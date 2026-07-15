@@ -117,6 +117,26 @@ RSL-RL ready
 
 This is not yet an Isaac Lab RL environment and is not a trained model.
 
+### L40S Revalidation
+
+The Stage 1 foundation was revalidated on an NVIDIA L40S in Lightning AI after
+recreating the persistent Isaac Lab cache directories. The following commands
+completed successfully in the `isaac-lab-2-3-2-workshop` container:
+
+```bash
+python -m unittest task3_rl.test_stage1
+python -B task3_rl/live_stage1_smoke.py
+python -B scripts/evaluation/task3/tests/test_grading.py
+```
+
+The live smoke test loaded the real room, dynamic coffee beans, and Task 3
+head placement A on `cuda:0`, then produced a `(1, 13)` Stage 1 observation
+with no terminal condition. The full grading suite also reported:
+
+```text
+7 task3 all grading tests passed.
+```
+
 ## What Is Not Yet Available
 
 There is no released Task 3 pretrained model, official Task 3 RL environment,
