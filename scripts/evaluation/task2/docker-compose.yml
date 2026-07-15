@@ -1,0 +1,55 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+# Self-contained ROS2 evaluation container for task2.
+#
+# The main docker/ stack (Isaac Sim/Lab) has no ROS2, so this service runs in its
+# own jazzy image. It shares the host network to see the Isaac Sim ROS2 bridge DDS
+# traffic, and runs on FastDDS (the base image default), with ROS_DOMAIN_ID 0.
+#
+# FASTDDS_BUILTIN_TRANSPORTS=UDPv4 is REQUIRED: Isaac Sim and this container each
+# have their own private /dev/shm (IpcMode=private). FastDDS treats host-network
+# peers as same-host and would pick its shared-memory transport for data, which
+# cannot cross the private /dev/shm boundary -- discovery succeeds (topics appear)
+# but no samples are ever delivered. Forcing UDPv4 makes Isaac deliver frames over
+# the network path instead.
+#
+# Artifacts persist to a host bind mount under ${ISAAC_DOCKER_ROOT} (created by
+# setup.sh), mirroring how the main containers persist their caches/data.
+#
+# Usage:
+#   bash scripts/evaluation/task2/setup.sh        # one-time: create volume + .env
+#   bash scripts/evaluation/task2/run.sh up
+#   bash scripts/evaluation/task2/run.sh evaluate
+
+services:
+  eval_task2:
+    build:
+      # Build context is the repo root so the bind-mounted code matches the image layout.
+      context: ../../..
+      dockerfile: scripts/evaluation/task2/Dockerfile
+    image: eval-task2:ebim2026
+    container_name: eval_task2
+    profiles: ["eval"]
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    network_mode: host
+    working_dir: /workspace
+    environment:
+      # Disable FastDDS shared-memory transport; force UDP so frames cross the
+      # Isaac<->eval container boundary (private /dev/shm). See header note.
+      FASTDDS_BUILTIN_TRANSPORTS: UDPv4
+    command: >
+      bash -lc "source /opt/ros/jazzy/setup.bash &&
+      python3 /workspace/scripts/evaluation/task2/main.py --output-dir /output"
+    volumes:
+      # Repo code (flat eval modules importable via PYTHONPATH set in the image).
+      - type: bind
+        source: ../../..
+        target: /workspace
+      # Persistent artifact volume on the host.
+      - type: bind
+        source: ${ISAAC_DOCKER_ROOT:-${HOME}/docker/ebim-challenge}/eval-task2
+        target: /output
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
