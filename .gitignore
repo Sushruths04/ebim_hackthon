@@ -84,6 +84,8 @@ checkpoints/
 *.pt
 *.pth
 *.onnx
+!models/
+!models/**/*.pt
 
 # Secrets — defense in depth
 *.pem
