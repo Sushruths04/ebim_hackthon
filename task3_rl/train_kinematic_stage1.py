@@ -1,3 +1,6 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Train a PPO checkpoint for the Stage 1 kinematic transport curriculum."""
 
 from __future__ import annotations
@@ -6,7 +9,6 @@ import argparse
 from pathlib import Path
 
 import torch
-
 from rsl_rl.runners import OnPolicyRunner
 
 from task3_rl.kinematic_stage1 import KinematicStage1Cfg, KinematicStage1Env
@@ -51,14 +53,24 @@ def main() -> None:
     parser.add_argument("--iterations", type=int, default=150)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--log-dir", type=Path, default=Path("outputs/task3_rl/kinematic_stage1"))
+    parser.add_argument(
+        "--log-dir",
+        type=Path,
+        default=Path("outputs/task3_rl/kinematic_stage1"),
+    )
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
-    env = KinematicStage1Env(KinematicStage1Cfg(num_envs=args.num_envs), device=args.device)
+    env = KinematicStage1Env(
+        KinematicStage1Cfg(num_envs=args.num_envs), device=args.device
+    )
     args.log_dir.mkdir(parents=True, exist_ok=True)
-    runner = OnPolicyRunner(env, runner_cfg(), log_dir=str(args.log_dir), device=args.device)
-    runner.learn(num_learning_iterations=args.iterations, init_at_random_ep_len=True)
+    runner = OnPolicyRunner(
+        env, runner_cfg(), log_dir=str(args.log_dir), device=args.device
+    )
+    runner.learn(
+        num_learning_iterations=args.iterations, init_at_random_ep_len=True
+    )
     checkpoint = args.log_dir / "model_final.pt"
     runner.save(str(checkpoint))
     print(f"KINEMATIC_STAGE1_CHECKPOINT {checkpoint.resolve()}", flush=True)
