@@ -14,6 +14,17 @@ each session, not retroactively.
 - Modal: 0 EUR spent (0 running apps, verified 2026-07-16).
 - Lightning: 0 EUR this session (no GPU time used; SSH access currently down).
 
+## Session log (continued)
+
+- 2026-07-16 (same day, continued): authored `scripts/task3/run_episode.py`
+  (headless episode runner: seed, head placement, policy=idle, off-screen
+  video via the proven `record_robot_demo.py` GIF-encoding pattern, grading
+  hookup to `scripts/evaluation/task3/grading.py`'s pure scoring functions
+  via `isaacsim.core.prims.RigidPrim` for Fabric-safe live pose reads).
+  0 GPU hours — still blocked on Lightning/GCP access, so this is
+  **unverified, untested code**. No proof bundle exists; Phase 1 checklist
+  boxes remain unticked per the visual-proof Definition of Done (§7.2).
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

@@ -565,9 +565,22 @@ unless everything else is done — PPO on the physical scene is out of budget.
 - [ ] Re-run `verify` on SIM-DEV; it becomes the primary machine (Lightning = fallback)
 
 ### Phase 1 — Episode runner
-- [ ] Read `scripts/task3/record_robot_demo.py` and `capture_static_view.py`
-- [ ] Refactor task3 scene build into an importable function (keep CLI intact)
-- [ ] `scripts/task3/run_episode.py`: seed, head placement, policy=idle, max time
+- [x] Read `scripts/task3/record_robot_demo.py` and `capture_static_view.py`
+      (2026-07-16) — finding: the scene-build composition functions
+      (`configure_keyboard_control_stage`, `configure_robot_room_stage`,
+      `make_control_scene_cfg`) are ALREADY importable/reusable exactly as
+      `record_robot_demo.py` uses them; no refactor of
+      `scene_robot_room_keyboard.py` was needed.
+- [x] Refactor task3 scene build into an importable function (keep CLI
+      intact) — not needed, see finding above; CLI untouched.
+- [ ] **AUTHORED, NOT YET RUN** `scripts/task3/run_episode.py`: seed, head
+      placement, policy=idle, max time, off-screen video, grading hookup →
+      `EPISODE_RESULT` JSON — written 2026-07-16 against the documented
+      APIs but never executed (no live Isaac Sim GPU access this session:
+      Lightning studio SSH down, GCP quota not granted). Known unverified
+      risk: `isaacsim.core.prims.RigidPrim` construction/`initialize()`
+      requirements are version-dependent and unconfirmed. Do NOT tick the
+      remaining Phase 1 boxes below until this has actually run.
 - [ ] Deterministic reset verified (same seed → same spawn poses, 2 runs)
 - [ ] Off-screen video recording per episode
 - [ ] Grading hookup → one `EPISODE_RESULT` JSON line per run
