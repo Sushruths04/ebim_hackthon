@@ -59,6 +59,20 @@ each session, not retroactively.
     ~15-30s of Kit startup (well under a minute of L4 time total,
     negligible cost). Image-build steps (apt/pip installs) ran CPU-only.
 
+## Session log (continued 3)
+
+- 2026-07-16 17:33 UTC: submitted the GCP GPU quota request via
+  `gcloud alpha quotas preferences create` (project
+  `gen-lang-client-0186028838`): `NVIDIA-L4-GPUS-per-project-region`=2 and
+  `NVIDIA-A100-GPUS-per-project-region`=1 in `us-central1`, plus
+  `GPUS-ALL-REGIONS-per-project`=3. All three currently show
+  `grantedValue: 0` (pending review, normal for this API) -- check status
+  with `gcloud alpha quotas preferences list
+  --service=compute.googleapis.com --project=gen-lang-client-0186028838`.
+  Standard 24-48h approval latency applies. Billing alerts (250/500/750
+  EUR) were NOT set up automatically -- left as a manual step since it
+  needs a currency/notification-channel judgment call.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
