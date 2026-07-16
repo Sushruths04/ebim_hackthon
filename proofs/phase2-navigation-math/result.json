@@ -1,0 +1,11 @@
+{
+  "task": "phase2-navigation-math",
+  "description": "Pure-math unit tests for task3_autonomy/navigation.py: waypoint routing (y-then-x), body-frame twist control law, and stop-tolerance check for the navigate_to() skill.",
+  "commit_parent": "9d6ac478ce10ef2b31d7721527d3068f058a208d",
+  "date": "2026-07-16",
+  "command": "python -m pytest task3_autonomy/tests/test_navigation.py -v",
+  "tests_total": 14,
+  "tests_passed": 14,
+  "tests_failed": 0,
+  "note": "No Isaac Sim / GPU required for this task -- pure Python/math, runs on the local CPU-only machine. This is the code that will drive the Isaac-dependent navigate_to() skill in task3_autonomy/skills.py (not yet written/verified, needs live GPU access)."
+}

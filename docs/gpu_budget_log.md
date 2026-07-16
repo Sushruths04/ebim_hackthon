@@ -73,6 +73,16 @@ each session, not retroactively.
   EUR) were NOT set up automatically -- left as a manual step since it
   needs a currency/notification-channel judgment call.
 
+## Session log (continued 4)
+
+- 2026-07-16 (same day, continued): while all three GPU paths are stalled,
+  did local CPU-only Phase 2 work that's actually verifiable now:
+  `task3_autonomy/navigation.py` (waypoint routing, body-frame control
+  law, stop-tolerance check for `navigate_to()`) with 14/14 passing unit
+  tests, no Isaac Sim needed. First real proof bundle of this project:
+  `proofs/phase2-navigation-math/`, logged in the new `docs/eval_results.md`.
+  0 GPU hours.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

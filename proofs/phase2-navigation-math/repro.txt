@@ -1,0 +1,1 @@
+python -m pytest task3_autonomy/tests/test_navigation.py -v

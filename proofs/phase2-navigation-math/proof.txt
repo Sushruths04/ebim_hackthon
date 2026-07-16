@@ -1,0 +1,25 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.3, pytest-9.0.2, pluggy-1.6.0 -- C:\Python313\python.exe
+cachedir: .pytest_cache
+rootdir: D:\Mini Thesis\EBIM HAckthon\EBiM-benchmark
+configfile: pyproject.toml
+plugins: anyio-4.12.0, Faker-40.15.0, hydra-core-1.3.2, langsmith-0.5.1, asyncio-1.3.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 14 items
+
+task3_autonomy/tests/test_navigation.py::test_wrap_to_pi_keeps_values_already_in_range PASSED [  7%]
+task3_autonomy/tests/test_navigation.py::test_wrap_to_pi_wraps_values_outside_range PASSED [ 14%]
+task3_autonomy/tests/test_navigation.py::test_waypoints_y_then_x_routes_through_y_first_when_both_change PASSED [ 21%]
+task3_autonomy/tests/test_navigation.py::test_waypoints_y_then_x_collapses_when_x_already_aligned PASSED [ 28%]
+task3_autonomy/tests/test_navigation.py::test_waypoints_y_then_x_collapses_when_y_already_aligned PASSED [ 35%]
+task3_autonomy/tests/test_navigation.py::test_waypoints_y_then_x_is_single_point_when_already_at_target PASSED [ 42%]
+task3_autonomy/tests/test_navigation.py::test_base_twist_toward_drives_straight_forward_in_body_frame PASSED [ 50%]
+task3_autonomy/tests/test_navigation.py::test_base_twist_toward_drives_sideways_in_body_frame PASSED [ 57%]
+task3_autonomy/tests/test_navigation.py::test_base_twist_toward_rotates_world_error_into_body_frame PASSED [ 64%]
+task3_autonomy/tests/test_navigation.py::test_base_twist_toward_is_proportional_when_close PASSED [ 71%]
+task3_autonomy/tests/test_navigation.py::test_base_twist_toward_returns_zero_at_target PASSED [ 78%]
+task3_autonomy/tests/test_navigation.py::test_pose_reached_true_within_position_tolerance PASSED [ 85%]
+task3_autonomy/tests/test_navigation.py::test_pose_reached_false_outside_position_tolerance PASSED [ 92%]
+task3_autonomy/tests/test_navigation.py::test_pose_reached_checks_yaw_when_target_yaw_given PASSED [100%]
+
+============================= 14 passed in 0.08s ==============================

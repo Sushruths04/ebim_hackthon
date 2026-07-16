@@ -596,14 +596,34 @@ unless everything else is done — PPO on the physical scene is out of budget.
 - [ ] Commit + push (`v0.1-harness`)
 
 ### Phase 2 — Skills
-- [ ] Read `scripts/evaluation/task3/grading.py` fully; extract all region/
-      target coordinates into a `task3_autonomy/constants.py`
-- [ ] `navigate_to()` + waypoint router (y-before-x wall avoidance)
+- [x] Read `scripts/evaluation/task3/grading.py` fully; extract all region/
+      target coordinates into a `task3_autonomy/constants.py` — finding
+      (2026-07-16): grading.py's region/point constants are already pure,
+      Isaac-free, and well-documented (`TASK3_KITCHEN_AREA`,
+      `TASK3_DINING_AREA`, `TASK3_BEAN_RECOVERY_REGION`,
+      `TASK3_SINK_REGION`, `DEFAULT_STAGE1_OBJECTS`, etc.); duplicating
+      them into a second constants file would just risk drift, so Phase 2
+      skill code imports directly from `grading.py` instead. No new
+      constants.py was created.
+- [x] **PROVEN, PURE-MATH PORTION ONLY**: `task3_autonomy/navigation.py` --
+      `waypoints_y_then_x()` (y-before-x wall avoidance), `base_twist_toward()`
+      (body-frame proportional control law), `pose_reached()` (±3 cm/3°
+      stop tolerance). 14/14 unit tests passing on CPU, no Isaac Sim
+      needed -- proof bundle at `proofs/phase2-navigation-math/`, logged in
+      `docs/eval_results.md` (2026-07-16). The Isaac-dependent orchestration
+      that wires this into a real `navigate_to()` skill (reading live robot
+      pose, calling `tmr_base_control.compute_drive_targets()` /
+      `compensate_yaw_rate()`, stepping the sim) is NOT written yet --
+      deliberately deferred until GPU access returns, so it can be written
+      and verified in the same session instead of piling up more
+      unverified code (see run_episode.py's unverified state above).
 - [ ] `verify_navigate.py` passes (kitchen↔dining, ±3 cm/3°)
 - [ ] `reach()` via TeleopCommand→Lula IK, world-frame wrapper
 - [ ] `grasp()`/`release()` with hold-confirmation predicate
 - [ ] `lift()`, `place()`
-- [ ] Local unit tests for frame math (no Isaac needed)
+- [x] Local unit tests for frame math (no Isaac needed) — see
+      `task3_autonomy/navigation.py` above; more will be added alongside
+      `reach()`/`grasp()`/`lift()`/`place()` as those are written.
 - [ ] `verify_grasp_lift.py` ≥ 8/10 with video — **critical gate**
 - [ ] If grasping unstable after 2 days: adopt mitigation (b)/(c), document it
 - [ ] Commit + push (`v0.1-skills`)
