@@ -618,7 +618,33 @@ unless everything else is done — PPO on the physical scene is out of budget.
       and verified in the same session instead of piling up more
       unverified code (see run_episode.py's unverified state above).
 - [ ] `verify_navigate.py` passes (kitchen↔dining, ±3 cm/3°)
-- [ ] `reach()` via TeleopCommand→Lula IK, world-frame wrapper
+- [ ] `reach()` via TeleopCommand→Lula IK, world-frame wrapper —
+      **design finding (2026-07-16), read before implementing**:
+      `scripts/common/teleop_targets.py` already has everything needed and
+      is pure/tested — do NOT reimplement frame math from scratch.
+      `pose_world_to_base()`/`pose_base_to_world()` convert between world
+      and robot-base frames; `CartesianTargetTracker` holds the live
+      per-arm target as a base-frame `Pose` and only moves it via
+      `TeleopCommand.left_pose`/`right_pose` **incremental** `PoseDelta`
+      (`_apply_pose_delta`: `new_position = current + delta.translation`
+      clamped to `TargetLimits`, `new_orientation =
+      normalize(quat_from_rpy(delta.rotation_rpy) * current)` — a
+      **left-multiply**, not a replace). So `reach(arm, world_pose)` must:
+      (1) convert `world_pose` to base frame with `pose_world_to_base()`;
+      (2) compute a ONE-STEP delta that lands the tracker's target exactly
+      on it: `delta.translation = target.position - current.position`
+      (position is a simple additive delta, no clamping surprise beyond
+      `TargetLimits`); for orientation, solve
+      `delta_quat = target.orientation * current.orientation⁻¹` then
+      convert `delta_quat` back to roll-pitch-yaw — **this inverse
+      (quat→rpy) does not exist yet**, only `_quaternion_from_rpy()`
+      (rpy→quat) is defined in `teleop_targets.py`; write and unit-test it
+      by round-tripping through the existing function before using it;
+      (3) feed that single `PoseDelta` through a `TeleopCommand`, then in
+      the Isaac-dependent tick loop just poll the REAL end-effector pose
+      (not the tracker's target, which updates instantly — the physical
+      arm converges to it over many sim ticks via Lula IK + physics) until
+      it's within tolerance or a timeout is hit.
 - [ ] `grasp()`/`release()` with hold-confirmation predicate
 - [ ] `lift()`, `place()`
 - [x] Local unit tests for frame math (no Isaac needed) — see
