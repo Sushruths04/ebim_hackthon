@@ -25,6 +25,40 @@ each session, not retroactively.
   **unverified, untested code**. No proof bundle exists; Phase 1 checklist
   boxes remain unticked per the visual-proof Definition of Done (§7.2).
 
+## Session log (continued 2)
+
+- 2026-07-16 (same day, continued): user asked to try Modal serverless GPUs
+  as a substitute for the (still-down) Lightning studio. Investigated and
+  tested directly (all `modal run` batch jobs, auto-exit, confirmed
+  `modal app list` shows 0 running afterward):
+  - `nvcr.io/nvidia/isaac-lab:2.3.2` etc. (this repo's documented images)
+    need NGC registry auth -- no NGC API key available locally or as a
+    Modal secret. BUT: `isaacsim` (4.5.0.0) and `isaaclab` (2.1.0) are
+    plain public pip packages on `pypi.nvidia.com` (and even pypi.org),
+    no NGC auth needed at all -- confirmed by a cheap CPU-only probe.
+  - Built a Modal image (Ubuntu 22.04 + CUDA 12.4 base, apt Kit runtime
+    deps, pip-installed isaacsim[all,extscache]==4.5.0.0) and ran a
+    minimal headless-boot + off-screen-render smoke test on `gpu="L4"`.
+  - **Result: FAILED, twice, reproducibly.** `nvidia-smi` inside the
+    container correctly shows a real NVIDIA L4 (23GB, driver 580.95.05)
+    -- CUDA compute access works. But `vulkaninfo` only enumerates a
+    software renderer (`llvmpipe`/Mesa), never the NVIDIA Vulkan ICD, and
+    Isaac Sim's Kit renderer fails with
+    `[gpu.foundation.plugin] No device could be created` / "Driver
+    Version: 0, Graphics API: Vulkan", then hard-crashes with
+    `Fatal Python error: Segmentation fault`. Tried the standard fix
+    (`NVIDIA_DRIVER_CAPABILITIES=all`, `NVIDIA_VISIBLE_DEVICES=all`) --
+    no change, identical failure both times.
+  - **Conclusion: Modal's GPU container runtime exposes CUDA compute but
+    not the NVIDIA Vulkan/OpenGL graphics stack Isaac Sim's RTX renderer
+    needs.** This is a platform-level limitation, not a missing package --
+    confirms (with actual evidence, not assumption) the master plan's
+    original allocation table judgment: Modal is fine for Phase 7's
+    pure-PyTorch VLA fine-tuning, but cannot run Isaac Sim/Isaac Lab.
+  - GPU time spent: 3 short `gpu="L4"` invocations, each failing within
+    ~15-30s of Kit startup (well under a minute of L4 time total,
+    negligible cost). Image-build steps (apt/pip installs) ran CPU-only.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
@@ -34,3 +68,7 @@ each session, not retroactively.
 2. **Lightning studio (`lightning-p4`) unreachable** — SSH key rejected,
    consistent with the studio being stopped. Needs to be started from the
    Lightning AI web console before any GPU-side Phase 0-2 work can resume.
+3. **Modal cannot run Isaac Sim** — confirmed by direct testing (see
+   session log above), not usable as a Lightning/GCP substitute for any
+   Isaac Sim/Isaac Lab work. Still fine for Phase 7 (pure PyTorch
+   training), unchanged from the original plan.
