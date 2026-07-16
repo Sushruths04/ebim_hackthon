@@ -545,12 +545,22 @@ unless everything else is done — PPO on the physical scene is out of budget.
 ## 10. Detailed TODO Checklist
 
 ### Phase 0 — Sync & bootstrap
-- [ ] **(Manual, first)** GCP project + billing + L4×2/A100×1 quota request + billing alerts
-- [ ] **(Manual)** Competition registration (team name + email)
-- [ ] Push merged local main to fork (`git push origin main --force-with-lease`)
-- [ ] Lightning GPU studio: clone/pull fork, `docker login nvcr.io`
+- [ ] **(Manual, first)** GCP project + billing + L4×2/A100×1 quota request + billing alerts —
+      verified 2026-07-16: project `gen-lang-client-0186028838` has billing
+      enabled, but `NVIDIA_L4_GPUS`/`NVIDIA_A100_GPUS` quota = 0 in
+      `us-central1` — **the quota request itself has not been submitted yet.**
+- [ ] **(Manual)** Competition registration (team name + email) — status not verifiable by the executor session; confirm done
+- [x] Push merged local main to fork — pushed as a clean single-commit
+      snapshot (`9cc7088`) instead of full history: the fork's old history
+      contained unrecoverable Git LFS objects (dead upstream
+      `amp_for_hardware` quadruped meshes) that blocked a full-history
+      force-push. Prior fork state backed up at `backup/pre-sync-2026-07-16`.
+      Local `main` keeps its full real history untouched. (2026-07-16)
+- [ ] Lightning GPU studio: clone/pull fork, `docker login nvcr.io` —
+      **BLOCKED**: `ssh lightning-p4` returns `Permission denied (publickey)`,
+      studio appears stopped. Needs restart from the Lightning web console.
 - [ ] `lightning_workflow.sh bootstrap` then `verify` — all tests pass
-- [ ] Create `docs/gpu_budget_log.md`, log session hours
+- [x] Create `docs/gpu_budget_log.md`, log session hours (2026-07-16)
 - [ ] Once quota lands: build SIM-DEV GCP VM (L4, driver, Docker, NGC, repo, Isaac up) and **snapshot the disk**
 - [ ] Re-run `verify` on SIM-DEV; it becomes the primary machine (Lightning = fallback)
 
