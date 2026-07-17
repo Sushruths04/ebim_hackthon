@@ -71,10 +71,13 @@ def main() -> None:
 
     from isaaclab.app import AppLauncher
 
+    # Cameras only when actually needed: enable_cameras makes sim.step()
+    # run full app updates whose USD sync can interfere with tensor-API
+    # joint targets (2026-07-17 investigation) -- and it triples wall time.
     app_launcher = AppLauncher(
         {
             "headless": True,
-            "enable_cameras": True,
+            "enable_cameras": bool(args.record_video or args.livestream),
             "livestream": 2 if args.livestream else -1,
         }
     )
