@@ -13,6 +13,7 @@ authority deficit lives (skill -> targets -> PhysX response).
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -29,18 +30,28 @@ from run_episode import (  # noqa: E402
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--drive-damping",
+        type=float,
+        default=None,
+        help="Override the wheel drive damping written to PhysX (isolates "
+        "the drive-authority variable without touching shared config).",
+    )
+    args = parser.parse_args()
+
     from isaaclab.app import AppLauncher
 
     app_launcher = AppLauncher({"headless": True, "enable_cameras": False})
     simulation_app = app_launcher.app
     try:
-        _probe(simulation_app)
+        _probe(simulation_app, args)
     finally:
         sys.stdout.flush()
         simulation_app.close()
 
 
-def _probe(simulation_app) -> None:
+def _probe(simulation_app, args) -> None:
     for path in (SCENES_DIR, COMMON_DIR, str(REPO_ROOT)):
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
@@ -98,6 +109,18 @@ def _probe(simulation_app) -> None:
     drive_names = [robot.joint_names[i] for i in adapter.drive_ids]
     print(f"PROBE steering joints: {steer_names}", flush=True)
     print(f"PROBE drive joints:    {drive_names}", flush=True)
+
+    if args.drive_damping is not None:
+        import torch
+
+        damping = torch.full(
+            (1, len(adapter.drive_ids)), args.drive_damping, device="cuda:0"
+        )
+        robot.write_joint_damping_to_sim(
+            damping, joint_ids=adapter.drive_ids
+        )
+        print(f"PROBE drive damping override: {args.drive_damping}",
+              flush=True)
 
     def fmt(tensor, ids) -> list[float]:
         return [round(float(tensor[0, i]), 3) for i in ids]
