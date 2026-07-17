@@ -1,0 +1,19 @@
+{
+  "final_pose": [
+    -3.173172950744629,
+    -1.5721997022628784,
+    -1.5513333898550798
+  ],
+  "max_seconds": 60.0,
+  "passed": true,
+  "position_error_m": 0.0286,
+  "sim_dt": 0.005,
+  "skill_reported_done": true,
+  "steps_used": 2941,
+  "target": [
+    -3.18,
+    -1.6
+  ],
+  "tolerance_m": 0.1,
+  "wall_time_seconds": 340.268
+}

@@ -1,0 +1,41 @@
+# Phase 2 gate: live NavigateTo on the real base — PASSED
+
+Commit: fdf9476 (branch main)
+Box: sim-dev-g4b (GCP g4-standard-48, FULL RTX PRO 6000 96 GB, spot,
+us-central1-b), container isaac-lab-2-3-2-workshop, Isaac Sim 5.1.0.
+
+Command (inside the container, repo at /workspace/EBiM_Challenge):
+
+  /workspace/isaaclab/isaaclab.sh -p scripts/task3/verify_navigate.py \
+      --livestream --record-video --max-seconds 60 \
+      --out-dir /workspace/EBiM_Challenge/outputs/task3_verify_navigate_v2
+
+Result (result.json, run log /tmp/task3_verify_nav10.log):
+  passed=true, position_error_m=0.0286 (tolerance 0.10; skill's own stop
+  tolerance is 0.03), steps_used=2941 (= 14.7 s sim at dt=0.005),
+  final_pose (-3.173, -1.572, yaw -1.551) vs target (-3.18, -1.6),
+  yaw drift ~1.2 deg over the run with heading hold active.
+
+What the run does (all autonomous, no teleop):
+  1. Ramps both FR3 arms into the measured transit tuck
+     (TRANSIT_ARM_POSE "pnn_j6_15_j4_30": width 1.88 -> 0.74 m,
+     forward overhang 0.885 -> 0.78 m; picked by scripts/task3/
+     probe_arm_tuck.py sweeps, not by hand).
+  2. Drives route_via_door: south to the doorway approach, straight
+     through the 1.2 m partition doorway at x=-4.14, east along the
+     shallow wall-island lane y=-0.37, then down the island-east
+     corridor to the stop beside the kitchen island.
+  3. Stops within tolerance; NAVIGATE_RESULT JSON printed and saved.
+
+Failed precursors (evidence trail, same day):
+  nav7 (camera-free): base stalled against the partition at y~0.99 —
+    proved drives healthy (wheels track 10 rad/s) and the "crawl" was
+    wall contact. Damping 500 must be written at runtime by
+    TmrBaseAdapter; the actuator-config path does not reach PhysX.
+  nav8: door turn worked, robot stalled IN the doorway — arms 1.88 m
+    wide vs 1.2 m gap (video proofs sent to owner).
+  nav9: crossed the doorway tucked but scraped the kitchen island for
+    ~35 s — 0.885 m forward overhang in the 1.32 m corridor; timed out
+    while still en route.
+
+Video: navigate.mp4 (344 frames, 20 fps re-encode of the run capture).
