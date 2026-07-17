@@ -1,0 +1,109 @@
+{
+  "date": "2026-07-17T16:21:52Z",
+  "final_positions": {
+    "bowl2": [
+      -4.2982964515686035,
+      -1.499874234199524,
+      0.74642014503479
+    ],
+    "cup": [
+      -4.184937477111816,
+      -1.7527490854263306,
+      0.7470028400421143
+    ],
+    "plate2": [
+      -4.3087286949157715,
+      -1.660852074623108,
+      0.7471679449081421
+    ],
+    "simple_tray": [
+      -4.2793049812316895,
+      -1.6176908016204834,
+      0.7596607804298401
+    ],
+    "spoon2": [
+      -4.3415727615356445,
+      -1.678146481513977,
+      0.7607625126838684
+    ]
+  },
+  "git_commit": "unknown",
+  "head_placement": "a",
+  "max_seconds": 8.0,
+  "policy": "idle",
+  "seed": 42,
+  "sim_dt": 0.005,
+  "spawn_bean_count": 300,
+  "spawn_positions": {
+    "bowl2": [
+      -4.2983174324035645,
+      -1.4999148845672607,
+      0.7471776008605957
+    ],
+    "cup": [
+      -4.184926986694336,
+      -1.7527521848678589,
+      0.7471024990081787
+    ],
+    "plate2": [
+      -4.308726787567139,
+      -1.66084623336792,
+      0.7471680641174316
+    ],
+    "simple_tray": [
+      -4.2793049812316895,
+      -1.617691993713379,
+      0.7596606612205505
+    ],
+    "spoon2": [
+      -4.341505527496338,
+      -1.6781758069992065,
+      0.7607650756835938
+    ]
+  },
+  "stage2_note": "not scored: requires the Phase 4 feeding FSM",
+  "stages": [
+    {
+      "max_score": 5,
+      "objects_failed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "objects_passed": [],
+      "passed": false,
+      "score": 0,
+      "stage": "stage1"
+    },
+    {
+      "beans_recovered": 0,
+      "beans_recovered_percent": 0.0,
+      "beans_total": 300,
+      "max_score": 4,
+      "passed": false,
+      "score": 0,
+      "stage": "stage3"
+    },
+    {
+      "bounds_approximation": "point",
+      "max_score": 5,
+      "objects_failed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "objects_passed": [],
+      "passed": false,
+      "score": 0,
+      "stage": "stage4"
+    }
+  ],
+  "total_steps": 1600,
+  "video_frames_dir": "/workspace/EBiM_Challenge/outputs/task3_det_runB/seed42_a/frames",
+  "video_gif": "/workspace/EBiM_Challenge/outputs/task3_det_runB/seed42_a/episode.gif",
+  "wall_time_seconds": 95.494
+}

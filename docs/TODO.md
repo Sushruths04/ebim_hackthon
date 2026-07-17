@@ -16,14 +16,15 @@ line to the Session Log at the bottom (this is the shared memory), update
       Fractional vGPU shapes proven unusable (see AGENT_STATE.md).
 - [x] Multi-agent coordination: sprint plan + AGENTS.md + AGENT_STATE.md +
       this TODO, all pushed; worktrees aligned.
-- [ ] [GPU] **Phase 1a: `run_episode.py --policy idle` completes** —
-      4 bugs fixed so far (commits `34896ce f9c51f4 2d23b63 8431332`);
-      continue the crash→fix→rerun loop (crash_traceback.txt in the
-      episode dir tells you the next bug; rerun command in AGENT_STATE.md).
-- [ ] [GPU] Phase 1b: video frames + `EPISODE_RESULT` JSON line produced.
-- [ ] [GPU] Phase 1c: determinism — same seed twice → identical spawn
-      poses (diff the logged object poses).
-- [ ] [GPU] Phase 1d: proof bundle `proofs/phase1-harness/` + line in
+- [x] [GPU] **Phase 1a: `run_episode.py --policy idle` completes** —
+      final blockers: controller OmniGraphs deactivated pre-composition
+      (`a328224`), pull-based video capture (`9caecb1`), results written
+      before Kit shutdown (`b4be9d5`).
+- [x] [GPU] Phase 1b: video frames + `EPISODE_RESULT` JSON line produced
+      (160 frames + full JSON, runA 2026-07-17 16:07 UTC).
+- [x] [GPU] Phase 1c: determinism — seed 42 twice → SPAWN_MATCH True
+      (300 beans + 5 props bit-identical; result_runA/B.json in proofs).
+- [x] [GPU] Phase 1d: proof bundle `proofs/phase1-harness/` + line in
       `docs/eval_results.md` + tag `v0.1-harness` + push.
 
 ## Day 1–2 — Skills (Phase 2)
