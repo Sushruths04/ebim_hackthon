@@ -120,7 +120,9 @@ def main() -> None:
     # SimulationApp must start before importing Isaac Lab/Omniverse modules.
     from isaaclab.app import AppLauncher
 
-    app_launcher = AppLauncher({"headless": True})
+    # enable_cameras is required for omni.replicator (off-screen video
+    # recording) to exist in headless mode.
+    app_launcher = AppLauncher({"headless": True, "enable_cameras": True})
     simulation_app = app_launcher.app
     try:
         result = _run_episode(args, simulation_app, frames_dir)
