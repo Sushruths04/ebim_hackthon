@@ -101,6 +101,17 @@ def test_robot_body_still_composes(wrapper_path: Path) -> None:
         assert prim.IsValid() and prim.IsActive(), f"{child} lost"
 
 
+def test_video_capture_is_gated_not_capture_on_play() -> None:
+    """Replicator captures on every app update by default once a writer is
+    attached (one 8 s episode wrote 139k frames / 93 GB on 2026-07-17).
+    run_episode must disable capture-on-play before attaching the writer so
+    only the explicit orchestrator.step() calls capture frames."""
+    source = (TASK3_DIR / "run_episode.py").read_text()
+    gating = source.index("set_capture_on_play(False)")
+    attach = source.index("writer.attach(")
+    assert gating < attach
+
+
 def test_regeneration_is_idempotent(wrapper_path: Path) -> None:
     first = wrapper_path.read_text()
     again = make_headless_robot_usd(ROBOT_USD)

@@ -416,6 +416,13 @@ def _run_episode(
     total_steps = max(1, round(args.max_seconds / sim.cfg.dt))
     capture_every = max(1, round(1.0 / (sim.cfg.dt * VIDEO_FPS)))
     if args.record_video:
+        # Replicator's orchestrator defaults to capture-on-play: once a
+        # writer is attached and the timeline runs, it writes a frame on
+        # EVERY app update, ignoring the capture_every gating below (one
+        # 8 s episode produced 139k frames / 93 GB on 2026-07-17). Frames
+        # must only be captured by the explicit orchestrator.step() calls
+        # in the stepping loop.
+        rep.orchestrator.set_capture_on_play(False)
         camera = rep.create.camera(
             position=CAMERA_POSITION, look_at=CAMERA_LOOK_AT
         )
@@ -438,6 +445,19 @@ def _run_episode(
         rep.orchestrator.wait_until_complete()
         writer.detach()
         render_product.destroy()
+        frame_count = len(list(frames_dir.glob("rgb_*.png")))
+        expected_frames = total_steps // capture_every + 1
+        if frame_count > expected_frames * 3:
+            raise RuntimeError(
+                f"Video capture runaway: {frame_count} frames written but "
+                f"~{expected_frames} expected -- capture-on-play gating "
+                "failed; refusing to fill the disk."
+            )
+        print(
+            f"Captured {frame_count} video frames "
+            f"(expected ~{expected_frames})",
+            flush=True,
+        )
         _encode_gif(frames_dir, frames_dir.parent / "episode.gif")
 
     # --- Grading (final-state snapshot; idle policy never moves anything,
