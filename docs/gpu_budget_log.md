@@ -138,6 +138,26 @@ each session, not retroactively.
 - Estimated cost: 3–4 EUR (spot g4-standard-48 ≈ $1.5–2/h).
 - Disk maintenance: deleted 93 GB Replicator runaway frames + ~16 GB older debug frame dirs (task3_episodes_aaf7905/de684a0/f02dea2); disk now 17% used.
 
+## Session log (continued 7) — 2026-07-17 evening (Claude): navigate root cause + door routing + arm-width finding
+
+- Determinism pair verdict: runA/runB seed-42 result.json agree on every
+  physics field — Phase 1 re-confirmed closed (tag v0.1-harness existed).
+- Camera-free instrumented verify (nav7): wheels track targets, base does
+  a true 0.5 m/s → drive chain healthy; stall at y~0.99 is CONTACT (wheel
+  vel ~ -0.3 with targets 10). Root cause = partition wall collision, NOT
+  actuation; enable_cameras exonerated.
+- route_via_door shipped (ebe88ba, CPU 207/207). Live run nav8 (with
+  livestream for the owner + video): door turn executes, but robot stalls
+  IN the gap — USD measurement shows both partition crossings are ~1.2 m
+  while the robot spans 1.88 m across the outboard-mounted arms. Next:
+  probe_arm_tuck.py (f7d1a6e) to pick a measured transit pose.
+- Livestream diagnosis for owner: stream only exists while a --livestream
+  run is active; view with NVIDIA's desktop Isaac Sim WebRTC Streaming
+  Client at 35.202.157.74 (no browser client in Isaac Sim 5.x). Firewall
+  IP-lock verified still correct (owner IPv4 134.61.98.3).
+- GPU time this session ≈ 0.7 h spot g4-standard-48 ≈ 1.5 EUR (nav8
+  livestream run + probes pending).
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

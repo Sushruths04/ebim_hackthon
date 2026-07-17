@@ -4,7 +4,7 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-17 (Claude, main; ~16:00 UTC)
+Last update: 2026-07-17 (Claude, main; ~18:20 UTC)
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -42,16 +42,33 @@ Last update: 2026-07-17 (Claude, main; ~16:00 UTC)
   unusable for Isaac (see GPU STATUS).
 - Phase 1 blocker RESOLVED (2026-07-17): robot USD's ROS2/keyboard controller OmniGraphs now deactivated BEFORE composition via generated wrapper layer (make_headless_robot_usd, commit a328224; CPU tests 198/198). Video capture rebuilt pull-based via rgb annotator after Replicator BasicWriter runaways of 139k/93 GB and 12k frames — even set_capture_on_play(False) cannot stop an attached writer while the timeline plays (commits 9caecb1, ef7af06). First clean idle episode: exactly 160 frames + episode.gif on sim-dev-g4b.
 
-## IN PROGRESS — Phase 1 determinism verification (Claude, main; 2026-07-17 ~16:00 UTC)
+## IN PROGRESS — Phase 2 NavigateTo live verification (Claude, main; 2026-07-17 ~18:20 UTC)
 
-Determinism pair (two seed-42 idle runs, outputs/task3_det_runA and _runB, logs /tmp/task3_runA.log,/tmp/task3_runB.log in the container) launched at commit ef7af06; runA completed capture (160 frames + gif); runB verdict pending — spawn_positions of both result.json must match to close Phase 1 and tag v0.1-harness with a proof bundle.
+Base-drive chain is PROVEN GOOD: with runtime wheel damping 500 (TmrBaseAdapter
+writes it to PhysX directly; actuator-cfg path does NOT deliver), wheels track
+10 rad/s targets and the base does a true 0.5 m/s (NAVDBG, /tmp/task3_verify_nav7.log,
+camera-free). enable_cameras is NOT a culprit (camera-free run behaved identically).
+
+The remaining Phase 2 blocker is GEOMETRY: the "crawl"/stall is the robot
+contact-stalling against the dining/kitchen partition (wall y in [0.10,0.34]).
+route_via_door (commit ebe88ba, CPU 207/207) crosses at doorway center x=-4.14,
+and live run nav8 confirmed the door turn executes — but the robot STILL stalls
+in the gap: both wall crossings measure ~1.2 m wide (second gap x in (3.79,4.99);
+east detour walled by Rectangle009) while the robot spans 1.88 m across its
+outboard-mounted FR3 arms (base_link is only 0.8x0.58 m — the base fits, the
+arms don't). Fix in flight: probe_arm_tuck.py (commit f7d1a6e) measures settled
+body-frame extents for candidate tuck poses in one session; wire the winner into
+NavigateTo as a transit pose, rerun verify.
+
+Phase 1 is CLOSED: proof bundle `proofs/phase1-harness/` (c1681b2) with
+SPAWN_MATCH True, tag `v0.1-harness` pushed. Re-confirmed 2026-07-17 ~18:30:
+runA/runB result.json agree on every physics field (spawn/final positions,
+stages, total_steps); only timestamps/paths differ.
 
 ## NEXT UP (in order — claim in this file before starting)
-1. [GPU/Claude] Phase 1: first real run of `scripts/task3/run_episode.py`
-   (`--policy idle --record-video`), repair/disable the legacy steering
-   OmniGraph then verify the harness,
-   deterministic-reset check, measure episode wall-time → proof bundle →
-   tag `v0.1-harness`.
+1. [GPU/Claude] Arm transit pose: run `probe_arm_tuck.py`, pick the pose
+   with body-y half-extent ≤ ~0.45 m, ramp arms to it in verify_navigate
+   before driving, rerun the door-routed verify → Phase 2 navigate proof.
 2. [GPU/Claude] Fix nonfatal PhysX error spam: disable_robot_external_wrenches() calls addTorque/setLinearVelocity which are illegal with eENABLE_DIRECT_GPU_API — guard or replace with Isaac Lab tensor API.
 3. [GPU/Claude] Phase 2 skills: live `navigate_to()` → `verify_navigate.py`;
    quat→rpy inverse (unit-test round-trip) → `reach()` → `grasp()`/`lift()`
