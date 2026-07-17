@@ -53,25 +53,30 @@ def _pair(left: list[float]) -> list[float]:
     return left + _mirror(left)
 
 
-# v3 lean sweep: mounts sit at only y +-0.12 (USD link0 measurement) but
-# tilt the arms ~50 deg outward, which is the entire width problem. The
-# cancel recipe is j1=+-90 deg (bend plane lateral), j2 ~0.87 rad counter
-# lean to vertical, j3=+-90 deg (fold plane back to sagittal), j4 fold.
-# Signs are ambiguous from geometry alone, so sweep all 8 combinations;
-# fold_up is the v2 baseline winner (+-0.565 at link origins).
+# v4 forward-extent sweep: v3's winner lean_pnn fixed the width
+# (+-0.37 m) and the doorway crossing succeeded live (nav9), but its fold
+# sticks 0.885 m FORWARD at island height — the robot scraped the kitchen
+# island for ~35 s in the 1.32 m wall-island corridor (robot length 1.27 m).
+# Sweep wrist/fold tweaks on lean_pnn to shorten the nose.
+_PNN = [1.57, -0.87, -1.57, -2.9, 0.0, 2.9, 0.785]
+
+
+def _variant(**overrides: float) -> list[float]:
+    pose = list(_PNN)
+    for key, value in overrides.items():
+        pose[int(key[1]) - 1] = value
+    return _pair(pose)
+
+
 CANDIDATES: dict[str, list[float]] = {
-    "fold_up": [0.0, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785] * 2,
+    "pnn_base": _pair(_PNN),
+    "pnn_j6_15": _variant(j6=1.5),
+    "pnn_j6_22": _variant(j6=2.2),
+    "pnn_j6_40": _variant(j6=4.0),
+    "pnn_j4_30": _variant(j4=-3.0),
+    "pnn_j6_15_j4_30": _variant(j6=1.5, j4=-3.0),
+    "pnn_j5_15": _variant(j5=1.57),
 }
-for s1 in (1.57, -1.57):
-    for s2 in (-0.87, 0.87):
-        for s3 in (1.57, -1.57):
-            label = (
-                f"lean_{'p' if s1 > 0 else 'n'}"
-                f"{'p' if s2 > 0 else 'n'}{'p' if s3 > 0 else 'n'}"
-            )
-            CANDIDATES[label] = _pair(
-                [s1, s2, s3, -2.9, 0.0, 2.9, 0.785]
-            )
 
 RAMP_STEPS = 300  # 1.5 s target interpolation
 SETTLE_STEPS = 400  # 2.0 s hold before measuring
@@ -187,6 +192,16 @@ def _probe(simulation_app) -> None:
             ),
             key=lambda e: -abs(e[1]),
         )[:8]
+        # Forward overhang matters at island height (z 0.35-1.15): report
+        # every link past the base_link nose with its height.
+        long_links = sorted(
+            (
+                (name, round(bx, 3), round(float(body_pos[i, 2]), 3))
+                for i, (bx, by, name) in enumerate(extents)
+                if bx > 0.5
+            ),
+            key=lambda e: -e[1],
+        )[:8]
         print(
             "TUCK_RESULT "
             + json.dumps(
@@ -197,6 +212,7 @@ def _probe(simulation_app) -> None:
                     "widest_link": [widest[2], round(widest[1], 3)],
                     "longest_link": [longest[2], round(longest[0], 3)],
                     "wide_links_by_z": wide_links,
+                    "long_links_by_z": long_links,
                     "arm_err": round(arm_err, 3),
                     "root_xy": [round(float(root[0]), 3),
                                 round(float(root[1]), 3)],
