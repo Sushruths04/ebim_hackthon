@@ -49,13 +49,15 @@ def test_reaches_target_and_crosses_partition_only_in_doorway():
     # run stalled against the door jamb descending at x=-4.6; the route must
     # cross the partition band only near the doorway center.
     start = Pose2D(-4.6, 2.7, math.radians(-90.0))
-    skill = NavigateTo((-2.0, -1.5))
+    skill = NavigateTo((-3.18, -1.6))
     final, trajectory, done = drive(skill, start, max_steps=3000)
 
     assert done, "navigation never finished"
-    assert math.hypot(final.x - (-2.0), final.y - (-1.5)) <= 0.05
+    assert math.hypot(final.x - (-3.18), final.y - (-1.6)) <= 0.05
+    # Wall band [0.10, 0.34] plus the robot's 0.38 m rear extent: while any
+    # part of the robot overlaps the partition, x must stay in the doorway.
     for pose in trajectory:
-        if -0.4 <= pose.y <= 0.8:  # partition band plus robot half-length
+        if -0.25 <= pose.y <= 0.8:
             assert -4.74 < pose.x < -3.54, (
                 f"crossed partition outside doorway at ({pose.x}, {pose.y})"
             )

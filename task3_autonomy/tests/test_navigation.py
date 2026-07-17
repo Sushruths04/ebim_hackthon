@@ -10,8 +10,10 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from task3_autonomy.navigation import (  # noqa: E402
+    TASK3_DOOR_APPROACH_M,
     TASK3_DOOR_X,
     TASK3_DOOR_Y,
+    TASK3_KITCHEN_LANE_Y,
     Pose2D,
     base_twist_toward,
     pose_reached,
@@ -72,22 +74,27 @@ def test_route_via_door_same_side_falls_back_to_y_then_x():
     assert route_via_door(start, target) == waypoints_y_then_x(start, target)
 
 
+NORTH_POINT = (TASK3_DOOR_X, TASK3_DOOR_Y + TASK3_DOOR_APPROACH_M)
+SOUTH_POINT = (TASK3_DOOR_X, TASK3_KITCHEN_LANE_Y)
+
+
 def test_route_via_door_crossing_passes_through_doorway_center():
-    route = route_via_door((-4.6, 2.7), (-2.0, -1.5))
-    assert (TASK3_DOOR_X, TASK3_DOOR_Y + 0.9) in route
-    assert (TASK3_DOOR_X, TASK3_DOOR_Y - 0.9) in route
+    route = route_via_door((-4.6, 2.7), (-3.18, -1.6))
     # The two door waypoints must be consecutive: the crossing leg is a
     # straight line at the doorway's x, never a diagonal near the wall.
-    approach_i = route.index((TASK3_DOOR_X, TASK3_DOOR_Y + 0.9))
-    assert route[approach_i + 1] == (TASK3_DOOR_X, TASK3_DOOR_Y - 0.9)
+    approach_i = route.index(NORTH_POINT)
+    assert route[approach_i + 1] == SOUTH_POINT
     assert route[0] == (-4.6, 2.7)
-    assert route[-1] == (-2.0, -1.5)
+    assert route[-1] == (-3.18, -1.6)
+    # The kitchen-side east leg runs in the shallow lane: after the door,
+    # y stays at the lane until the final x is reached.
+    assert (route[approach_i + 2][1]) == TASK3_KITCHEN_LANE_Y
 
 
 def test_route_via_door_crossing_south_to_north_is_mirrored():
-    route = route_via_door((-2.0, -1.5), (-4.6, 2.7))
-    approach_i = route.index((TASK3_DOOR_X, TASK3_DOOR_Y - 0.9))
-    assert route[approach_i + 1] == (TASK3_DOOR_X, TASK3_DOOR_Y + 0.9)
+    route = route_via_door((-3.18, -1.6), (-4.6, 2.7))
+    approach_i = route.index(SOUTH_POINT)
+    assert route[approach_i + 1] == NORTH_POINT
     assert route[-1] == (-4.6, 2.7)
 
 

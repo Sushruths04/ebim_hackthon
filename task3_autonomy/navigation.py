@@ -59,6 +59,13 @@ TASK3_DOOR_X = -4.14
 TASK3_DOOR_Y = 0.22
 TASK3_DOOR_APPROACH_M = 0.9
 
+# Kitchen-side door point sits in the shallow lane between the partition
+# (south face y=0.10) and the kitchen island (north face y=-1.22): rear
+# extent 0.38 clears the wall (rear tip -0.02) and the tucked arms' forward
+# overhang F stays off the island while driving east iff F < 0.82 (live
+# evidence: nav9 scraped the island for ~35 s with F=0.885).
+TASK3_KITCHEN_LANE_Y = -0.40
+
 
 def waypoints_x_then_y(
     start_xy: tuple[float, float], target_xy: tuple[float, float]
@@ -83,19 +90,25 @@ def route_via_door(
     """Waypoint route that crosses the partition only through the doorway.
 
     Same-side start/target fall back to plain y-then-x. Crossing routes:
-    y-then-x to the door approach point (dining side is open), straight
-    through the gap, then x-then-y on the far side (clears the island).
+    y-then-x to the door point on the start side (dining side is open at
+    +TASK3_DOOR_APPROACH_M; kitchen side uses the shallow
+    TASK3_KITCHEN_LANE_Y lane), straight through the gap, then x-then-y on
+    the far side (hugs the wall to clear the island).
     """
     start_north = start_xy[1] > TASK3_DOOR_Y
     target_north = target_xy[1] > TASK3_DOOR_Y
     if start_north == target_north:
         return waypoints_y_then_x(start_xy, target_xy)
-    sign = 1.0 if start_north else -1.0
-    approach = (TASK3_DOOR_X, TASK3_DOOR_Y + sign * TASK3_DOOR_APPROACH_M)
-    exit_point = (TASK3_DOOR_X, TASK3_DOOR_Y - sign * TASK3_DOOR_APPROACH_M)
-    route = waypoints_y_then_x(start_xy, approach)
-    route.append(exit_point)
-    route.extend(waypoints_x_then_y(exit_point, target_xy)[1:])
+    north_point = (TASK3_DOOR_X, TASK3_DOOR_Y + TASK3_DOOR_APPROACH_M)
+    south_point = (TASK3_DOOR_X, TASK3_KITCHEN_LANE_Y)
+    first, second = (
+        (north_point, south_point)
+        if start_north
+        else (south_point, north_point)
+    )
+    route = waypoints_y_then_x(start_xy, first)
+    route.append(second)
+    route.extend(waypoints_x_then_y(second, target_xy)[1:])
     return route
 
 

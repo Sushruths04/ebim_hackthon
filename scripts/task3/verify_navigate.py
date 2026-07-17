@@ -43,8 +43,12 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Verify the live NavigateTo skill on the real base."
     )
-    parser.add_argument("--target-x", type=float, default=-2.0)
-    parser.add_argument("--target-y", type=float, default=-1.5)
+    # Default target: the island-east corridor stop (between island east
+    # face x=-3.77 and the kitchen/dining wall at x=-2.59) — the reachable
+    # kitchen-side pose the later grasp FSM will actually use. The old
+    # (-2.0, -1.5) default sits behind that wall and was never reachable.
+    parser.add_argument("--target-x", type=float, default=-3.18)
+    parser.add_argument("--target-y", type=float, default=-1.6)
     parser.add_argument("--tolerance-m", type=float, default=0.10)
     parser.add_argument("--max-seconds", type=float, default=40.0)
     parser.add_argument("--record-video", action="store_true")
