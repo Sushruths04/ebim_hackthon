@@ -47,6 +47,58 @@ def waypoints_y_then_x(
     return waypoints
 
 
+# Task 3 room geometry, measured from assets/robot_room.usd (2026-07-17):
+# the dining/kitchen partition runs along y in [0.10, 0.34] with a single
+# doorway gap x in (-4.74, -3.54); the kitchen island (grading-prop counter)
+# occupies x [-4.51, -3.77] x y [-2.47, -1.22]. The first live runs proved
+# walls are load-bearing: a y-then-x route descending at x=-4.60 hugged the
+# door jamb (jamb edge x=-4.74) and stalled the base at y ~ 0.99 with wheels
+# contact-stalled (NAVDBG, /tmp/task3_verify_nav7.log on sim-dev-g4b).
+
+TASK3_DOOR_X = -4.14
+TASK3_DOOR_Y = 0.22
+TASK3_DOOR_APPROACH_M = 0.9
+
+
+def waypoints_x_then_y(
+    start_xy: tuple[float, float], target_xy: tuple[float, float]
+) -> list[tuple[float, float]]:
+    """Route the x move before the y move (mirror of waypoints_y_then_x).
+
+    Needed on the kitchen side: descending at the door's x runs into the
+    kitchen island, so cross the clear row first, then descend.
+    """
+    midpoint = (target_xy[0], start_xy[1])
+    waypoints = [start_xy]
+    if midpoint != waypoints[-1]:
+        waypoints.append(midpoint)
+    if target_xy != waypoints[-1]:
+        waypoints.append(target_xy)
+    return waypoints
+
+
+def route_via_door(
+    start_xy: tuple[float, float], target_xy: tuple[float, float]
+) -> list[tuple[float, float]]:
+    """Waypoint route that crosses the partition only through the doorway.
+
+    Same-side start/target fall back to plain y-then-x. Crossing routes:
+    y-then-x to the door approach point (dining side is open), straight
+    through the gap, then x-then-y on the far side (clears the island).
+    """
+    start_north = start_xy[1] > TASK3_DOOR_Y
+    target_north = target_xy[1] > TASK3_DOOR_Y
+    if start_north == target_north:
+        return waypoints_y_then_x(start_xy, target_xy)
+    sign = 1.0 if start_north else -1.0
+    approach = (TASK3_DOOR_X, TASK3_DOOR_Y + sign * TASK3_DOOR_APPROACH_M)
+    exit_point = (TASK3_DOOR_X, TASK3_DOOR_Y - sign * TASK3_DOOR_APPROACH_M)
+    route = waypoints_y_then_x(start_xy, approach)
+    route.append(exit_point)
+    route.extend(waypoints_x_then_y(exit_point, target_xy)[1:])
+    return route
+
+
 def base_twist_toward(
     pose: Pose2D,
     target_xy: tuple[float, float],

@@ -3,8 +3,8 @@
 
 """CPU tests for the NavigateTo skill's waypoint/twist logic.
 
-The skill is pure logic over Pose2D: it plans y-then-x waypoints, emits
-body-frame twists, and reports completion. Here it drives a kinematic
+The skill is pure logic over Pose2D: it plans door-aware waypoints
+(route_via_door), emits body-frame twists, and reports completion. Here it drives a kinematic
 omnidirectional integrator; the Isaac-side adapter that turns twists into
 TMR wheel commands is exercised on GPU by scripts/task3/verify_navigate.py.
 """
@@ -43,17 +43,22 @@ def drive(skill: NavigateTo, pose: Pose2D, max_steps: int) -> tuple[
     return pose, trajectory, False
 
 
-def test_reaches_target_with_y_then_x_routing():
+def test_reaches_target_and_crosses_partition_only_in_doorway():
+    # The Task 3 spawn->kitchen route crosses the dining/kitchen partition
+    # (y in [0.10, 0.34], doorway gap x in (-4.74, -3.54)). The first live
+    # run stalled against the door jamb descending at x=-4.6; the route must
+    # cross the partition band only near the doorway center.
     start = Pose2D(-4.6, 2.7, math.radians(-90.0))
     skill = NavigateTo((-2.0, -1.5))
-    final, trajectory, done = drive(skill, start, max_steps=2000)
+    final, trajectory, done = drive(skill, start, max_steps=3000)
 
     assert done, "navigation never finished"
     assert math.hypot(final.x - (-2.0), final.y - (-1.5)) <= 0.05
-    # y-then-x: while y is still far from the target, x must not drift.
     for pose in trajectory:
-        if abs(pose.y - (-1.5)) > 0.5:
-            assert abs(pose.x - start.x) < 0.3, "moved in x before y leg done"
+        if -0.4 <= pose.y <= 0.8:  # partition band plus robot half-length
+            assert -4.74 < pose.x < -3.54, (
+                f"crossed partition outside doorway at ({pose.x}, {pose.y})"
+            )
 
 
 def test_zero_length_navigation_is_immediately_done():

@@ -10,9 +10,13 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from task3_autonomy.navigation import (  # noqa: E402
+    TASK3_DOOR_X,
+    TASK3_DOOR_Y,
     Pose2D,
     base_twist_toward,
     pose_reached,
+    route_via_door,
+    waypoints_x_then_y,
     waypoints_y_then_x,
     wrap_to_pi,
 )
@@ -51,6 +55,40 @@ def test_waypoints_y_then_x_collapses_when_y_already_aligned():
 def test_waypoints_y_then_x_is_single_point_when_already_at_target():
     waypoints = waypoints_y_then_x((1.0, 1.0), (1.0, 1.0))
     assert waypoints == [(1.0, 1.0)]
+
+
+def test_waypoints_x_then_y_routes_through_x_first_when_both_change():
+    waypoints = waypoints_x_then_y((0.0, 0.0), (3.0, 4.0))
+    assert waypoints == [(0.0, 0.0), (3.0, 0.0), (3.0, 4.0)]
+
+
+def test_waypoints_x_then_y_is_single_point_when_already_at_target():
+    waypoints = waypoints_x_then_y((1.0, 1.0), (1.0, 1.0))
+    assert waypoints == [(1.0, 1.0)]
+
+
+def test_route_via_door_same_side_falls_back_to_y_then_x():
+    start, target = (-4.6, 2.7), (-1.0, 1.5)  # both north of the partition
+    assert route_via_door(start, target) == waypoints_y_then_x(start, target)
+
+
+def test_route_via_door_crossing_passes_through_doorway_center():
+    route = route_via_door((-4.6, 2.7), (-2.0, -1.5))
+    assert (TASK3_DOOR_X, TASK3_DOOR_Y + 0.9) in route
+    assert (TASK3_DOOR_X, TASK3_DOOR_Y - 0.9) in route
+    # The two door waypoints must be consecutive: the crossing leg is a
+    # straight line at the doorway's x, never a diagonal near the wall.
+    approach_i = route.index((TASK3_DOOR_X, TASK3_DOOR_Y + 0.9))
+    assert route[approach_i + 1] == (TASK3_DOOR_X, TASK3_DOOR_Y - 0.9)
+    assert route[0] == (-4.6, 2.7)
+    assert route[-1] == (-2.0, -1.5)
+
+
+def test_route_via_door_crossing_south_to_north_is_mirrored():
+    route = route_via_door((-2.0, -1.5), (-4.6, 2.7))
+    approach_i = route.index((TASK3_DOOR_X, TASK3_DOOR_Y - 0.9))
+    assert route[approach_i + 1] == (TASK3_DOOR_X, TASK3_DOOR_Y + 0.9)
+    assert route[-1] == (-4.6, 2.7)
 
 
 def test_base_twist_toward_drives_straight_forward_in_body_frame():

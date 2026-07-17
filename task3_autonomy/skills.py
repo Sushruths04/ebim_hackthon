@@ -18,7 +18,7 @@ from task3_autonomy.navigation import (
     Pose2D,
     base_twist_toward,
     pose_reached,
-    waypoints_y_then_x,
+    route_via_door,
 )
 
 # Intermediate waypoints only shape the route around the wall partition, so
@@ -27,7 +27,7 @@ WAYPOINT_PASS_TOLERANCE_M = 0.15
 
 
 class NavigateTo:
-    """Drive an omnidirectional base through y-then-x waypoints to a target.
+    """Drive an omnidirectional base through door-aware waypoints to a target.
 
     Call compute(pose) every control step; it returns (vx, vy, done) in the
     body frame. Yaw is not commanded here -- the caller holds heading with
@@ -58,7 +58,7 @@ class NavigateTo:
         if self._done:
             return 0.0, 0.0, True
         if self._waypoints is None:
-            self._waypoints = waypoints_y_then_x(
+            self._waypoints = route_via_door(
                 (pose.x, pose.y), self.target_xy
             )
             self._waypoint_index = 1 if len(self._waypoints) > 1 else 0
