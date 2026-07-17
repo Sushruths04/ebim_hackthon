@@ -261,12 +261,32 @@ def main() -> None:
         }
     )
     simulation_app = app_launcher.app
+    # Everything after close() is unreachable: Kit's fastShutdown kills the
+    # process inside close() on this build (proven 2026-07-17 -- two runs
+    # finished their episode yet never wrote result.json because the write
+    # sat after close()). Persist ALL results before shutting the app down;
+    # the same reasoning already applied to the crash traceback below.
     try:
         result = _run_episode(args, simulation_app, frames_dir)
+        result["seed"] = args.seed
+        result["head_placement"] = args.head_placement
+        result["policy"] = args.policy
+        result["git_commit"] = git_commit_hash()
+        result["date"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        # Excludes Kit shutdown time, which can be nontrivial.
+        result["wall_time_seconds"] = round(time.time() - started_at, 3)
+        if args.record_video:
+            result["video_frames_dir"] = str(frames_dir)
+            result["video_gif"] = str(episode_dir / "episode.gif")
+
+        result_path = episode_dir / "result.json"
+        result_path.write_text(json.dumps(result, indent=2, sort_keys=True))
+        print(
+            "EPISODE_RESULT " + json.dumps(result, sort_keys=True),
+            flush=True,
+        )
+        sys.stdout.flush()
     except BaseException:
-        # Kit's fastShutdown can kill the process inside close() before
-        # Python prints a pending traceback, leaving headless failures
-        # undiagnosable. Emit it to stderr and a file first.
         traceback.print_exc()
         (episode_dir / "crash_traceback.txt").write_text(
             traceback.format_exc()
@@ -276,20 +296,6 @@ def main() -> None:
         raise
     else:
         simulation_app.close()
-
-    result["seed"] = args.seed
-    result["head_placement"] = args.head_placement
-    result["policy"] = args.policy
-    result["git_commit"] = git_commit_hash()
-    result["date"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    result["wall_time_seconds"] = round(time.time() - started_at, 3)
-    if args.record_video:
-        result["video_frames_dir"] = str(frames_dir)
-        result["video_gif"] = str(episode_dir / "episode.gif")
-
-    result_path = episode_dir / "result.json"
-    result_path.write_text(json.dumps(result, indent=2, sort_keys=True))
-    print("EPISODE_RESULT " + json.dumps(result, sort_keys=True), flush=True)
 
 
 def _run_episode(

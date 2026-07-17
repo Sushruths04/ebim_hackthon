@@ -79,8 +79,20 @@ def main() -> None:
         }
     )
     simulation_app = app_launcher.app
+    # Persist results BEFORE close(): Kit's fastShutdown kills the process
+    # inside close(), so any code after it never runs (proven 2026-07-17
+    # in run_episode.py).
     try:
         result = _verify(args, simulation_app, frames_dir)
+        result["wall_time_seconds"] = round(time.time() - started_at, 3)
+        (out_dir / "result.json").write_text(
+            json.dumps(result, indent=2, sort_keys=True)
+        )
+        print(
+            "NAVIGATE_RESULT " + json.dumps(result, sort_keys=True),
+            flush=True,
+        )
+        sys.stdout.flush()
     except BaseException:
         traceback.print_exc()
         (out_dir / "crash_traceback.txt").write_text(traceback.format_exc())
@@ -89,14 +101,8 @@ def main() -> None:
         raise
     else:
         simulation_app.close()
-
-    result["wall_time_seconds"] = round(time.time() - started_at, 3)
-    (out_dir / "result.json").write_text(
-        json.dumps(result, indent=2, sort_keys=True)
-    )
-    print("NAVIGATE_RESULT " + json.dumps(result, sort_keys=True), flush=True)
-    if not result["passed"]:
-        raise SystemExit(1)
+        if not result["passed"]:
+            raise SystemExit(1)
 
 
 def _verify(
