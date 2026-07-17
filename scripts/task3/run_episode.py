@@ -117,24 +117,34 @@ def _fix_single_articulation_root(stage, robot_prim_path: str) -> None:
     print(f"Articulation root kept: {keep.GetPath()}", flush=True)
 
 
-def disable_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
-    """Remove the USD keyboard-control graph from this headless stage.
+LEGACY_STEERING_INPUTS = (
+    "Desired_Linear_Velocity_X",
+    "Desired_Linear_Velocity_Y",
+    "Desired_Angular_Velocity_Z",
+)
 
-    Isaac Lab writes actuator targets directly.  The imported mobile FR3 USD
-    also carries an old OmniGraph steering controller whose input attributes
-    are invalid in Isaac Sim 5; it raises during reset and leaves Kit stuck.
-    Removing it changes only this in-memory composed stage, never the USD.
+
+def initialize_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
+    """Give the imported keyboard graph safe zero-velocity inputs.
+
+    The mobile FR3 USD contains a legacy steering ScriptNode.  Isaac Sim 5
+    composes it before the harness can replace it, but its three velocity
+    input attributes are absent.  Add zero-valued inputs to this in-memory
+    stage so it stays inert while Isaac Lab owns actuator commands.
     """
-    graph_path = f"{robot_prim_path}/Graph"
-    graph_prim = stage.GetPrimAtPath(graph_path)
-    if graph_prim and graph_prim.IsValid():
-        # Deactivation is required in addition to removal: Kit can register
-        # an OmniGraph while composing the robot reference, before the first
-        # reset.  The session-layer active override prevents that registered
-        # graph from evaluating during the reset.
-        graph_prim.SetActive(False)
-        stage.RemovePrim(graph_path)
-        print(f"Disabled legacy robot control graph: {graph_path}", flush=True)
+    from pxr import Sdf
+
+    node_path = f"{robot_prim_path}/Graph/Steer_joint_Controller/script_node"
+    node = stage.GetPrimAtPath(node_path)
+    if not node or not node.IsValid():
+        return
+    for name in LEGACY_STEERING_INPUTS:
+        attribute = node.GetAttribute(f"inputs:{name}")
+        if not attribute or not attribute.IsValid():
+            node.CreateAttribute(
+                f"inputs:{name}", Sdf.ValueTypeNames.Float, custom=False
+            ).Set(0.0)
+            print(f"Initialized legacy steering input: {name}", flush=True)
 
 
 def git_commit_hash() -> str:
@@ -337,7 +347,7 @@ def _run_episode(
         for name in grading_object_names
     }
     _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
-    disable_legacy_robot_control_graph(
+    initialize_legacy_robot_control_graph(
         sim.stage, "/World/envs/env_0/Robot"
     )
     sim.reset()

@@ -37,7 +37,7 @@ def test_task3_enables_keyboard_control_by_default(monkeypatch):
     assert scene_keyboard.should_enable_keyboard_control(args) is True
 
 
-def test_headless_runner_removes_only_the_legacy_robot_graph():
+def test_headless_runner_declares_all_legacy_steering_inputs():
     script_path = (
         Path(__file__).resolve().parents[1] / "task3" / "run_episode.py"
     )
@@ -47,35 +47,11 @@ def test_headless_runner_removes_only_the_legacy_robot_graph():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    class Prim:
-        def __init__(self, valid):
-            self.valid = valid
-            self.active = True
-
-        def IsValid(self):
-            return self.valid
-
-        def SetActive(self, active):
-            self.active = active
-
-    class Stage:
-        def __init__(self):
-            self.removed = []
-            self.graph = Prim(True)
-
-        def GetPrimAtPath(self, path):
-            return self.graph if path == "/World/envs/env_0/Robot/Graph" else Prim(False)
-
-        def RemovePrim(self, path):
-            self.removed.append(path)
-
-    stage = Stage()
-    module.disable_legacy_robot_control_graph(
-        stage, "/World/envs/env_0/Robot"
+    assert module.LEGACY_STEERING_INPUTS == (
+        "Desired_Linear_Velocity_X",
+        "Desired_Linear_Velocity_Y",
+        "Desired_Angular_Velocity_Z",
     )
-
-    assert stage.removed == ["/World/envs/env_0/Robot/Graph"]
-    assert stage.graph.active is False
 
 
 def test_keyboard_control_can_be_disabled_for_viewer_mode(monkeypatch):
