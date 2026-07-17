@@ -52,6 +52,17 @@ CANDIDATES: dict[str, list[float]] = {
         [1.57, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
         + [-1.57, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
     ),
+    # Inward j1 bias on the vertical fold (swing_in_a showed left +/right -
+    # is the inward direction).
+    "fold_bias_in": (
+        [0.5, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
+        + [-0.5, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
+    ),
+    # Arms swung far toward the back of the tower, folded.
+    "back_fold": (
+        [2.6, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
+        + [-2.6, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
+    ),
 }
 
 RAMP_STEPS = 300  # 1.5 s target interpolation
@@ -152,6 +163,17 @@ def _probe(simulation_app) -> None:
         bys = [e[1] for e in extents]
         widest = max(extents, key=lambda e: abs(e[1]))
         longest = max(extents, key=lambda e: abs(e[0]))
+        # Links that would matter at the 1.2 m doorway: report their height
+        # too, because the wall WEST of the door is only 1.18 m tall — wide
+        # links above ~1.2 m can overhang it if the crossing is biased west.
+        wide_links = sorted(
+            (
+                (name, round(by, 3), round(float(body_pos[i, 2]), 3))
+                for i, (bx, by, name) in enumerate(extents)
+                if abs(by) > 0.45
+            ),
+            key=lambda e: -abs(e[1]),
+        )[:8]
         print(
             "TUCK_RESULT "
             + json.dumps(
@@ -161,6 +183,7 @@ def _probe(simulation_app) -> None:
                     "body_y_extent": [round(min(bys), 3), round(max(bys), 3)],
                     "widest_link": [widest[2], round(widest[1], 3)],
                     "longest_link": [longest[2], round(longest[0], 3)],
+                    "wide_links_by_z": wide_links,
                     "root_xy": [round(float(root[0]), 3),
                                 round(float(root[1]), 3)],
                 },
