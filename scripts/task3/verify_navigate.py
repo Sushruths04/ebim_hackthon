@@ -133,7 +133,12 @@ def _verify(
     from isaaclab.scene import InteractiveScene
     from isaaclab.sim import SimulationContext
 
-    from task3_autonomy.skills import NavigateTo, TmrBaseAdapter
+    from task3_autonomy.skills import (
+        TRANSIT_ARM_POSE,
+        NavigateTo,
+        TmrBaseAdapter,
+        ramp_arm_pose,
+    )
 
     sim = SimulationContext(
         sim_utils.SimulationCfg(
@@ -183,6 +188,23 @@ def _verify(
     adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
     skill = NavigateTo((args.target_x, args.target_y))
 
+    tick_count = 0
+
+    def sim_tick() -> None:
+        nonlocal tick_count, frames_written
+        disable_robot_external_wrenches(robot)
+        scene.write_data_to_sim()
+        sim.step()
+        scene.update(sim.cfg.dt)
+        if args.record_video and tick_count % capture_every == 0:
+            if _save_rgb_frame(rgb_annotator, frames_dir, frames_written):
+                frames_written += 1
+        tick_count += 1
+
+    # Tuck the arms before driving: the default ready pose is wider than
+    # either partition doorway (see task3_autonomy/skills.py).
+    ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
+
     total_steps = max(1, round(args.max_seconds / sim.cfg.dt))
     done = False
     for step in range(total_steps):
@@ -191,10 +213,7 @@ def _verify(
         if done:
             break
         adapter.apply_twist(vx, vy)
-        disable_robot_external_wrenches(robot)
-        scene.write_data_to_sim()
-        sim.step()
-        scene.update(sim.cfg.dt)
+        sim_tick()
         if step % 400 == 0 or step in (1, 2, 5, 20):
             data = robot.data
             print(
@@ -207,9 +226,6 @@ def _verify(
                 f" steer_tgt={[round(float(data.joint_pos_target[0, i]), 3) for i in adapter.steering_ids]}",
                 flush=True,
             )
-        if args.record_video and step % capture_every == 0:
-            if _save_rgb_frame(rgb_annotator, frames_dir, frames_written):
-                frames_written += 1
 
     final_pose = adapter.pose()
     error_m = (

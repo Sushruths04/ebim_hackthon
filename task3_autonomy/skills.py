@@ -25,6 +25,53 @@ from task3_autonomy.navigation import (
 # they can be passed loosely; only the final stop uses the strict tolerance.
 WAYPOINT_PASS_TOLERANCE_M = 0.15
 
+# Arm transit pose for navigation: the default ready pose spans 1.88 m
+# across the outboard-mounted arms while both partition crossings measure
+# ~1.2 m (probe_arm_tuck.py, sim-dev-g4b 2026-07-17). Values are filled
+# from the probe's measured winner; empty means "hold whatever pose the
+# arms are in".
+TRANSIT_ARM_POSE: dict[str, float] = {}
+
+
+def ramp_arm_pose(
+    robot,
+    pose: dict[str, float],
+    *,
+    step,
+    ramp_steps: int = 300,
+    settle_steps: int = 200,
+) -> None:
+    """Ramp arm joint position targets to `pose`, calling `step()` per tick.
+
+    GPU-only helper (lazy torch import). `step` must advance the sim one
+    tick (write targets, step physics, update scene); targets persist in
+    the articulation's buffer afterward, so the arms hold the pose while
+    later code drives the base.
+    """
+    if not pose:
+        return
+    import torch
+
+    names = sorted(pose)
+    joint_ids = [robot.joint_names.index(n) for n in names]
+    device = robot.data.joint_pos.device
+    start = robot.data.joint_pos[0, joint_ids].clone()
+    target = torch.tensor(
+        [pose[n] for n in names], device=device, dtype=start.dtype
+    )
+    for tick in range(ramp_steps):
+        alpha = (tick + 1) / ramp_steps
+        robot.set_joint_position_target(
+            ((1.0 - alpha) * start + alpha * target).unsqueeze(0),
+            joint_ids=joint_ids,
+        )
+        step()
+    for _ in range(settle_steps):
+        robot.set_joint_position_target(
+            target.unsqueeze(0), joint_ids=joint_ids
+        )
+        step()
+
 
 class NavigateTo:
     """Drive an omnidirectional base through door-aware waypoints to a target.
