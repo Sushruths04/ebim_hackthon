@@ -4,7 +4,7 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-17 (Claude, main)
+Last update: 2026-07-17 (Codex, main)
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -39,26 +39,32 @@ Last update: 2026-07-17 (Claude, main)
   taken; proof image sent to owner. Fractional/vGPU shapes proven
   unusable for Isaac (see GPU STATUS).
 
-## IN PROGRESS — Phase 1 debug loop (handed off 2026-07-17 ~13:30 UTC)
+## IN PROGRESS — Phase 1 debug loop (Codex, main; 2026-07-17 ~14:10 UTC)
 
-`scripts/task3/run_episode.py` first-ever execution: 3 bugs fixed+pushed,
-**bug #4 diagnosed, fix not yet applied** — continue exactly here:
+`scripts/task3/run_episode.py` has now been run repeatedly on the verified
+RTX PRO 6000. The original `RigidPrim` CUDA crash has been narrowed and
+partially repaired, but the idle episode is still blocked by the robot USD's
+legacy steering-controller OmniGraph.
 
-- Fixed ✅ (commits `34896ce`, `f9c51f4`, `2d23b63`): traceback now dumped
-  to `<episode>/crash_traceback.txt` before Kit fastShutdown eats it;
-  `AppLauncher(..., enable_cameras=True)` so replicator exists headless;
-  duplicate ArticulationRootAPI dedup before `sim.reset()`.
-- **Bug #4 (NEXT ACTION):** `scene_robot_room_keyboard.py` line ~298:
-  actuator group `"grippers": {"joint_names_expr": [".*finger.*"]}` —
-  matches NOTHING in `mobile_fr3_duo_v0_2.usd`. Real joints (from the
-  crash traceback): drive = `left_gripper_joint`/`right_gripper_joint`;
-  linkage = `left/right_left_2_joint`, `left/right_right_1_joint`,
-  `left/right_right_2_joint`, `*_left/right_support_joint`.
-  Suggested fix: grippers expr → `[".*gripper_joint"]` and add a
-  passive/low-gain group for the linkage+support joints (mirror how
-  `passive_base_joints` is done). Isaac Lab errors if joints lack an
-  actuator group, so cover all of them. CAUTION: this cfg is shared with
-  the interactive keyboard path — keep the change additive.
+- Fixed and pushed: `8431332` corrects the gripper joint patterns;
+  `aaf7905`, `3075b5f`, `de684a0`, and `f02dea2` improve `run_episode.py`
+  initialization. Focused CPU regression suite: **106/106 passed** after
+  each final change.
+- Evidence: the old `RigidPrim` failure was `CUDA illegal memory access`
+  after PhysX reported `Unresolved rigid dynamic index`. Commit `de684a0`
+  normalizes nested enabled rigid bodies below the grading props; the latest
+  run no longer logs that PhysX/CUDA error.
+- **Current blocker / NEXT ACTION:** after `sim.reset()`, the robot's
+  `/World/envs/env_0/Robot/Graph/Steer_joint_Controller/script_node` raises
+  `OmniGraphError: Attempted to access an invalid object` while reading
+  `Desired_Linear_Velocity_X`. Every failed run then leaves Kit alive for
+  >1 min despite `--max-seconds 8`; stop its exact Kit PID before retrying.
+  Repair or disable that legacy controller graph for the headless harness
+  (the harness uses Isaac Lab actuator commands, not the USD keyboard graph),
+  then rerun the command below.
+- No `run_episode.py` process is currently active. Dedicated logs from the
+  last attempts are `/tmp/task3_phase1_{aaf7905,3075b5f,de684a0,f02dea2}.log`
+  inside the Isaac container.
 - Rerun command (VM `sim-dev-g4b`, us-central1-b):
   `cd ~/EBiM-benchmark && git pull && sudo docker exec isaac-lab-2-3-2-workshop \
    bash -lc 'cd /workspace/EBiM_Challenge && python scripts/task3/run_episode.py \
@@ -71,7 +77,8 @@ Last update: 2026-07-17 (Claude, main)
 
 ## NEXT UP (in order — claim in this file before starting)
 1. [GPU/Claude] Phase 1: first real run of `scripts/task3/run_episode.py`
-   (`--policy idle --record-video`), fix RigidPrim init if needed,
+   (`--policy idle --record-video`), repair/disable the legacy steering
+   OmniGraph then verify the harness,
    deterministic-reset check, measure episode wall-time → proof bundle →
    tag `v0.1-harness`.
 2. [GPU/Claude] Phase 2 skills: live `navigate_to()` → `verify_navigate.py`;
