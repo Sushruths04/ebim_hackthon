@@ -128,6 +128,11 @@ def disable_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
     graph_path = f"{robot_prim_path}/Graph"
     graph_prim = stage.GetPrimAtPath(graph_path)
     if graph_prim and graph_prim.IsValid():
+        # Deactivation is required in addition to removal: Kit can register
+        # an OmniGraph while composing the robot reference, before the first
+        # reset.  The session-layer active override prevents that registered
+        # graph from evaluating during the reset.
+        graph_prim.SetActive(False)
         stage.RemovePrim(graph_path)
         print(f"Disabled legacy robot control graph: {graph_path}", flush=True)
 

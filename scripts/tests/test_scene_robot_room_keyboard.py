@@ -50,16 +50,21 @@ def test_headless_runner_removes_only_the_legacy_robot_graph():
     class Prim:
         def __init__(self, valid):
             self.valid = valid
+            self.active = True
 
         def IsValid(self):
             return self.valid
 
+        def SetActive(self, active):
+            self.active = active
+
     class Stage:
         def __init__(self):
             self.removed = []
+            self.graph = Prim(True)
 
         def GetPrimAtPath(self, path):
-            return Prim(path == "/World/envs/env_0/Robot/Graph")
+            return self.graph if path == "/World/envs/env_0/Robot/Graph" else Prim(False)
 
         def RemovePrim(self, path):
             self.removed.append(path)
@@ -70,6 +75,7 @@ def test_headless_runner_removes_only_the_legacy_robot_graph():
     )
 
     assert stage.removed == ["/World/envs/env_0/Robot/Graph"]
+    assert stage.graph.active is False
 
 
 def test_keyboard_control_can_be_disabled_for_viewer_mode(monkeypatch):
