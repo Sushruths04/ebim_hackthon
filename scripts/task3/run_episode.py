@@ -130,6 +130,46 @@ def git_commit_hash() -> str:
         return "unknown"
 
 
+def prepare_rigid_body_view_path(stage: Any, root_path: str) -> str:
+    """Return one valid PhysX body below ``root_path`` for a live view.
+
+    Several imported Task 3 props contain enabled RigidBodyAPI schemas both
+    on their outer prop root and on a mesh child.  PhysX does not support
+    enabled rigid bodies nested in one hierarchy: its tensor backend emits an
+    unresolved-dynamic-index error and then a CUDA illegal-memory-access.
+    Keep the outermost body and explicitly disable every nested body before
+    the first physics reset.
+    """
+    from pxr import Usd, UsdPhysics
+
+    root = stage.GetPrimAtPath(root_path)
+    if not root or not root.IsValid():
+        raise RuntimeError(f"Invalid rigid-body root: {root_path}")
+
+    rigid_prims = []
+    for prim in Usd.PrimRange(root):
+        enabled_attr = prim.GetAttribute("physics:rigidBodyEnabled")
+        if (
+            prim.HasAPI(UsdPhysics.RigidBodyAPI)
+            or (enabled_attr and enabled_attr.IsValid())
+        ):
+            rigid_prims.append(prim)
+    if not rigid_prims:
+        raise RuntimeError(f"No rigid body found below {root_path}")
+
+    primary = rigid_prims[0]
+    for nested in rigid_prims[1:]:
+        UsdPhysics.RigidBodyAPI(nested).CreateRigidBodyEnabledAttr(False).Set(
+            False
+        )
+        print(
+            "Disabled nested rigid body: "
+            f"{nested.GetPath()} (keeping {primary.GetPath()})",
+            flush=True,
+        )
+    return str(primary.GetPath())
+
+
 def main() -> None:
     args = parse_args()
     if args.policy != "idle":
@@ -265,11 +305,15 @@ def _run_episode(
     # their USD xform attributes go stale while the sim is playing (see
     # docs/task3_master_plan.md section 5, "State reading"). RigidPrim
     # queries PhysX/Fabric directly and must be used for every live pose
-    # read below instead.
+    # read below instead.  Resolve each prop to one valid physics body: the
+    # imported room asset otherwise has nested enabled bodies that PhysX's
+    # tensor backend cannot index.
     # (tray, bowl2, spoon2, plate2, cup)
     grading_object_names = DEFAULT_STAGE1_OBJECTS
     object_paths = {
-        name: resolve_prim_path(sim.stage, name)
+        name: prepare_rigid_body_view_path(
+            sim.stage, resolve_prim_path(sim.stage, name)
+        )
         for name in grading_object_names
     }
     _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
