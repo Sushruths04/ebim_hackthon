@@ -80,6 +80,43 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _fix_single_articulation_root(stage, robot_prim_path: str) -> None:
+    """Keep exactly one UsdPhysics.ArticulationRootAPI under the robot.
+
+    mobile_fr3_duo_v0_2.usd carries the API on both Robot/base and
+    Robot/base_link; Isaac Lab's Articulation refuses ambiguous roots.
+    Same pattern as task1/task2's _fix_single_articulation_root.
+    """
+    from pxr import Usd, UsdPhysics
+
+    robot_prim = stage.GetPrimAtPath(robot_prim_path)
+    if not robot_prim.IsValid():
+        print(
+            f"WARNING: articulation-root patch: prim not found {robot_prim_path}",
+            file=sys.stderr,
+        )
+        return
+    root_prims = [
+        prim
+        for prim in Usd.PrimRange(robot_prim)
+        if prim.HasAPI(UsdPhysics.ArticulationRootAPI)
+    ]
+    if len(root_prims) <= 1:
+        return
+    keep = None
+    for preferred in (f"{robot_prim_path}/base", f"{robot_prim_path}/base_link"):
+        candidate = stage.GetPrimAtPath(preferred)
+        if candidate in root_prims:
+            keep = candidate
+            break
+    if keep is None:
+        keep = root_prims[0]
+    for prim in root_prims:
+        if prim != keep:
+            prim.RemoveAPI(UsdPhysics.ArticulationRootAPI)
+    print(f"Articulation root kept: {keep.GetPath()}", flush=True)
+
+
 def git_commit_hash() -> str:
     try:
         return (
@@ -219,6 +256,7 @@ def _run_episode(
             robot_rotation=yaw_to_quat(ROBOT_SPAWN_YAW),
         )
     )
+    _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
     sim.reset()
     scene.reset()
     robot = scene["robot"]
