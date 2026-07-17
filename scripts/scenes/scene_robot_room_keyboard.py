@@ -296,7 +296,16 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
             "effort_limit_sim": 200.0,
         },
         "grippers": {
-            "joint_names_expr": [".*finger.*"],
+            # mobile_fr3_duo_v0_2.usd gripper joints: <side>_gripper_joint
+            # drives the linkage (<side>_left_2 / _right_1 / _right_2 /
+            # _support joints). No joint is named *finger* in this USD.
+            "joint_names_expr": [
+                ".*gripper_joint",
+                ".*_left_2_joint",
+                ".*_right_1_joint",
+                ".*_right_2_joint",
+                ".*_support_joint",
+            ],
             "stiffness": 200.0,
             "damping": 20.0,
             "effort_limit_sim": 50.0,
