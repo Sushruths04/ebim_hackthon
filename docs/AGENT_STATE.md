@@ -39,9 +39,35 @@ Last update: 2026-07-17 (Claude, main)
   taken; proof image sent to owner. Fractional/vGPU shapes proven
   unusable for Isaac (see GPU STATUS).
 
-## IN PROGRESS
-- (Claude, main) Sprint Phase 1: first real execution of
-  `scripts/task3/run_episode.py` on sim-dev-g4b.
+## IN PROGRESS — Phase 1 debug loop (handed off 2026-07-17 ~13:30 UTC)
+
+`scripts/task3/run_episode.py` first-ever execution: 3 bugs fixed+pushed,
+**bug #4 diagnosed, fix not yet applied** — continue exactly here:
+
+- Fixed ✅ (commits `34896ce`, `f9c51f4`, `2d23b63`): traceback now dumped
+  to `<episode>/crash_traceback.txt` before Kit fastShutdown eats it;
+  `AppLauncher(..., enable_cameras=True)` so replicator exists headless;
+  duplicate ArticulationRootAPI dedup before `sim.reset()`.
+- **Bug #4 (NEXT ACTION):** `scene_robot_room_keyboard.py` line ~298:
+  actuator group `"grippers": {"joint_names_expr": [".*finger.*"]}` —
+  matches NOTHING in `mobile_fr3_duo_v0_2.usd`. Real joints (from the
+  crash traceback): drive = `left_gripper_joint`/`right_gripper_joint`;
+  linkage = `left/right_left_2_joint`, `left/right_right_1_joint`,
+  `left/right_right_2_joint`, `*_left/right_support_joint`.
+  Suggested fix: grippers expr → `[".*gripper_joint"]` and add a
+  passive/low-gain group for the linkage+support joints (mirror how
+  `passive_base_joints` is done). Isaac Lab errors if joints lack an
+  actuator group, so cover all of them. CAUTION: this cfg is shared with
+  the interactive keyboard path — keep the change additive.
+- Rerun command (VM `sim-dev-g4b`, us-central1-b):
+  `cd ~/EBiM-benchmark && git pull && sudo docker exec isaac-lab-2-3-2-workshop \
+   bash -lc 'cd /workspace/EBiM_Challenge && python scripts/task3/run_episode.py \
+   --seed 42 --head-placement a --policy idle --record-video \
+   --out-dir /workspace/EBiM_Challenge/outputs/task3_episodes'`
+  On crash, read `outputs/task3_episodes/seed42_a/crash_traceback.txt`.
+- Phase 1 exit criterion (then tag `v0.1-harness` + proof bundle §7.2):
+  idle episode → video frames + EPISODE_RESULT JSON, and same seed twice
+  → identical spawn poses.
 
 ## NEXT UP (in order — claim in this file before starting)
 1. [GPU/Claude] Phase 1: first real run of `scripts/task3/run_episode.py`
