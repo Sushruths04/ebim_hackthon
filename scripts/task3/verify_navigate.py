@@ -195,6 +195,18 @@ def _verify(
         scene.write_data_to_sim()
         sim.step()
         scene.update(sim.cfg.dt)
+        if step % 400 == 0 or step in (1, 2, 5, 20):
+            data = robot.data
+            print(
+                f"NAVDBG step={step}"
+                f" pose=({pose.x:.3f},{pose.y:.3f},{pose.yaw:.3f})"
+                f" twist=({vx:.3f},{vy:.3f})"
+                f" wheel_vel={[round(float(data.joint_vel[0, i]), 2) for i in adapter.drive_ids]}"
+                f" wheel_tgt={[round(float(data.joint_vel_target[0, i]), 2) for i in adapter.drive_ids]}"
+                f" steer_pos={[round(float(data.joint_pos[0, i]), 3) for i in adapter.steering_ids]}"
+                f" steer_tgt={[round(float(data.joint_pos_target[0, i]), 3) for i in adapter.steering_ids]}",
+                flush=True,
+            )
         if args.record_video and step % capture_every == 0:
             if _save_rgb_frame(rgb_annotator, frames_dir, frames_written):
                 frames_written += 1
