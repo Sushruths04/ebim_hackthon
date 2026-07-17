@@ -141,10 +141,11 @@ def initialize_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
     for name in LEGACY_STEERING_INPUTS:
         attribute = node.GetAttribute(f"inputs:{name}")
         if not attribute or not attribute.IsValid():
-            node.CreateAttribute(
+            attribute = node.CreateAttribute(
                 f"inputs:{name}", Sdf.ValueTypeNames.Float, custom=False
-            ).Set(0.0)
-            print(f"Initialized legacy steering input: {name}", flush=True)
+            )
+        attribute.Set(0.0)
+        print(f"Initialized legacy steering input: {name}", flush=True)
 
 
 def git_commit_hash() -> str:
