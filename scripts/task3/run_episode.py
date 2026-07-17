@@ -256,12 +256,6 @@ def _run_episode(
             robot_rotation=yaw_to_quat(ROBOT_SPAWN_YAW),
         )
     )
-    _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
-    sim.reset()
-    scene.reset()
-    robot = scene["robot"]
-    reset_robot_to_default_state(robot, scene.env_origins)
-    scene.write_data_to_sim()
 
     # --- Grading-object pose reading ---------------------------------
     # integration_test.get_prim_position() reads a UsdGeom.XformCache
@@ -278,6 +272,11 @@ def _run_episode(
         name: resolve_prim_path(sim.stage, name)
         for name in grading_object_names
     }
+    # Construct the views *before* the first sim.reset().  In Isaac Sim 5,
+    # RigidPrim binds immediately when a physics simulation view already
+    # exists and reads velocities during construction.  That path caused a
+    # CUDA illegal-memory-access here.  Pre-reset construction defers the
+    # bind until the explicit initialize() calls below.
     object_views = {
         name: RigidPrim(prim_paths_expr=path, name=f"task3_obj_{name}")
         for name, path in object_paths.items()
@@ -289,6 +288,13 @@ def _run_episode(
         bean_view = RigidPrim(
             prim_paths_expr=f"{bean_scope}/Bean_.*", name="task3_beans"
         )
+
+    _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
+    sim.reset()
+    scene.reset()
+    robot = scene["robot"]
+    reset_robot_to_default_state(robot, scene.env_origins)
+    scene.write_data_to_sim()
     for view in (*object_views.values(), bean_view):
         # Isaac Sim's prim-view classes require the PhysX simulation view to
         # exist (created by the sim.reset()/scene.reset() above) before they
