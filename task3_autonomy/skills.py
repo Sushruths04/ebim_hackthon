@@ -106,7 +106,19 @@ class TmrBaseAdapter:
     scripts/task3/verify_navigate.py, not by CPU tests.
     """
 
+    # Wheel velocity-drive damping the wheels actually need: 5.0 left them
+    # at ~7% of target; 500 tracks within 2 s (probe_base_drive.py,
+    # sim-dev-g4b 2026-07-17). Written directly to PhysX here because the
+    # same value in robot_actuator_cfg_specs did NOT reach the sim (the two
+    # live runs crawled identically before and after that config change) --
+    # the runtime tensor write is the delivery mechanism proven by the
+    # probe. The readback print below records what the sim had, as
+    # evidence for root-causing the config path later.
+    DRIVE_DAMPING = 500.0
+
     def __init__(self, robot, *, num_envs: int, device: str) -> None:
+        import torch
+
         import tmr_base_control as base
 
         self._base = base
@@ -117,6 +129,26 @@ class TmrBaseAdapter:
             robot.joint_names
         )
         self._hold_yaw = base.get_root_yaw(robot)
+
+        sim_damping = getattr(robot.data, "joint_damping", None)
+        if sim_damping is not None:
+            print(
+                "TmrBaseAdapter: sim wheel damping before override: "
+                f"{[round(float(sim_damping[0, i]), 3) for i in self.drive_ids]}",
+                flush=True,
+            )
+        robot.write_joint_damping_to_sim(
+            torch.full(
+                (num_envs, len(self.drive_ids)),
+                self.DRIVE_DAMPING,
+                device=device,
+            ),
+            joint_ids=self.drive_ids,
+        )
+        print(
+            f"TmrBaseAdapter: wheel drive damping set to {self.DRIVE_DAMPING}",
+            flush=True,
+        )
 
     def pose(self) -> Pose2D:
         position = self.robot.data.root_pos_w[0]
