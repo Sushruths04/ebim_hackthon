@@ -73,6 +73,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-seconds", type=float, default=8.0)
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument(
+        "--livestream",
+        action="store_true",
+        help="Stream the run over WebRTC for live viewing (needs the "
+        "streaming ports opened to the viewer's IP; watch with NVIDIA's "
+        "Isaac Sim WebRTC Streaming Client pointed at the VM's IP).",
+    )
+    parser.add_argument(
         "--out-dir",
         type=Path,
         default=REPO_ROOT / "outputs" / "task3_episodes",
@@ -240,8 +247,15 @@ def main() -> None:
     from isaaclab.app import AppLauncher
 
     # enable_cameras is required for omni.replicator (off-screen video
-    # recording) to exist in headless mode.
-    app_launcher = AppLauncher({"headless": True, "enable_cameras": True})
+    # recording) to exist in headless mode. livestream=2 is AppLauncher's
+    # WebRTC mode; -1 leaves streaming disabled.
+    app_launcher = AppLauncher(
+        {
+            "headless": True,
+            "enable_cameras": True,
+            "livestream": 2 if args.livestream else -1,
+        }
+    )
     simulation_app = app_launcher.app
     try:
         result = _run_episode(args, simulation_app, frames_dir)
