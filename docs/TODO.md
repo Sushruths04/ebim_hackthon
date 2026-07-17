@@ -29,10 +29,15 @@ line to the Session Log at the bottom (this is the shared memory), update
 
 ## Day 1–2 — Skills (Phase 2)
 
-- [ ] [GPU] `navigate_to()` wired to live sim (pure math already proven in
+- [x] [GPU] `navigate_to()` wired to live sim (pure math already proven in
       `task3_autonomy/navigation.py`; use PhysX/tensor pose reads only,
-      never USD xforms while playing).
+      never USD xforms while playing). Base-drive chain proven at 0.5 m/s
+      (runtime wheel damping 500 via TmrBaseAdapter).
 - [ ] [GPU] `verify_navigate.py`: kitchen↔dining ±3 cm/3°, video, proof.
+      BLOCKER root-caused 2026-07-17: both partition doorways are ~1.2 m
+      but the default arm pose spans 1.88 m — `route_via_door` (ebe88ba)
+      fixed the path, arm transit pose (probe_arm_tuck.py lean sweep) is
+      the remaining piece.
 - [ ] [CPU] quat→rpy inverse in `task3_autonomy/` + unit tests
       (round-trip `_quaternion_from_rpy` from
       `scripts/common/teleop_targets.py` — design note in master plan §10

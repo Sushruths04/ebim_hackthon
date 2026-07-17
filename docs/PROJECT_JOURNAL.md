@@ -97,3 +97,32 @@ OmniGraph (`Steer_joint_Controller`), which reads an invalid
 `Desired_Linear_Velocity_X` input during reset and leaves the Kit process
 stalled. The next session should repair or disable that unused keyboard graph,
 then rerun the recorded idle episode.
+
+## 2026-07-17 (evening) — Navigation root cause: the room, not the robot
+
+Goal: make the live NavigateTo skill actually reach a kitchen-side target
+(Phase 2 gate), and let the owner watch runs live.
+
+Work completed: an instrumented, camera-free verify run proved the base
+drive chain is healthy — wheels track their commanded 10 rad/s and the base
+moves at the full 0.5 m/s — and that every "slow crawl" seen so far was the
+robot pressing against the dining/kitchen partition wall (wheels
+contact-stalled at zero speed while targets stayed high). Routing was fixed
+to cross only through the doorway (route_via_door, 207/207 CPU tests), and
+a livestream-enabled rerun both gave the owner a live WebRTC view and
+produced video of the next blocker: the doorway is ~1.2 m wide but the
+robot spans 1.88 m across its outboard-mounted arms. USD measurements show
+the arm mounts themselves are narrow (±0.12 m), so a folded "transit pose"
+can fit; two probe sessions measured candidate poses in-sim and a
+systematic 8-way sweep of the fold geometry is running to pick the
+narrowest reachable pose.
+
+Evidence: NAVDBG logs nav7/nav8 (sim-dev-g4b), TUCK_RESULT lines in
+/tmp/task3_tuck*.log, stall video sent to owner, room/robot bbox
+measurements recorded in task3_autonomy/navigation.py comments.
+
+Lesson: when a controlled system underperforms, verify the actuators
+against their targets before tuning them — a wheel commanded to 10 rad/s
+that reads back ~0 is an obstruction, not a gain problem. And measure the
+environment before planning through it: both partition crossings were
+narrower than the robot's default pose from day one.
