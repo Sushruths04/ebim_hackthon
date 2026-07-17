@@ -37,6 +37,41 @@ def test_task3_enables_keyboard_control_by_default(monkeypatch):
     assert scene_keyboard.should_enable_keyboard_control(args) is True
 
 
+def test_headless_runner_removes_only_the_legacy_robot_graph():
+    script_path = (
+        Path(__file__).resolve().parents[1] / "task3" / "run_episode.py"
+    )
+    spec = importlib.util.spec_from_file_location("run_episode", script_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    class Prim:
+        def __init__(self, valid):
+            self.valid = valid
+
+        def IsValid(self):
+            return self.valid
+
+    class Stage:
+        def __init__(self):
+            self.removed = []
+
+        def GetPrimAtPath(self, path):
+            return Prim(path == "/World/envs/env_0/Robot/Graph")
+
+        def RemovePrim(self, path):
+            self.removed.append(path)
+
+    stage = Stage()
+    module.disable_legacy_robot_control_graph(
+        stage, "/World/envs/env_0/Robot"
+    )
+
+    assert stage.removed == ["/World/envs/env_0/Robot/Graph"]
+
+
 def test_keyboard_control_can_be_disabled_for_viewer_mode(monkeypatch):
     monkeypatch.delenv(scene_keyboard.INSIDE_KIT_ENV_VAR, raising=False)
     monkeypatch.delenv(scene_keyboard.INNER_ARGV_ENV_VAR, raising=False)

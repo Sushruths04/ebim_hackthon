@@ -117,6 +117,21 @@ def _fix_single_articulation_root(stage, robot_prim_path: str) -> None:
     print(f"Articulation root kept: {keep.GetPath()}", flush=True)
 
 
+def disable_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
+    """Remove the USD keyboard-control graph from this headless stage.
+
+    Isaac Lab writes actuator targets directly.  The imported mobile FR3 USD
+    also carries an old OmniGraph steering controller whose input attributes
+    are invalid in Isaac Sim 5; it raises during reset and leaves Kit stuck.
+    Removing it changes only this in-memory composed stage, never the USD.
+    """
+    graph_path = f"{robot_prim_path}/Graph"
+    graph_prim = stage.GetPrimAtPath(graph_path)
+    if graph_prim and graph_prim.IsValid():
+        stage.RemovePrim(graph_path)
+        print(f"Disabled legacy robot control graph: {graph_path}", flush=True)
+
+
 def git_commit_hash() -> str:
     try:
         return (
@@ -317,6 +332,9 @@ def _run_episode(
         for name in grading_object_names
     }
     _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
+    disable_legacy_robot_control_graph(
+        sim.stage, "/World/envs/env_0/Robot"
+    )
     sim.reset()
     scene.reset()
     robot = scene["robot"]
