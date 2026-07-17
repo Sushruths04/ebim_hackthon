@@ -23,27 +23,31 @@ from task3_autonomy.navigation import (
 
 # Intermediate waypoints only shape the route around the wall partition, so
 # they can be passed loosely; only the final stop uses the strict tolerance.
-WAYPOINT_PASS_TOLERANCE_M = 0.15
+# 0.10 (down from 0.15): the kitchen lane and the island-east descent both
+# have ~0.16 m lateral margin, so a 0.15 m corner cut could clip geometry.
+WAYPOINT_PASS_TOLERANCE_M = 0.10
 
 # Arm transit pose for navigation: the default ready pose spans 1.88 m
 # across the outboard-mounted arms while both partition crossings measure
-# ~1.2 m (probe_arm_tuck.py, sim-dev-g4b 2026-07-17). This is the probe's
-# measured winner "lean_pnn": settled body-frame width +-0.37 m at link
-# origins (vs +-0.75 default), max joint-target error 0.024 rad.
+# ~1.2 m (probe_arm_tuck.py, sim-dev-g4b 2026-07-17). Probe v3/v4 winner
+# "pnn_j6_15_j4_30": settled body-frame width +-0.37 m (vs +-0.75
+# default) and forward overhang 0.778 m at link origins (vs 0.885 for the
+# v3 fold, which scraped the kitchen island live in nav9); max
+# joint-target error 0.009 rad.
 TRANSIT_ARM_POSE: dict[str, float] = {
     "left_fr3v2_joint1": 1.57,
     "left_fr3v2_joint2": -0.87,
     "left_fr3v2_joint3": -1.57,
-    "left_fr3v2_joint4": -2.9,
+    "left_fr3v2_joint4": -3.0,
     "left_fr3v2_joint5": 0.0,
-    "left_fr3v2_joint6": 2.9,
+    "left_fr3v2_joint6": 1.5,
     "left_fr3v2_joint7": 0.785,
     "right_fr3v2_joint1": -1.57,
     "right_fr3v2_joint2": -0.87,
     "right_fr3v2_joint3": 1.57,
-    "right_fr3v2_joint4": -2.9,
+    "right_fr3v2_joint4": -3.0,
     "right_fr3v2_joint5": 0.0,
-    "right_fr3v2_joint6": 2.9,
+    "right_fr3v2_joint6": 1.5,
     "right_fr3v2_joint7": 0.785,
 }
 

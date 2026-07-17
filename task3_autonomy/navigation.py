@@ -61,10 +61,11 @@ TASK3_DOOR_APPROACH_M = 0.9
 
 # Kitchen-side door point sits in the shallow lane between the partition
 # (south face y=0.10) and the kitchen island (north face y=-1.22): rear
-# extent 0.38 clears the wall (rear tip -0.02) and the tucked arms' forward
-# overhang F stays off the island while driving east iff F < 0.82 (live
-# evidence: nav9 scraped the island for ~35 s with F=0.885).
-TASK3_KITCHEN_LANE_Y = -0.40
+# extent ~0.42 clears the wall (rear tip 0.05) and the tucked arms' 0.80 m
+# effective forward overhang clears the island (nose tip -1.17) — ~5 cm
+# margin each way. Live evidence: nav9 scraped the island for ~35 s with
+# the 0.885 m overhang of the v3 fold at lane y=-0.68.
+TASK3_KITCHEN_LANE_Y = -0.37
 
 
 def waypoints_x_then_y(
