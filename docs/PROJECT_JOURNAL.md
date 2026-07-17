@@ -126,3 +126,26 @@ against their targets before tuning them — a wheel commanded to 10 rad/s
 that reads back ~0 is an obstruction, not a gain problem. And measure the
 environment before planning through it: both partition crossings were
 narrower than the robot's default pose from day one.
+
+## 2026-07-17 (late evening) — Phase 2 navigate gate PASSED
+
+Goal: get the live NavigateTo run to actually reach its kitchen-side
+target after the arm-width discovery.
+
+Work completed: two more measurement probes picked the arm "transit
+pose" entirely from in-sim evidence — an 8-way sweep of fold geometries
+found a pose that cancels the arms' outward mount lean (width 1.88 m to
+0.74 m), and a follow-up sweep shortened its forward overhang (0.885 m to
+0.78 m) after the first tucked run scraped the kitchen island. The route
+gained a shallow "kitchen lane" (y=-0.37) that threads the 1.32 m gap
+between partition and island, and the verify target moved to a stop the
+room actually allows (the old default sat behind an unmapped wall).
+Run nav10 then passed cleanly: doorway crossed, 2.9 cm final error,
+14.7 s of sim time, heading held within ~1 degree. Proof bundle
+proofs/phase2-navigate-live/ (video + result.json + repro chain);
+video sent to the owner. VM stopped at session close.
+
+Lesson: in cluttered scenes, navigation failures are usually geometry
+budget failures — measure the robot's true swept extents per pose and
+the room's true corridor widths, then plan with explicit margins, instead
+of tuning controllers against symptoms.

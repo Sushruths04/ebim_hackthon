@@ -157,6 +157,12 @@ each session, not retroactively.
   IP-lock verified still correct (owner IPv4 134.61.98.3).
 - GPU time this session ≈ 0.7 h spot g4-standard-48 ≈ 1.5 EUR (nav8
   livestream run + probes pending).
+- SESSION CLOSE (~21:05 UTC): **Phase 2 navigate gate PASSED** (nav10,
+  fdf9476: error 0.0286 m in 14.7 s sim; proof
+  `proofs/phase2-navigate-live/`). Getting there took 4 tuck-probe/verify
+  GPU runs (probe v1–v4 ≈ 4×4 min, nav9 ≈ 16 min, nav10 ≈ 30 min — nav10
+  ran ~9× slower than nav9, consistent with an active WebRTC viewer).
+  Total session GPU ≈ 3 h ≈ 6 EUR. sim-dev-g4b STOPPED at close.
 
 ## Outstanding blockers (as of 2026-07-16)
 
