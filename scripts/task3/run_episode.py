@@ -240,6 +240,10 @@ def main() -> None:
     episode_dir.mkdir(parents=True, exist_ok=True)
     if args.record_video:
         frames_dir.mkdir(parents=True, exist_ok=True)
+        # A crashed or killed earlier run can leave frames behind; encoding
+        # globs rgb_*.png, so stale files would silently corrupt the video.
+        for stale in frames_dir.glob("rgb_*.png"):
+            stale.unlink()
 
     started_at = time.time()
 
