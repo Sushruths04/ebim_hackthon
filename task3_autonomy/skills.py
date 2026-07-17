@@ -1,0 +1,147 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+"""Task 3 FSM skills: waypoint navigation logic and the Isaac base adapter.
+
+NavigateTo is pure logic over Pose2D (CPU-tested in tests/test_skills.py).
+TmrBaseAdapter is the thin Isaac-side shim that turns the skill's body-frame
+twists into TMR steering/wheel joint targets via
+scripts/common/tmr_base_control.py -- it is exercised on GPU by
+scripts/task3/verify_navigate.py, never by CPU tests.
+"""
+
+from __future__ import annotations
+
+import math
+
+from task3_autonomy.navigation import (
+    Pose2D,
+    base_twist_toward,
+    pose_reached,
+    waypoints_y_then_x,
+)
+
+# Intermediate waypoints only shape the route around the wall partition, so
+# they can be passed loosely; only the final stop uses the strict tolerance.
+WAYPOINT_PASS_TOLERANCE_M = 0.15
+
+
+class NavigateTo:
+    """Drive an omnidirectional base through y-then-x waypoints to a target.
+
+    Call compute(pose) every control step; it returns (vx, vy, done) in the
+    body frame. Yaw is not commanded here -- the caller holds heading with
+    tmr_base_control.compensate_yaw_rate().
+    """
+
+    def __init__(
+        self,
+        target_xy: tuple[float, float],
+        target_yaw: float | None = None,
+        *,
+        max_linear_mps: float = 0.5,
+        position_kp: float = 1.5,
+        position_tolerance_m: float = 0.03,
+        yaw_tolerance_rad: float = math.radians(3.0),
+    ) -> None:
+        self.target_xy = target_xy
+        self.target_yaw = target_yaw
+        self.max_linear_mps = max_linear_mps
+        self.position_kp = position_kp
+        self.position_tolerance_m = position_tolerance_m
+        self.yaw_tolerance_rad = yaw_tolerance_rad
+        self._waypoints: list[tuple[float, float]] | None = None
+        self._waypoint_index = 0
+        self._done = False
+
+    def compute(self, pose: Pose2D) -> tuple[float, float, bool]:
+        if self._done:
+            return 0.0, 0.0, True
+        if self._waypoints is None:
+            self._waypoints = waypoints_y_then_x(
+                (pose.x, pose.y), self.target_xy
+            )
+            self._waypoint_index = 1 if len(self._waypoints) > 1 else 0
+
+        while self._waypoint_index < len(self._waypoints) - 1:
+            waypoint = self._waypoints[self._waypoint_index]
+            if pose_reached(
+                pose,
+                waypoint,
+                position_tolerance_m=WAYPOINT_PASS_TOLERANCE_M,
+            ):
+                self._waypoint_index += 1
+            else:
+                break
+
+        final_leg = self._waypoint_index >= len(self._waypoints) - 1
+        if final_leg and pose_reached(
+            pose,
+            self.target_xy,
+            self.target_yaw,
+            position_tolerance_m=self.position_tolerance_m,
+            yaw_tolerance_rad=self.yaw_tolerance_rad,
+        ):
+            self._done = True
+            return 0.0, 0.0, True
+
+        goal = (
+            self.target_xy
+            if final_leg
+            else self._waypoints[self._waypoint_index]
+        )
+        vx, vy = base_twist_toward(
+            pose,
+            goal,
+            max_linear_mps=self.max_linear_mps,
+            position_kp=self.position_kp,
+        )
+        return vx, vy, False
+
+
+class TmrBaseAdapter:
+    """Isaac-side shim: body twist -> TMR steering/wheel joint targets.
+
+    GPU-only (imports torch-backed helpers lazily); verified by
+    scripts/task3/verify_navigate.py, not by CPU tests.
+    """
+
+    def __init__(self, robot, *, num_envs: int, device: str) -> None:
+        import tmr_base_control as base
+
+        self._base = base
+        self.robot = robot
+        self.num_envs = num_envs
+        self.device = device
+        self.steering_ids, self.drive_ids = base.find_drive_joint_ids(
+            robot.joint_names
+        )
+        self._hold_yaw = base.get_root_yaw(robot)
+
+    def pose(self) -> Pose2D:
+        position = self.robot.data.root_pos_w[0]
+        return Pose2D(
+            float(position[0]),
+            float(position[1]),
+            self._base.get_root_yaw(self.robot),
+        )
+
+    def apply_twist(self, vx: float, vy: float) -> None:
+        wz, self._hold_yaw = self._base.compensate_yaw_rate(
+            self.robot, vx, vy, 0.0, self._hold_yaw, manual_rotation=False
+        )
+        steering_targets, drive_targets = self._base.compute_drive_targets(
+            self.robot,
+            self.steering_ids,
+            vx,
+            vy,
+            wz,
+            num_envs=self.num_envs,
+            device=self.device,
+        )
+        self.robot.set_joint_position_target(
+            steering_targets, joint_ids=self.steering_ids
+        )
+        self.robot.set_joint_velocity_target(
+            drive_targets, joint_ids=self.drive_ids
+        )
