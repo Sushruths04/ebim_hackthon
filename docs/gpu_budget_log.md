@@ -131,6 +131,13 @@ each session, not retroactively.
   for this leg ≈ 0.5 h ≈ 1 EUR. `sim-dev-g4` (us-east5-a) left STOPPED —
   owner may delete its disk (~$10/mo equiv.) since the snapshot supersedes it.
 
+## Session log (continued 6) — 2026-07-17 afternoon (Claude): OmniGraph fix + video capture rebuild + determinism pair
+
+- sim-dev-g4b (spot g4-standard-48) afternoon session: OmniGraph pre-composition fix (commit a328224, make_headless_robot_usd wrapper layer deactivates controller graph BEFORE composition); Replicator video-capture runaway incident #2 (12k frames, ~1 GB on already-full disk) repaired with pull-based RGB annotator (commits 9caecb1, ef7af06). First clean idle episode completed: exactly 160 frames + episode.gif captured. Determinism pair launched at commit ef7af06 (two seed-42 runs, runA verdict pending, runB in flight). CPU tests 198/198 passing. WebRTC livestream configured (IP-locked to owner); livestream ready in --livestream mode.
+- Estimated GPU hours: ~2 h (three aborted runs debugging video capture, then first clean episode + determinism pair launch).
+- Estimated cost: 3–4 EUR (spot g4-standard-48 ≈ $1.5–2/h).
+- Disk maintenance: deleted 93 GB Replicator runaway frames + ~16 GB older debug frame dirs (task3_episodes_aaf7905/de684a0/f02dea2); disk now 17% used.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

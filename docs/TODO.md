@@ -84,3 +84,4 @@ line to the Session Log at the bottom (this is the shared memory), update
   spot create → GRID/open driver saga → verified 9.4 s render → snapshot);
   Phase 1 debug loop started, 4 harness bugs fixed (see AGENT_STATE.md);
   all coordination docs created and pushed.
+- 2026-07-17 PM (Claude/Fable): OmniGraph pre-composition fix + annotator video capture; first clean episode 160 frames; determinism pair in flight; WebRTC stream ready (IP-locked).
