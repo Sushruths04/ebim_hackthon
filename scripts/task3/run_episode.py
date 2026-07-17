@@ -323,13 +323,9 @@ def _run_episode(
     reset_robot_to_default_state(robot, scene.env_origins)
     scene.write_data_to_sim()
 
-    # Isaac Sim 5's RigidPrim constructor binds a PhysX view immediately.
-    # Creating that view directly after reset triggered a CUDA illegal memory
-    # access; creating it before reset deadlocked the robot's OmniGraph.
-    # Advance one frame first so PhysX/Fabric has populated rigid-body state.
-    sim.step()
-    scene.update(sim.cfg.dt)
-
+    # Bind views before the first physics step.  The robot USD's legacy
+    # steering OmniGraph errors during stepping, while the hierarchy repair
+    # above makes the valid rigid-body views safe to construct after reset.
     object_views = {
         name: RigidPrim(prim_paths_expr=path, name=f"task3_obj_{name}")
         for name, path in object_paths.items()
