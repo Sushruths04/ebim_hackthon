@@ -4,7 +4,7 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-17 (Codex, main)
+Last update: 2026-07-17 (Codex, main; latest GPU attempt ~14:30 UTC)
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -65,6 +65,14 @@ legacy steering-controller OmniGraph.
 - No `run_episode.py` process is currently active. Dedicated logs from the
   last attempts are `/tmp/task3_phase1_{aaf7905,3075b5f,de684a0,f02dea2}.log`
   inside the Isaac container.
+- Follow-up attempts `900520f`, `221dffa`, `f71d32e`, and `69f5913` proved
+  that deleting/deactivating the graph is too late (Kit registers it while
+  composing the robot) and that creating/zeroing its named USD inputs does
+  not repair the ScriptNode database. Do **not** repeat those idle runs.
+  Next diagnostic: repair the graph's authored ScriptNode interface before
+  it is composed, or launch a headless Isaac experience without the imported
+  keyboard-controller graph while preserving Replicator for video capture.
+  The last stalled Kit PID was stopped; no episode runner is active.
 - Rerun command (VM `sim-dev-g4b`, us-central1-b):
   `cd ~/EBiM-benchmark && git pull && sudo docker exec isaac-lab-2-3-2-workshop \
    bash -lc 'cd /workspace/EBiM_Challenge && python scripts/task3/run_episode.py \
