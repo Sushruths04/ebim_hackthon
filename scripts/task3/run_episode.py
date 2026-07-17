@@ -27,6 +27,7 @@ import random
 import subprocess
 import sys
 import time
+import traceback
 from pathlib import Path
 from typing import Any
 
@@ -123,7 +124,18 @@ def main() -> None:
     simulation_app = app_launcher.app
     try:
         result = _run_episode(args, simulation_app, frames_dir)
-    finally:
+    except BaseException:
+        # Kit's fastShutdown can kill the process inside close() before
+        # Python prints a pending traceback, leaving headless failures
+        # undiagnosable. Emit it to stderr and a file first.
+        traceback.print_exc()
+        (episode_dir / "crash_traceback.txt").write_text(
+            traceback.format_exc()
+        )
+        sys.stderr.flush()
+        simulation_app.close()
+        raise
+    else:
         simulation_app.close()
 
     result["seed"] = args.seed
