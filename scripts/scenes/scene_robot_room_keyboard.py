@@ -274,7 +274,11 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
         "drive_joints": {
             "joint_names_expr": ["tmrv0_2_joint_1", "tmrv0_2_joint_3"],
             "stiffness": 0.0,
-            "damping": 5.0,
+            # 5.0 gave the wheels only ~7% of their velocity target (base
+            # crawled at 0.04 m/s for a 0.5 m/s command); 500.0 tracks the
+            # target within 2 s. Measured on sim-dev-g4b 2026-07-17 with
+            # scripts/task3/probe_base_drive.py --drive-damping 500.
+            "damping": 500.0,
             "effort_limit_sim": 500.0,
             "velocity_limit_sim": 20.0,
         },
