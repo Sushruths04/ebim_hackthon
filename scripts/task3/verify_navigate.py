@@ -124,7 +124,10 @@ def _verify(
         yaw_to_quat,
     )
 
-    import omni.replicator.core as rep
+    # omni.replicator only exists when the app started with cameras.
+    rep = None
+    if args.record_video:
+        import omni.replicator.core as rep
 
     import isaaclab.sim as sim_utils
     from isaaclab.scene import InteractiveScene
