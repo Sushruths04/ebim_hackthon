@@ -6,21 +6,27 @@
 
 Last update: 2026-07-17 (Claude, main)
 
-## GPU STATUS
-- `sim-dev` (L4, us-central1-c): **STOPPED** — proven Isaac box, fallback. Never delete.
-- `sim-dev-g4` (g4-standard-24 = ½ RTX PRO 6000 48 GB, SPOT, us-east5-a):
-  **RUNNING** — created 2026-07-17 from snapshot, resized ¼→½ GPU on owner
-  instruction. **Driver: GRID vGPU 19.5 guest
-  (`NVIDIA-Linux-x86_64-580.159.03-grid.run` from
-  `gs://nvidia-drivers-us-public/GRID/vGPU19.5/`) — the ONLY working
-  driver**: standard proprietary/open 580 and GRID 20.1 (595, Xid 78
-  guest/host mismatch) all fail on fractional-g4 vGPU partitions. Keep
-  `libvulkan1 vulkan-tools` installed (an apt driver purge removes them).
-  nvidia-smi + Vulkan (device `...DC-2-48Q`, discrete, Vulkan 1.4) both
-  verified; Isaac render smoke test IN PROGRESS (first Blackwell boot
-  recompiles shader caches, ~10+ min). Vulkan/Warp caveats: vGPU has no
-  CUDA memory pools (Warp warns; perf-only). Snapshot the disk as soon as
-  the render is verified (spot VM — preemption expected).
+## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
+- **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
+  SPOT, us-central1-b): RUNNING — THE PRIMARY BOX.** Isaac render VERIFIED
+  (`outputs/task3_g4_render/rgb_0000.png`, app wall-time 9.4 s warm).
+  Driver: `nvidia-driver-580-open` (apt) — Blackwell passthrough needs the
+  OPEN kernel modules. `/dev/nvidia-uvm` must exist (persisted via
+  `/etc/modules-load.d/nvidia-uvm.conf`). After ANY driver change:
+  `docker restart isaac-lab-2-3-2-workshop` to re-inject GPU libs.
+  Snapshot: `sim-dev-g4b-verified-20260717`. Spot → preemption expected;
+  restore = boot from snapshot, drivers included.
+  **capture_static_view.py gotcha: pass an ABSOLUTE --output-dir** (a
+  relative path makes Replicator write the PNG somewhere else and
+  fastShutdown swallows the error).
+- `sim-dev-g4` (g4-standard-24/48-resized, us-east5-a): **STOPPED — DEAD
+  END for Isaac.** Fractional g4 shapes are MIG-backed vGPU partitions:
+  driver-level Vulkan+RT works (GRID vGPU 19.5 guest only), but Kit
+  refuses the GPU ("Skipping NVIDIA GPU due CUDA being in bad state" —
+  CUDA↔Vulkan interop unsupported on MIG vGPU). Do not retry without new
+  evidence. Owner may delete this VM's disk to save cost.
+- `sim-dev` (L4, us-central1-c): **STOPPED** — proven fallback. Never delete.
+- Quota: `GPUS_ALL_REGIONS=1` — one GPU VM running at a time, total.
 - Quota: `GPUS_ALL_REGIONS=1` — one GPU VM at a time, total.
 
 ## DONE (frozen — do not rework)
@@ -28,11 +34,14 @@ Last update: 2026-07-17 (Claude, main)
 - `task3_autonomy/navigation.py` pure math, 14/14 tests —
   `proofs/phase2-navigation-math/`.
 - sim-dev L4 Isaac bring-up + verified render + snapshot (2026-07-17).
-- RTX PRO 6000 feasibility: RESOLVED — spot quota=1 works; sim-dev-g4 created (2026-07-17).
+- RTX PRO 6000 bring-up: **COMPLETE (2026-07-17)** — full-GPU spot
+  `sim-dev-g4b` verified rendering the Task 3 room in 9.4 s; snapshot
+  taken; proof image sent to owner. Fractional/vGPU shapes proven
+  unusable for Isaac (see GPU STATUS).
 
 ## IN PROGRESS
-- (Claude, main) sim-dev-g4 driver bring-up → Isaac render smoke test →
-  snapshot g4 disk.
+- (Claude, main) Sprint Phase 1: first real execution of
+  `scripts/task3/run_episode.py` on sim-dev-g4b.
 
 ## NEXT UP (in order — claim in this file before starting)
 1. [GPU/Claude] Phase 1: first real run of `scripts/task3/run_episode.py`

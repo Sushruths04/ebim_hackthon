@@ -113,6 +113,23 @@ each session, not retroactively.
     g4 in progress at time of writing.
 - `sim-dev` (L4) left STOPPED as proven fallback. Spot g4 ≈ $1.5–2/hr est.;
   session GPU time so far ≈ 1.5 h ≈ 3 EUR.
+- **OUTCOME (continued, ~13:10 UTC): fractional vGPU = DEAD END for Isaac;
+  FULL GPU works.** On the ½-GPU vGPU shape, driver-level Vulkan+ray-tracing
+  verified fine, but Kit's renderer refuses the device ("Skipping NVIDIA
+  GPU due CUDA being in bad state") — CUDA↔Vulkan interop is unsupported
+  on MIG-backed vGPU partitions; also `/dev/nvidia-uvm` had to be created
+  manually (`.run` installs don't autoload it). Escalation evidence for
+  going to the full GPU: not a size upgrade by preference — the fractional
+  shapes are *functionally incapable* of running Isaac Sim.
+  `g4-standard-48` (FULL RTX PRO 6000 96 GB) spot: us-east5-a stockout;
+  **us-central1-b create SUCCEEDED** (`sim-dev-g4b`, from the L4 snapshot).
+  Standard `nvidia-driver-580-open` via apt works on passthrough.
+  **Task 3 room render VERIFIED: 9.4 s app wall-time warm (vs ~60 s+ on
+  L4)** → `sim-dev-g4b` is now the primary box; snapshot
+  `sim-dev-g4b-verified-20260717` taken. Gotcha for future runs:
+  `capture_static_view.py` needs an ABSOLUTE `--output-dir`. Extra GPU time
+  for this leg ≈ 0.5 h ≈ 1 EUR. `sim-dev-g4` (us-east5-a) left STOPPED —
+  owner may delete its disk (~$10/mo equiv.) since the snapshot supersedes it.
 
 ## Outstanding blockers (as of 2026-07-16)
 
