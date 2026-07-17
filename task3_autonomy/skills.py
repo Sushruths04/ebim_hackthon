@@ -27,10 +27,25 @@ WAYPOINT_PASS_TOLERANCE_M = 0.15
 
 # Arm transit pose for navigation: the default ready pose spans 1.88 m
 # across the outboard-mounted arms while both partition crossings measure
-# ~1.2 m (probe_arm_tuck.py, sim-dev-g4b 2026-07-17). Values are filled
-# from the probe's measured winner; empty means "hold whatever pose the
-# arms are in".
-TRANSIT_ARM_POSE: dict[str, float] = {}
+# ~1.2 m (probe_arm_tuck.py, sim-dev-g4b 2026-07-17). This is the probe's
+# measured winner "lean_pnn": settled body-frame width +-0.37 m at link
+# origins (vs +-0.75 default), max joint-target error 0.024 rad.
+TRANSIT_ARM_POSE: dict[str, float] = {
+    "left_fr3v2_joint1": 1.57,
+    "left_fr3v2_joint2": -0.87,
+    "left_fr3v2_joint3": -1.57,
+    "left_fr3v2_joint4": -2.9,
+    "left_fr3v2_joint5": 0.0,
+    "left_fr3v2_joint6": 2.9,
+    "left_fr3v2_joint7": 0.785,
+    "right_fr3v2_joint1": -1.57,
+    "right_fr3v2_joint2": -0.87,
+    "right_fr3v2_joint3": 1.57,
+    "right_fr3v2_joint4": -2.9,
+    "right_fr3v2_joint5": 0.0,
+    "right_fr3v2_joint6": 2.9,
+    "right_fr3v2_joint7": 0.785,
+}
 
 
 def ramp_arm_pose(
