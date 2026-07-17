@@ -19,6 +19,7 @@
 
 
 # Outputs
+assets/*_headless.usda
 assets/deprecated/
 DEMO/
 **/runs/*

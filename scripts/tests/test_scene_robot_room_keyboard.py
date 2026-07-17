@@ -37,7 +37,11 @@ def test_task3_enables_keyboard_control_by_default(monkeypatch):
     assert scene_keyboard.should_enable_keyboard_control(args) is True
 
 
-def test_headless_runner_declares_all_legacy_steering_inputs():
+def test_headless_runner_strips_legacy_controller_graph():
+    """run_episode must neutralize the robot's imported OmniGraphs BEFORE
+    composition (post-load repair is too late -- see run_episode.
+    make_headless_robot_usd docstring). Wrapper behavior itself is covered
+    in test_run_episode_headless_robot.py."""
     script_path = (
         Path(__file__).resolve().parents[1] / "task3" / "run_episode.py"
     )
@@ -47,11 +51,11 @@ def test_headless_runner_declares_all_legacy_steering_inputs():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    assert module.LEGACY_STEERING_INPUTS == (
-        "Desired_Linear_Velocity_X",
-        "Desired_Linear_Velocity_Y",
-        "Desired_Angular_Velocity_Z",
-    )
+    assert callable(module.make_headless_robot_usd)
+    # The zero-input workaround was proven ineffective and must stay gone.
+    assert not hasattr(module, "LEGACY_STEERING_INPUTS")
+    source = script_path.read_text()
+    assert "make_headless_robot_usd(" in source.split("def _run_episode", 1)[1]
 
 
 def test_keyboard_control_can_be_disabled_for_viewer_mode(monkeypatch):

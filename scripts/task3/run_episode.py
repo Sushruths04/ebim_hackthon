@@ -117,35 +117,46 @@ def _fix_single_articulation_root(stage, robot_prim_path: str) -> None:
     print(f"Articulation root kept: {keep.GetPath()}", flush=True)
 
 
-LEGACY_STEERING_INPUTS = (
-    "Desired_Linear_Velocity_X",
-    "Desired_Linear_Velocity_Y",
-    "Desired_Angular_Velocity_Z",
-)
+def make_headless_robot_usd(robot_usd: Path) -> Path:
+    """Write a wrapper layer that deactivates the robot's OmniGraphs.
 
-
-def initialize_legacy_robot_control_graph(stage, robot_prim_path: str) -> None:
-    """Give the imported keyboard graph safe zero-velocity inputs.
-
-    The mobile FR3 USD contains a legacy steering ScriptNode.  Isaac Sim 5
-    composes it before the harness can replace it, but its three velocity
-    input attributes are absent.  Add zero-valued inputs to this in-memory
-    stage so it stays inert while Isaac Lab owns actuator commands.
+    mobile_fr3_duo_v0_2.usd ships ROS2/keyboard controller graphs in its
+    root layer (Graph/ROS_JointStates and Graph/Steer_joint_Controller,
+    each with its own ArticulationController).  Headless, the steering
+    ScriptNode crashes after sim.reset() ("Attempted to access an invalid
+    object" reading Desired_Linear_Velocity_X), and even a working graph
+    would fight Isaac Lab's actuator commands.  Kit registers the graphs
+    while composing the robot reference, so any post-load repair is too
+    late (proven in 900520f, 221dffa, f71d32e, 69f5913).  The only safe
+    point is before composition: reference this thin sibling wrapper,
+    which sublayers the asset and overrides Graph with active=false.
     """
     from pxr import Sdf
 
-    node_path = f"{robot_prim_path}/Graph/Steer_joint_Controller/script_node"
-    node = stage.GetPrimAtPath(node_path)
-    if not node or not node.IsValid():
-        return
-    for name in LEGACY_STEERING_INPUTS:
-        attribute = node.GetAttribute(f"inputs:{name}")
-        if not attribute or not attribute.IsValid():
-            attribute = node.CreateAttribute(
-                f"inputs:{name}", Sdf.ValueTypeNames.Float, custom=False
-            )
-        attribute.Set(0.0)
-        print(f"Initialized legacy steering input: {name}", flush=True)
+    src = Sdf.Layer.FindOrOpen(str(robot_usd))
+    if src is None:
+        raise RuntimeError(f"Cannot open robot USD: {robot_usd}")
+    default_prim = src.defaultPrim
+    if not default_prim:
+        raise RuntimeError(f"Robot USD has no defaultPrim: {robot_usd}")
+
+    wrapper = Sdf.Layer.CreateAnonymous(".usda")
+    # Relative sublayer path: the wrapper sits next to the asset, so it
+    # composes identically on the Windows worktree and the VM's /workspace.
+    wrapper.subLayerPaths.append(f"./{robot_usd.name}")
+    wrapper.defaultPrim = default_prim
+    for key in ("metersPerUnit", "upAxis", "kilogramsPerUnit"):
+        if src.pseudoRoot.HasInfo(key):
+            wrapper.pseudoRoot.SetInfo(key, src.pseudoRoot.GetInfo(key))
+    graph_over = Sdf.CreatePrimInLayer(
+        wrapper, f"/{default_prim}/Graph"
+    )
+    graph_over.active = False
+
+    wrapper_path = robot_usd.with_name(robot_usd.stem + "_headless.usda")
+    if not wrapper.Export(str(wrapper_path)):
+        raise RuntimeError(f"Failed to write {wrapper_path}")
+    return wrapper_path
 
 
 def git_commit_hash() -> str:
@@ -322,11 +333,22 @@ def _run_episode(
     scene = InteractiveScene(
         make_control_scene_cfg(
             num_envs=1,
-            robot_path=REPO_ROOT / "assets" / "mobile_fr3_duo_v0_2.usd",
+            robot_path=make_headless_robot_usd(
+                REPO_ROOT / "assets" / "mobile_fr3_duo_v0_2.usd"
+            ),
             robot_position=ROBOT_SPAWN_POSITION,
             robot_rotation=yaw_to_quat(ROBOT_SPAWN_YAW),
         )
     )
+    legacy_graph = sim.stage.GetPrimAtPath("/World/envs/env_0/Robot/Graph")
+    if legacy_graph.IsValid() and legacy_graph.IsActive():
+        raise RuntimeError(
+            "Legacy robot controller OmniGraph composed active despite the "
+            "headless wrapper -- it would crash after sim.reset(). Check "
+            "make_headless_robot_usd()."
+        )
+    print("Legacy robot controller OmniGraph deactivated pre-composition",
+          flush=True)
 
     # --- Grading-object pose reading ---------------------------------
     # integration_test.get_prim_position() reads a UsdGeom.XformCache
@@ -348,18 +370,14 @@ def _run_episode(
         for name in grading_object_names
     }
     _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
-    initialize_legacy_robot_control_graph(
-        sim.stage, "/World/envs/env_0/Robot"
-    )
     sim.reset()
     scene.reset()
     robot = scene["robot"]
     reset_robot_to_default_state(robot, scene.env_origins)
     scene.write_data_to_sim()
 
-    # Bind views before the first physics step.  The robot USD's legacy
-    # steering OmniGraph errors during stepping, while the hierarchy repair
-    # above makes the valid rigid-body views safe to construct after reset.
+    # Bind views before the first physics step; the hierarchy repair above
+    # makes the valid rigid-body views safe to construct after reset.
     object_views = {
         name: RigidPrim(prim_paths_expr=path, name=f"task3_obj_{name}")
         for name, path in object_paths.items()
