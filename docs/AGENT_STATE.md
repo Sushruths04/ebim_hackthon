@@ -8,11 +8,19 @@ Last update: 2026-07-17 (Claude, main)
 
 ## GPU STATUS
 - `sim-dev` (L4, us-central1-c): **STOPPED** — proven Isaac box, fallback. Never delete.
-- `sim-dev-g4` (RTX PRO 6000, SPOT, us-east5-a): **RUNNING** — created
-  2026-07-17 from snapshot `sim-dev-verified-20260717-1310`.
-  `nvidia-driver-580-open` installed (Blackwell needs open kernel modules;
-  proprietary 580 rejected GPU `10de:2bb5`); rebooting; nvidia-smi /
-  vulkaninfo / Isaac render verification IN PROGRESS.
+- `sim-dev-g4` (g4-standard-24 = ½ RTX PRO 6000 48 GB, SPOT, us-east5-a):
+  **RUNNING** — created 2026-07-17 from snapshot, resized ¼→½ GPU on owner
+  instruction. **Driver: GRID vGPU 19.5 guest
+  (`NVIDIA-Linux-x86_64-580.159.03-grid.run` from
+  `gs://nvidia-drivers-us-public/GRID/vGPU19.5/`) — the ONLY working
+  driver**: standard proprietary/open 580 and GRID 20.1 (595, Xid 78
+  guest/host mismatch) all fail on fractional-g4 vGPU partitions. Keep
+  `libvulkan1 vulkan-tools` installed (an apt driver purge removes them).
+  nvidia-smi + Vulkan (device `...DC-2-48Q`, discrete, Vulkan 1.4) both
+  verified; Isaac render smoke test IN PROGRESS (first Blackwell boot
+  recompiles shader caches, ~10+ min). Vulkan/Warp caveats: vGPU has no
+  CUDA memory pools (Warp warns; perf-only). Snapshot the disk as soon as
+  the render is verified (spot VM — preemption expected).
 - Quota: `GPUS_ALL_REGIONS=1` — one GPU VM at a time, total.
 
 ## DONE (frozen — do not rework)

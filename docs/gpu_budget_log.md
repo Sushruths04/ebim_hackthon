@@ -83,6 +83,37 @@ each session, not retroactively.
   `proofs/phase2-navigation-math/`, logged in the new `docs/eval_results.md`.
   0 GPU hours.
 
+## Session log (continued 5) — 2026-07-17: RTX PRO 6000 bring-up
+
+- Compute moved to the **hackathon lab account** `devstar2361@gcplab.me`,
+  project `ebim26ham-236` — **expires ≈ Jul 19–20**; `GPUS_ALL_REGIONS=1`
+  (one GPU VM at a time). Prior session (Sonnet) built `sim-dev`
+  (g2-standard-16, L4, us-central1-c) there: Isaac Lab 2.3.2 verified
+  render, snapshot `sim-dev-verified-20260717-1310`.
+- Owner requested RTX PRO 6000 (explicitly overriding smallest-first; wants
+  ½ GPU or less VRAM). Evidence gathered:
+  - Legacy region quotas show NO RTX PRO metric; Cloud Quotas API shows
+    **spot RTX PRO 6000 = 1, VWS = 1, plain on-demand = 0**.
+  - On-demand create: quota-blocked. us-central1-b & us-east1-d: stockout.
+    **us-east5-a spot g4-standard-12: SUCCESS** → resized to
+    **g4-standard-24 (½ GPU, 48 GB VRAM, 24 vCPU)** on owner instruction.
+- **Driver findings (important, cost ~1.5 h of debugging):** fractional g4
+  shapes are **vGPU partitions**:
+  1. Proprietary 580.159 rejects the GPU (`10de:2bb5 not supported`).
+  2. `nvidia-driver-580-open` rejects vGPU ("not supported by open nvidia.ko").
+  3. GRID vGPU 20.1 guest (595.71.05) → **Xid 78 guest/host incompatible**
+     (GCP host runs the 19.x branch).
+  4. **GRID vGPU 19.5 guest (`NVIDIA-Linux-x86_64-580.159.03-grid.run`
+     from `gs://nvidia-drivers-us-public/GRID/vGPU19.5/`) WORKS**:
+     nvidia-smi shows RTX Pro 6000 Blackwell 48 GB; vulkaninfo enumerates
+     `RTX Pro 6000 Blackwell DC-2-48Q` as a discrete Vulkan 1.4 device
+     (Q-profile = graphics-capable despite MIG-mode flag).
+  - Caveat: apt purge of old drivers also removed `libvulkan1` —
+    reinstalled (`libvulkan1 vulkan-tools`). Isaac render smoke test on the
+    g4 in progress at time of writing.
+- `sim-dev` (L4) left STOPPED as proven fallback. Spot g4 ≈ $1.5–2/hr est.;
+  session GPU time so far ≈ 1.5 h ≈ 3 EUR.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
