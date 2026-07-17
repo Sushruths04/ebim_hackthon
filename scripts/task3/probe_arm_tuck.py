@@ -39,31 +39,39 @@ ARM_JOINT_NAMES = [
 # config's ready pose (measured 1.88 m wide authored); the others try to
 # swing the outboard-mounted arms inward and/or fold them vertically.
 DEFAULT_ARM = [0.0, -1.5, 0.0, -2.2, 0.0, 1.5, 0.785]
+
+
+def _mirror(left: list[float]) -> list[float]:
+    """Right-arm mirror of a left-arm pose (negate j1/j3/j5; mounts are
+    mirrored, verified by swing_in_a narrowing both sides symmetrically)."""
+    return [
+        -left[0], left[1], -left[2], left[3], -left[4], left[5], left[6]
+    ]
+
+
+def _pair(left: list[float]) -> list[float]:
+    return left + _mirror(left)
+
+
+# v3 lean sweep: mounts sit at only y +-0.12 (USD link0 measurement) but
+# tilt the arms ~50 deg outward, which is the entire width problem. The
+# cancel recipe is j1=+-90 deg (bend plane lateral), j2 ~0.87 rad counter
+# lean to vertical, j3=+-90 deg (fold plane back to sagittal), j4 fold.
+# Signs are ambiguous from geometry alone, so sweep all 8 combinations;
+# fold_up is the v2 baseline winner (+-0.565 at link origins).
 CANDIDATES: dict[str, list[float]] = {
-    "default": DEFAULT_ARM + DEFAULT_ARM,
-    "swing_in_a": (
-        [1.57] + DEFAULT_ARM[1:] + [-1.57] + DEFAULT_ARM[1:]
-    ),
-    "swing_in_b": (
-        [-1.57] + DEFAULT_ARM[1:] + [1.57] + DEFAULT_ARM[1:]
-    ),
     "fold_up": [0.0, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785] * 2,
-    "swing_a_fold": (
-        [1.57, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-        + [-1.57, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-    ),
-    # Inward j1 bias on the vertical fold (swing_in_a showed left +/right -
-    # is the inward direction).
-    "fold_bias_in": (
-        [0.5, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-        + [-0.5, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-    ),
-    # Arms swung far toward the back of the tower, folded.
-    "back_fold": (
-        [2.6, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-        + [-2.6, 0.0, 0.0, -2.9, 0.0, 2.9, 0.785]
-    ),
 }
+for s1 in (1.57, -1.57):
+    for s2 in (-0.87, 0.87):
+        for s3 in (1.57, -1.57):
+            label = (
+                f"lean_{'p' if s1 > 0 else 'n'}"
+                f"{'p' if s2 > 0 else 'n'}{'p' if s3 > 0 else 'n'}"
+            )
+            CANDIDATES[label] = _pair(
+                [s1, s2, s3, -2.9, 0.0, 2.9, 0.785]
+            )
 
 RAMP_STEPS = 300  # 1.5 s target interpolation
 SETTLE_STEPS = 400  # 2.0 s hold before measuring
@@ -147,7 +155,12 @@ def _probe(simulation_app) -> None:
         sim.step()
         scene.update(sim.cfg.dt)
 
-    def measure(label: str) -> None:
+    def measure(label: str, target) -> None:
+        # Max joint-target error flags poses the arms could not reach
+        # (self-collision or a limit) -- discard those results.
+        arm_err = float(
+            (robot.data.joint_pos[0, arm_ids] - target).abs().max()
+        )
         root = robot.data.root_pos_w[0]
         yaw = adapter._base.get_root_yaw(robot)
         cos_y, sin_y = math.cos(yaw), math.sin(yaw)
@@ -184,6 +197,7 @@ def _probe(simulation_app) -> None:
                     "widest_link": [widest[2], round(widest[1], 3)],
                     "longest_link": [longest[2], round(longest[0], 3)],
                     "wide_links_by_z": wide_links,
+                    "arm_err": round(arm_err, 3),
                     "root_xy": [round(float(root[0]), 3),
                                 round(float(root[1]), 3)],
                 },
@@ -207,7 +221,7 @@ def _probe(simulation_app) -> None:
                 target.unsqueeze(0), joint_ids=arm_ids
             )
             step_once()
-        measure(label)
+        measure(label, target)
 
     print("PROBE done", flush=True)
 
