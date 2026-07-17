@@ -110,7 +110,7 @@ def test_video_capture_is_pull_based_not_writer_based() -> None:
     source = (TASK3_DIR / "run_episode.py").read_text()
     assert 'AnnotatorRegistry.get_annotator("rgb")' in source
     assert "writers.get(" not in source
-    assert "BasicWriter" not in source
+    assert "writer.attach(" not in source
 
 
 def test_regeneration_is_idempotent(wrapper_path: Path) -> None:
