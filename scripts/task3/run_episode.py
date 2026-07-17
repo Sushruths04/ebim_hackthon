@@ -411,25 +411,24 @@ def _run_episode(
     spawn_bean_positions = read_positions(bean_view) if bean_view else []
 
     # --- Video setup ---------------------------------------------------
+    # No Replicator writer: with the timeline playing, an attached
+    # BasicWriter captures on EVERY app update regardless of orchestrator
+    # gating (two runs on 2026-07-17 each wrote >12k frames -- one reached
+    # 139k frames / 93 GB -- instead of the expected ~160; even
+    # set_capture_on_play(False) did not stop it). An annotator is pull-
+    # based: a frame exists only when this loop asks for one.
     render_product = None
-    writer = None
+    rgb_annotator = None
+    frames_written = 0
     total_steps = max(1, round(args.max_seconds / sim.cfg.dt))
     capture_every = max(1, round(1.0 / (sim.cfg.dt * VIDEO_FPS)))
     if args.record_video:
-        # Replicator's orchestrator defaults to capture-on-play: once a
-        # writer is attached and the timeline runs, it writes a frame on
-        # EVERY app update, ignoring the capture_every gating below (one
-        # 8 s episode produced 139k frames / 93 GB on 2026-07-17). Frames
-        # must only be captured by the explicit orchestrator.step() calls
-        # in the stepping loop.
-        rep.orchestrator.set_capture_on_play(False)
         camera = rep.create.camera(
             position=CAMERA_POSITION, look_at=CAMERA_LOOK_AT
         )
         render_product = rep.create.render_product(camera, (960, 540))
-        writer = rep.writers.get("BasicWriter")
-        writer.initialize(output_dir=str(frames_dir), rgb=True)
-        writer.attach([render_product])
+        rgb_annotator = rep.AnnotatorRegistry.get_annotator("rgb")
+        rgb_annotator.attach([render_product])
 
     # --- Idle policy: hold the reset joint targets and just step physics.
     # A 'scripted' policy (Phase 2+) would command skills here instead.
@@ -439,22 +438,15 @@ def _run_episode(
         sim.step()
         scene.update(sim.cfg.dt)
         if args.record_video and step % capture_every == 0:
-            rep.orchestrator.step(rt_subframes=1)
+            if _save_rgb_frame(rgb_annotator, frames_dir, frames_written):
+                frames_written += 1
 
     if args.record_video:
-        rep.orchestrator.wait_until_complete()
-        writer.detach()
+        rgb_annotator.detach()
         render_product.destroy()
-        frame_count = len(list(frames_dir.glob("rgb_*.png")))
         expected_frames = total_steps // capture_every + 1
-        if frame_count > expected_frames * 3:
-            raise RuntimeError(
-                f"Video capture runaway: {frame_count} frames written but "
-                f"~{expected_frames} expected -- capture-on-play gating "
-                "failed; refusing to fill the disk."
-            )
         print(
-            f"Captured {frame_count} video frames "
+            f"Captured {frames_written} video frames "
             f"(expected ~{expected_frames})",
             flush=True,
         )
@@ -530,6 +522,22 @@ def _run_episode(
         "sim_dt": sim.cfg.dt,
         "total_steps": total_steps,
     }
+
+
+def _save_rgb_frame(annotator: Any, frames_dir: Path, index: int) -> bool:
+    """Pull the latest rendered RGB frame and write it as a PNG.
+
+    Returns False (and writes nothing) while the annotator has no valid
+    data yet -- the first render or two after attach can be empty.
+    """
+    import numpy as np
+    from PIL import Image
+
+    data = np.asarray(annotator.get_data())
+    if data.ndim != 3 or data.shape[-1] < 3 or data.size == 0:
+        return False
+    Image.fromarray(data[..., :3]).save(frames_dir / f"rgb_{index:04d}.png")
+    return True
 
 
 def _encode_gif(frames_dir: Path, output_path: Path) -> None:
