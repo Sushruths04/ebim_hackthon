@@ -888,14 +888,38 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
 
     tray_now = tray_pose()  # tray does not move during navigate/rotate
     edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
-    edge_target = (pinch_target_xy[0], pinch_target_xy[1], tray_now[2] + 0.014)
-    edge_ok = reach("right", edge_target, edge_y, 10.0)
-    if not edge_ok:
-        log_reach_failure("edge_precontact", "right", edge_target, edge_y)
-        return _result(
-            False, "edge_precontact", phases, start, tray_pose(), args
+    edge_z = tray_now[2] + 0.014
+    # Round 2 trial r2t1: one direct reach combining this much position
+    # change with the ~90-degree wrist rotation to edge_y produced 5x
+    # "Right arm IK failed: solver reported no solution" -- the identical
+    # failure class that broke push_precontact in round 1. Apply the same
+    # fix: pregrasp-above first (rotate the wrist while still high, less
+    # constrained), then a ramped vertical descend onto the pinch height
+    # (holding the edge orientation fixed, so only z has to converge).
+    edge_pregrasp_above = (
+        pinch_target_xy[0],
+        pinch_target_xy[1],
+        PREGRASP_EE_Z,
+    )
+    if not reach("right", edge_pregrasp_above, edge_y, 8.0):
+        log_reach_failure(
+            "edge_pregrasp_above", "right", edge_pregrasp_above, edge_y
         )
-    log("edge_precontact", ok=True, target=list(edge_target))
+        return _result(
+            False, "edge_pregrasp_above", phases, start, tray_pose(), args
+        )
+    log("edge_pregrasp_above", ok=True, target=list(edge_pregrasp_above))
+
+    edge_descend_info = ramp_vertical(
+        "right",
+        (pinch_target_xy[0], pinch_target_xy[1]),
+        edge_y,
+        PREGRASP_EE_Z,
+        edge_z,
+        args.descend_seconds,
+        detect_contact=True,
+    )
+    log("edge_descend", ok=True, **edge_descend_info)
     lift_ok = False
     holding = arms.grasp(
         "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
