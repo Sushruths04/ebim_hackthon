@@ -8,16 +8,37 @@ The tray remains the organizer asset. This script uses only robot joint
 targets, contact, and PhysX pose reads. It intentionally contains no
 kinematic object motion, added geometry, mass override, or fixed joint.
 
-Fix (2026-07-18): the first trial failed at ``push_precontact`` because a
-single direct reach targeted a pose ~1.0 m from the stance -- past the
-proven ~0.83 m dead-ahead envelope from the cup pipeline -- and swept the
-outstretched arm through the tray airspace. This revision mirrors the proven
-cup pipeline instead: a local ``TRAY_STANCE`` puts the contact point dead
-ahead (~0.86 m), a pregrasp-above reach is followed by a closed-fist ramped
-vertical descend onto the tray top (not a single ``reach()``, which would
-never converge into contact), then a synchronized north drag that ramps the
-arm's push target and the base hold anchor by the same offset every tick so
-the commanded arm/base separation never grows.
+Fix round 1 (2026-07-18): the first trial failed at ``push_precontact``
+because a single direct reach targeted a pose ~1.0 m from the stance --
+past the proven ~0.83 m dead-ahead envelope from the cup pipeline -- and
+swept the outstretched arm through the tray airspace. That revision mirrors
+the proven cup pipeline instead: a local ``TRAY_STANCE`` puts the contact
+point dead ahead (~0.86 m), a pregrasp-above reach is followed by a
+closed-fist ramped vertical descend onto the tray top (not a single
+``reach()``, which would never converge into contact), then a synchronized
+north drag that ramps the arm's push target and the base hold anchor by the
+same offset every tick so the commanded arm/base separation never grows. 4
+bounded trials found the reach fix worked (0 IK failures at descend_ee_z in
+[0.815, 0.83]) and fixed a real navigation bug (``hold_anchor`` left set
+after manipulation silently overrode every subsequent ``NavigateTo``
+command), but surfaced three more issues, fixed here in round 2:
+
+1. ``tray_bounds()`` via ``UsdGeom.BBoxCache`` returned an IDENTICAL,
+   spawn-pose-stale bounding box across all 4 trials regardless of the
+   tray's live PhysX pose. Overhang is now computed directly from the live
+   ``RigidPrim`` tray-center y plus the Step 0 measured static half-extent
+   (``north_overhang_m()``), never from ``UsdGeom.BBoxCache``.
+2. Single-stroke coupling between the commanded arm drag and the actual
+   tray displacement was only ~28-47% (slipping, not dragging). Up to
+   ``MAX_PUSH_STROKES`` press-drag strokes now run in sequence, each one
+   re-reading the live tray pose, re-aligning the base if the contact
+   point drifted, and stopping early once the overhang/slide gate is met.
+3. The north-side edge-pinch stance ``(STANCE[0], -0.75)`` was inherited,
+   unvalidated legacy code that over-reached the tray by ~1.1-1.2 m once
+   trials finally reached it. The north stance is now derived from the
+   live post-slide tray pose (mirroring ``TRAY_STANCE``'s fix pattern),
+   with the robot driving around the island (never through it) to a point
+   dead ahead of the tray's north edge, then rotating to face south.
 """
 
 from __future__ import annotations
@@ -54,33 +75,135 @@ from verify_grasp_lift import (  # noqa: E402
     STANCE,
 )
 
-# Pure-math helpers: no Isaac dependency, safe to import at module scope.
+# Pure-math/constant helpers: no Isaac dependency, safe to import at module
+# scope (also used by _run_push_stroke() below, which stays module-level so
+# its branching does not count toward _run()'s cyclomatic complexity).
 from task3_autonomy.arms import (  # noqa: E402
+    GRIPPER_CLOSED_RAD,
+    GRIPPER_OPEN_RAD,
     linear_ramp_target,
     synchronized_drag_targets,
 )
 
 TRAY_NAME = "simple_tray"
 NORTH_COUNTER_EDGE_Y = -1.22
+# Dining/kitchen partition south face, from the room-geometry comment in
+# task3_autonomy/navigation.py ("partition runs along y in [0.10, 0.34]").
+# The open "kitchen lane" the door-crossing route already relies on
+# (TASK3_KITCHEN_LANE_Y = -0.37) sits strictly between this and
+# NORTH_COUNTER_EDGE_Y -- any north-side stance must too.
+KITCHEN_PARTITION_SOUTH_FACE_Y = 0.10
 DINING_TARGET = (-2.85, 1.90)
 
 # Same depth as the proven cup grasp (CUP_GRASP_XY = tray/cup center + 0.10 m
 # in x from the proven west-facing stance); dead ahead from TRAY_STANCE.
 CONTACT_X_OFFSET_M = 0.10
 PREGRASP_EE_Z = 1.05
-# Trial 1 (2026-07-18) measured where a CLOSED fist actually stalls on the
-# tray top: contact_measured_ee_z ~= 0.852-0.854 m, not the ~0.766-0.79 m
-# implied by the OPEN-gripper cup-grasp fingertip offset. Commanding 0.80 m
-# demanded a ~5 cm press-through that the IK solver could not sustain while
-# also translating laterally ("Right arm IK failed: solver reported no
-# solution" during push_drag), and the tray was shoved south/west instead of
-# dragged north. 0.83 m is ~1.5-2 cm below the measured closed-fist contact
-# height, enough press force without an infeasible penetration depth.
-DESCEND_EE_Z = 0.83
+# Round 1 trials measured where a CLOSED fist actually stalls on the tray
+# top: contact_measured_ee_z ~= 0.852-0.854 m, not the ~0.766-0.79 m implied
+# by the OPEN-gripper cup-grasp fingertip offset. 0.80 m demanded a ~5 cm
+# press-through that broke IK during lateral drag (fix1); 0.83 m was
+# IK-safe but weak coupling (fix2, +0.072 m); 0.815 m was IK-safe with
+# better coupling (fix3/fix4, +0.123 m) -- the best point found so far.
+DESCEND_EE_Z = 0.815
 CONTACT_STALL_EPS_M = 0.01
 CONTACT_STALL_SECONDS = 0.3
 SLIDE_MOVED_Y_GATE_M = 0.20
 SLIDE_OVERHANG_GATE_M = 0.05
+
+# Round 2: measured Step 0 tray bbox is 0.336644 x 0.436315 x 0.013141 m;
+# half of the y (north-south) extent locates the tray's own north edge from
+# its live PhysX center pose.
+TRAY_HALF_EXTENT_Y_M = 0.436315 / 2.0
+
+# Round 2: multi-stroke drag. Single-stroke coupling measured only 28-47%
+# (fix2/fix3), so repeat the press-drag cycle, re-reading the live tray
+# pose each time, until the slide gate is met or the stroke budget runs out.
+MAX_PUSH_STROKES = 3
+STROKE_REALIGN_DRIFT_M = 0.08
+STROKE_STOP_MOVED_Y_M = 0.22
+
+# Round 2: tray-relative north-side pinch stance (mirrors TRAY_STANCE's fix
+# pattern). Standoff stays inside the proven ~0.83 m dead-ahead envelope;
+# small margin under 0.86 m.
+NORTH_PINCH_X_OFFSET_M = 0.0
+NORTH_PINCH_STANDOFF_M = 0.8
+FACE_SOUTH_YAW_RAD = -math.pi / 2.0
+# Keep the stance comfortably inside the open lane, not flush against
+# either the island or the partition.
+SAFE_LANE_MARGIN_M = 0.10
+
+
+def north_overhang_m(
+    tray_y: float,
+    *,
+    half_extent_y: float = TRAY_HALF_EXTENT_Y_M,
+    counter_edge_y: float = NORTH_COUNTER_EDGE_Y,
+) -> float:
+    """North overhang from the live tray-center y and its static half-extent.
+
+    Replaces the ``UsdGeom.BBoxCache`` path: across all 4 round-1 trials,
+    ``ComputeWorldBound`` returned the IDENTICAL spawn-pose bounding box
+    regardless of the tray's actual (correctly live-read) PhysX pose, so the
+    overhang gate was never trustworthy. This computes overhang directly
+    from the live ``RigidPrim`` tray-center y (``tray_y``) plus the Step 0
+    measured half-extent, matching the tray's actual footprint.
+    """
+    return (tray_y + half_extent_y) - counter_edge_y
+
+
+def north_pinch_target(
+    tray_x: float,
+    tray_y: float,
+    *,
+    x_offset: float = NORTH_PINCH_X_OFFSET_M,
+    half_extent_y: float = TRAY_HALF_EXTENT_Y_M,
+) -> tuple[float, float]:
+    """World (x, y) of the tray's own north edge -- the point to pinch."""
+    return tray_x + x_offset, tray_y + half_extent_y
+
+
+def north_pinch_stance(
+    pinch_target: tuple[float, float],
+    *,
+    standoff_m: float = NORTH_PINCH_STANDOFF_M,
+) -> tuple[float, float]:
+    """Base (x, y) standing ``standoff_m`` north of ``pinch_target``.
+
+    Same x as the pinch target so it is dead ahead once the base faces
+    ``FACE_SOUTH_YAW_RAD`` -- the same "put the target dead ahead" pattern
+    used for the south-side ``TRAY_STANCE``.
+    """
+    return pinch_target[0], pinch_target[1] + standoff_m
+
+
+def stance_in_safe_lane(
+    stance_y: float,
+    *,
+    lane_min_y: float = NORTH_COUNTER_EDGE_Y,
+    lane_max_y: float = KITCHEN_PARTITION_SOUTH_FACE_Y,
+    margin_m: float = SAFE_LANE_MARGIN_M,
+) -> bool:
+    """Whether ``stance_y`` sits inside the open kitchen lane.
+
+    The lane is bounded by the island's north face (``NORTH_COUNTER_EDGE_Y``)
+    and the dining/kitchen partition's south face
+    (``KITCHEN_PARTITION_SOUTH_FACE_Y``) -- see the room-geometry comment in
+    ``task3_autonomy/navigation.py``. A stance outside this band would put
+    the base over the island or into the partition wall.
+    """
+    return (lane_min_y + margin_m) < stance_y < (lane_max_y - margin_m)
+
+
+def stroke_needs_realign(
+    contact_y: float,
+    base_y: float,
+    *,
+    threshold_m: float = STROKE_REALIGN_DRIFT_M,
+) -> bool:
+    """Whether the base has drifted far enough from the contact point to
+    need a small re-align drive before the next stroke."""
+    return abs(contact_y - base_y) > threshold_m
 
 
 def _reach_failure_detail(
@@ -185,6 +308,151 @@ def _ramp_vertical_ee(
     }
 
 
+def _run_push_stroke(
+    stroke_index: int,
+    *,
+    arms: Any,
+    adapter: Any,
+    reach: Any,
+    drive: Any,
+    ramp_vertical: Any,
+    sim_tick: Any,
+    log: Any,
+    log_reach_failure: Any,
+    tray_pose_fn: Any,
+    hold_anchor_box: dict[str, tuple[float, float] | None],
+    start_y: float,
+    top_down: tuple[float, ...],
+    dt: float,
+    args: argparse.Namespace,
+) -> tuple[bool, str | None]:
+    """One press-drag-raise stroke; module-level so its own branching does
+    not count toward ``_run()``'s cyclomatic complexity.
+
+    Re-reads the live tray pose every stroke (never the stale start pose)
+    so each stroke's contact point tracks wherever the tray actually ended
+    up, and re-aligns the base first if that point drifted too far from
+    the base's current position. Returns ``(gate_met, failed_phase)``.
+
+    ``hold_anchor_box`` is a one-entry ``{"value": ...}`` dict shared with
+    ``sim_tick()`` back in ``_run()`` -- a plain parameter would only
+    rebind this function's own local copy, leaving ``sim_tick()`` (which
+    reads ``_run()``'s variable directly) still driving toward the STALE
+    anchor. That exact class of bug is what broke navigation in round-1
+    trials 1-3; the shared mutable box is how both scopes see every update
+    immediately, including the mid-function anchor-clear ahead of the
+    realign drive below.
+    """
+    stroke_prefix = f"stroke{stroke_index + 1}"
+    live_tray = tray_pose_fn()
+    stroke_contact_x = live_tray[0] + CONTACT_X_OFFSET_M
+    stroke_contact_y = live_tray[1]
+    base_pose = adapter.pose()
+    if stroke_needs_realign(stroke_contact_y, base_pose.y):
+        realign_target = (STANCE[0], stroke_contact_y)
+        hold_anchor_box["value"] = None
+        realign_ok = drive(realign_target, 0.2, 10.0)
+        pose = adapter.pose()
+        hold_anchor_box["value"] = (pose.x, pose.y)
+        log(
+            f"{stroke_prefix}_realign",
+            ok=realign_ok,
+            target=list(realign_target),
+            drift_m=round(abs(stroke_contact_y - base_pose.y), 6),
+        )
+        if not realign_ok:
+            return False, f"{stroke_prefix}_realign"
+
+    pregrasp_above = (stroke_contact_x, stroke_contact_y, PREGRASP_EE_Z)
+    arms.set_gripper("right", GRIPPER_OPEN_RAD)
+    if not reach("right", pregrasp_above, top_down, 8.0):
+        log_reach_failure(
+            f"{stroke_prefix}_pregrasp_above",
+            "right",
+            pregrasp_above,
+            top_down,
+        )
+        return False, f"{stroke_prefix}_pregrasp_above"
+    log(
+        f"{stroke_prefix}_pregrasp_above", ok=True, target=list(pregrasp_above)
+    )
+
+    arms.set_gripper("right", GRIPPER_CLOSED_RAD)
+    for _ in range(math.ceil(1.0 / dt)):
+        arms.command()
+        sim_tick()
+    closed = arms.gripper_position("right")
+    log(f"{stroke_prefix}_close", ok=True, gripper_rad=round(closed, 6))
+
+    descend_info = ramp_vertical(
+        "right",
+        (stroke_contact_x, stroke_contact_y),
+        top_down,
+        PREGRASP_EE_Z,
+        args.descend_ee_z,
+        args.descend_seconds,
+        detect_contact=True,
+    )
+    log(f"{stroke_prefix}_descend", ok=True, **descend_info)
+
+    drag_start_anchor = hold_anchor_box["value"]
+    drag_ramp_ticks = max(1, math.ceil(args.drag_seconds / dt))
+    for tick_index in range(drag_ramp_ticks):
+        arm_y, anchor_y = synchronized_drag_targets(
+            stroke_contact_y,
+            drag_start_anchor[1],
+            args.push_distance,
+            tick_index + 1,
+            drag_ramp_ticks,
+        )
+        arms.set_arm_target(
+            "right", (stroke_contact_x, arm_y, args.descend_ee_z), top_down
+        )
+        arms.command()
+        hold_anchor_box["value"] = (drag_start_anchor[0], anchor_y)
+        sim_tick()
+    log(
+        f"{stroke_prefix}_drag",
+        ok=True,
+        target_arm_y=round(stroke_contact_y + args.push_distance, 6),
+        target_anchor=[
+            round(drag_start_anchor[0], 6),
+            round(drag_start_anchor[1] + args.push_distance, 6),
+        ],
+    )
+
+    raise_info = ramp_vertical(
+        "right",
+        (stroke_contact_x, stroke_contact_y + args.push_distance),
+        top_down,
+        args.descend_ee_z,
+        PREGRASP_EE_Z,
+        args.raise_seconds,
+    )
+    arms.set_gripper("right", GRIPPER_OPEN_RAD)
+    arms.command()
+    sim_tick()
+    pose = adapter.pose()
+    hold_anchor_box["value"] = (pose.x, pose.y)
+    log(f"{stroke_prefix}_raise", ok=True, **raise_info)
+
+    after_stroke = tray_pose_fn()
+    moved_y = after_stroke[1] - start_y
+    overhang_north = north_overhang_m(after_stroke[1])
+    stroke_gate_met = (
+        moved_y >= STROKE_STOP_MOVED_Y_M
+        or overhang_north >= SLIDE_OVERHANG_GATE_M
+    )
+    log(
+        f"{stroke_prefix}_result",
+        ok=stroke_gate_met,
+        moved_y_m=round(moved_y, 6),
+        north_overhang_m=round(overhang_north, 6),
+        stroke_moved_y_m=round(after_stroke[1] - live_tray[1], 6),
+    )
+    return stroke_gate_met, None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -249,17 +517,12 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     from teleop_targets import _quaternion_from_rpy
 
     from isaacsim.core.prims import RigidPrim
-    from pxr import Usd, UsdGeom
 
     import isaaclab.sim as sim_utils
     from isaaclab.scene import InteractiveScene
     from isaaclab.sim import SimulationContext
 
-    from task3_autonomy.arms import (
-        GRIPPER_CLOSED_RAD,
-        GRIPPER_OPEN_RAD,
-        DualArmController,
-    )
+    from task3_autonomy.arms import DualArmController
     from task3_autonomy.navigation import base_twist_toward
     from task3_autonomy.skills import (
         TRANSIT_ARM_POSE,
@@ -314,41 +577,29 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         positions, _ = tray_view.get_world_poses()
         return tuple(float(value) for value in positions.tolist()[0])
 
-    def tray_bounds() -> tuple[list[float], list[float]]:
-        cache = UsdGeom.BBoxCache(
-            Usd.TimeCode.Default(),
-            [
-                UsdGeom.Tokens.default_,
-                UsdGeom.Tokens.render,
-                UsdGeom.Tokens.proxy,
-            ],
-        )
-        box = cache.ComputeWorldBound(
-            sim.stage.GetPrimAtPath(tray_root_path)
-        ).ComputeAlignedBox()
-        return list(box.GetMin()), list(box.GetMax())
-
     # Local tray stance: put the contact point dead ahead so the reach stays
     # inside the proven ~0.83 m envelope (CUP_GRASP_XY dead-ahead distance
     # from STANCE), instead of the ~1.0 m diagonal reach that failed trial 1.
     initial_tray_pose = tray_pose()
-    contact_x = initial_tray_pose[0] + CONTACT_X_OFFSET_M
-    contact_y = initial_tray_pose[1]
-    tray_stance = (STANCE[0], contact_y)
+    tray_stance = (STANCE[0], initial_tray_pose[1])
 
     adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
     arms = DualArmController(robot, simulation_app)
     phases: list[dict[str, Any]] = []
     tick = 0
-    hold_anchor: tuple[float, float] | None = None
+    # A one-entry box, not a plain variable: _run_push_stroke() (module-level,
+    # so its own branching doesn't count toward this function's cyclomatic
+    # complexity) needs to mutate the SAME anchor sim_tick() reads, not a
+    # disconnected local copy -- see _run_push_stroke()'s docstring.
+    hold_anchor_box: dict[str, tuple[float, float] | None] = {"value": None}
 
     def sim_tick() -> None:
         nonlocal tick
         disable_robot_external_wrenches(robot)
-        if hold_anchor is not None:
+        if hold_anchor_box["value"] is not None:
             vx, vy = base_twist_toward(
                 adapter.pose(),
-                hold_anchor,
+                hold_anchor_box["value"],
                 max_linear_mps=0.12,
                 position_kp=2.0,
             )
@@ -507,7 +758,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
             False, "navigate_stance", phases, tray_pose(), tray_pose(), args
         )
     pose = adapter.pose()
-    hold_anchor = (pose.x, pose.y)
+    hold_anchor_box["value"] = (pose.x, pose.y)
     log(
         "at_stance",
         base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
@@ -516,85 +767,46 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
 
     start = tray_pose()
     top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
-    # Press-and-drag from the top of the tray: pregrasp above the contact
-    # point, close the fist (a rigid pusher, never attached to the tray),
-    # ramp down onto the tray top, then drag the contact point (and the base
-    # under it) north together. This mirrors the proven cup pipeline's
-    # pregrasp-above + ramped-descend structure instead of one direct reach.
-    pregrasp_above = (contact_x, contact_y, PREGRASP_EE_Z)
-    arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    if not reach("right", pregrasp_above, top_down, 8.0):
-        log_reach_failure(
-            "push_pregrasp_above", "right", pregrasp_above, top_down
-        )
-        return _result(
-            False, "push_pregrasp_above", phases, start, tray_pose(), args
-        )
-    log("push_pregrasp_above", ok=True, target=list(pregrasp_above))
 
-    arms.set_gripper("right", GRIPPER_CLOSED_RAD)
-    for _ in range(math.ceil(1.0 / sim.cfg.dt)):
-        arms.command()
-        sim_tick()
-    closed = arms.gripper_position("right")
-    log("push_close", ok=True, gripper_rad=round(closed, 6))
-
-    descend_info = ramp_vertical(
-        "right",
-        (contact_x, contact_y),
-        top_down,
-        PREGRASP_EE_Z,
-        args.descend_ee_z,
-        args.descend_seconds,
-        detect_contact=True,
-    )
-    log("push_descend", ok=True, **descend_info)
-
-    drag_start_anchor = hold_anchor
-    drag_ramp_ticks = max(1, math.ceil(args.drag_seconds / sim.cfg.dt))
-    for tick_index in range(drag_ramp_ticks):
-        arm_y, anchor_y = synchronized_drag_targets(
-            contact_y,
-            drag_start_anchor[1],
-            args.push_distance,
-            tick_index + 1,
-            drag_ramp_ticks,
+    # Multi-stroke press-and-drag from the top of the tray: pregrasp above
+    # the contact point, close the fist (a rigid pusher, never attached to
+    # the tray), ramp down onto the tray top, then drag the contact point
+    # (and the base under it) north together. This mirrors the proven cup
+    # pipeline's pregrasp-above + ramped-descend structure instead of one
+    # direct reach. Round 1 measured only ~28-47% coupling per stroke (the
+    # fist slips rather than fully dragging the tray), so repeat up to
+    # MAX_PUSH_STROKES times, re-reading the live tray pose every time and
+    # stopping as soon as the slide gate is met.
+    strokes_used = 0
+    for stroke_index in range(MAX_PUSH_STROKES):
+        strokes_used = stroke_index + 1
+        gate_met, failure_phase = _run_push_stroke(
+            stroke_index,
+            arms=arms,
+            adapter=adapter,
+            reach=reach,
+            drive=drive,
+            ramp_vertical=ramp_vertical,
+            sim_tick=sim_tick,
+            log=log,
+            log_reach_failure=log_reach_failure,
+            tray_pose_fn=tray_pose,
+            hold_anchor_box=hold_anchor_box,
+            start_y=start[1],
+            top_down=top_down,
+            dt=sim.cfg.dt,
+            args=args,
         )
-        arms.set_arm_target(
-            "right", (contact_x, arm_y, args.descend_ee_z), top_down
-        )
-        arms.command()
-        hold_anchor = (drag_start_anchor[0], anchor_y)
-        sim_tick()
-    log(
-        "push_drag",
-        ok=True,
-        target_arm_y=round(contact_y + args.push_distance, 6),
-        target_anchor=[
-            round(drag_start_anchor[0], 6),
-            round(drag_start_anchor[1] + args.push_distance, 6),
-        ],
-    )
-
-    raise_info = ramp_vertical(
-        "right",
-        (contact_x, contact_y + args.push_distance),
-        top_down,
-        args.descend_ee_z,
-        PREGRASP_EE_Z,
-        args.raise_seconds,
-    )
-    arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    arms.command()
-    sim_tick()
-    pose = adapter.pose()
-    hold_anchor = (pose.x, pose.y)
-    log("push_raise", ok=True, **raise_info)
+        if failure_phase is not None:
+            return _result(
+                False, failure_phase, phases, start, tray_pose(), args
+            )
+        if gate_met:
+            break
 
     after_push = tray_pose()
-    bounds_after_push = tray_bounds()
     moved_y = after_push[1] - start[1]
-    overhang_north = bounds_after_push[1][1] - NORTH_COUNTER_EDGE_Y
+    overhang_north = north_overhang_m(after_push[1])
     slide_ok = (
         moved_y >= SLIDE_MOVED_Y_GATE_M
         or overhang_north >= SLIDE_OVERHANG_GATE_M
@@ -604,30 +816,79 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         ok=slide_ok,
         moved_y_m=round(moved_y, 6),
         north_overhang_m=round(overhang_north, 6),
-        bounds_min=[round(v, 6) for v in bounds_after_push[0]],
-        bounds_max=[round(v, 6) for v in bounds_after_push[1]],
+        strokes_used=strokes_used,
     )
 
-    # Move to the north side of the island, then try a true thin-edge pinch.
-    # Bug fix (trials 1-3, 2026-07-18/19): hold_anchor was left set from the
+    # Move to a TRAY-RELATIVE north-side stance, then try a true thin-edge
+    # pinch. The inherited fixed stance (STANCE[0], -0.75) was unvalidated
+    # legacy code (all earlier trials failed upstream of it): once trial 4
+    # actually reached it, the edge target was ~1.1-1.2 m away -- well past
+    # the proven ~0.83 m envelope, and IK correctly refused to converge.
+    # Mirror TRAY_STANCE's fix: derive the pinch target and stance from the
+    # LIVE post-slide tray pose so the pinch point is dead ahead.
+    tray_now = tray_pose()
+    pinch_target_xy = north_pinch_target(tray_now[0], tray_now[1])
+    north_stance = north_pinch_stance(pinch_target_xy)
+    if not stance_in_safe_lane(north_stance[1]):
+        # Do not force a stance the room geometry forbids -- log the
+        # measured geometry (island north face NORTH_COUNTER_EDGE_Y,
+        # partition south face KITCHEN_PARTITION_SOUTH_FACE_Y, and the
+        # computed stance) and report back per the escalation protocol.
+        log(
+            "north_stance_geometry_blocked",
+            ok=False,
+            pinch_target=list(pinch_target_xy),
+            computed_stance=list(north_stance),
+            lane_min_y=NORTH_COUNTER_EDGE_Y,
+            lane_max_y=KITCHEN_PARTITION_SOUTH_FACE_Y,
+            safe_lane_margin_m=SAFE_LANE_MARGIN_M,
+        )
+        return _result(
+            False,
+            "north_stance_geometry_blocked",
+            phases,
+            start,
+            tray_pose(),
+            args,
+        )
+    # Bug fix (round 1 trials 1-3): hold_anchor was left set from the
     # manipulation phase, so sim_tick's own anchor-hold twist silently
     # overrode every NavigateTo command issued by drive() below -- the base
-    # measurably barely moved (~0.01-0.02 m) across the full 20 s budget in
-    # all three trials, timing out at exactly 20.0 s every time. Clear it
-    # before free navigation, then re-anchor once stopped (mirroring
-    # "at_stance") so the base still holds still during the edge-pinch
-    # manipulation that follows.
-    hold_anchor = None
-    if not drive((STANCE[0], -0.75), 0.25, 20.0):
-        log("navigate_north_side", ok=False)
+    # measurably barely moved (~0.01-0.02 m) across a 20 s budget. Clear it
+    # before free navigation, then re-anchor once stopped.
+    hold_anchor_box["value"] = None
+    # Route around the island, never through it: first move north while
+    # still east of it at the proven-safe transit x (STANCE[0] = -3.32,
+    # matching every prior trial's actual post-push base x), THEN move west
+    # along the now-clear lane to the tray-relative stance x.
+    transit_point = (STANCE[0], north_stance[1])
+    if not drive(transit_point, 0.25, 20.0):
+        log("navigate_north_transit", ok=False, target=list(transit_point))
         return _result(
-            False, "navigate_north_side", phases, start, tray_pose(), args
+            False, "navigate_north_transit", phases, start, tray_pose(), args
+        )
+    if not drive(north_stance, 0.25, 20.0):
+        log("navigate_north_stance", ok=False, target=list(north_stance))
+        return _result(
+            False, "navigate_north_stance", phases, start, tray_pose(), args
+        )
+    if not rotate(FACE_SOUTH_YAW_RAD, 15.0):
+        log("rotate_south", ok=False)
+        return _result(
+            False, "rotate_south", phases, start, tray_pose(), args
         )
     pose = adapter.pose()
-    hold_anchor = (pose.x, pose.y)
-    tray_now = tray_pose()
+    hold_anchor_box["value"] = (pose.x, pose.y)
+    log(
+        "at_north_stance",
+        base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
+        north_stance=list(north_stance),
+        pinch_target=list(pinch_target_xy),
+    )
+
+    tray_now = tray_pose()  # tray does not move during navigate/rotate
     edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
-    edge_target = (tray_now[0], tray_now[1] + 0.02, tray_now[2] + 0.014)
+    edge_target = (pinch_target_xy[0], pinch_target_xy[1], tray_now[2] + 0.014)
     edge_ok = reach("right", edge_target, edge_y, 10.0)
     if not edge_ok:
         log_reach_failure("edge_precontact", "right", edge_target, edge_y)
