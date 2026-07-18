@@ -609,11 +609,22 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     )
 
     # Move to the north side of the island, then try a true thin-edge pinch.
+    # Bug fix (trials 1-3, 2026-07-18/19): hold_anchor was left set from the
+    # manipulation phase, so sim_tick's own anchor-hold twist silently
+    # overrode every NavigateTo command issued by drive() below -- the base
+    # measurably barely moved (~0.01-0.02 m) across the full 20 s budget in
+    # all three trials, timing out at exactly 20.0 s every time. Clear it
+    # before free navigation, then re-anchor once stopped (mirroring
+    # "at_stance") so the base still holds still during the edge-pinch
+    # manipulation that follows.
+    hold_anchor = None
     if not drive((STANCE[0], -0.75), 0.25, 20.0):
         log("navigate_north_side", ok=False)
         return _result(
             False, "navigate_north_side", phases, start, tray_pose(), args
         )
+    pose = adapter.pose()
+    hold_anchor = (pose.x, pose.y)
     tray_now = tray_pose()
     edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
     edge_target = (tray_now[0], tray_now[1] + 0.02, tray_now[2] + 0.014)
