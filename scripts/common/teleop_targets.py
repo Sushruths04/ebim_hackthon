@@ -44,7 +44,7 @@ class TargetLimits:
     position_min: Vector3
     position_max: Vector3
     gripper_min: float = 0.0
-    gripper_max: float = 0.04
+    gripper_max: float = 1.0
     spine_min: float = 0.0
     spine_max: float = 0.85
 
@@ -192,14 +192,8 @@ def pose_base_to_world(
 
 LEFT_ARM_JOINTS = tuple(f"left_fr3v2_joint{i}" for i in range(1, 8))
 RIGHT_ARM_JOINTS = tuple(f"right_fr3v2_joint{i}" for i in range(1, 8))
-LEFT_GRIPPER_JOINTS = (
-    "left_fr3v2_finger_joint1",
-    "left_fr3v2_finger_joint2",
-)
-RIGHT_GRIPPER_JOINTS = (
-    "right_fr3v2_finger_joint1",
-    "right_fr3v2_finger_joint2",
-)
+LEFT_GRIPPER_JOINTS = ("left_gripper_joint",)
+RIGHT_GRIPPER_JOINTS = ("right_gripper_joint",)
 SPINE_JOINTS = ("franka_spine_vertical_joint",)
 STEERING_JOINTS = ("tmrv0_2_joint_0", "tmrv0_2_joint_2")
 DRIVE_JOINTS = ("tmrv0_2_joint_1", "tmrv0_2_joint_3")

@@ -1,0 +1,8 @@
+# Official frozen grasp/lift reliability gate
+# Run inside isaac-lab-2-3-2-workshop with the repository mounted at
+# /workspace/EBiM_Challenge. This launches fresh sequential Kit processes;
+# never run a second copy on the single GPU.
+/workspace/isaaclab/_isaac_sim/kit/python/bin/python3 scripts/task3/run_grasp_reliability_batch.py --trials 10 --required-rate 0.8 --out-dir outputs/task3_grasp_reliability_official_20260718
+
+# Public visual proof preserved from Run 18
+/workspace/isaaclab/isaaclab.sh -p scripts/task3/verify_grasp_lift.py --skip-navigation --record-video --livestream --fast-exit --out-dir outputs/task3_verify_grasp_skip18_margin_public

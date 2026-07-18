@@ -4,9 +4,10 @@
 """CPU tests for the NavigateTo skill's waypoint/twist logic.
 
 The skill is pure logic over Pose2D: it plans door-aware waypoints
-(route_via_door), emits body-frame twists, and reports completion. Here it drives a kinematic
-omnidirectional integrator; the Isaac-side adapter that turns twists into
-TMR wheel commands is exercised on GPU by scripts/task3/verify_navigate.py.
+(route_via_door), emits body-frame twists, and reports completion. Here it
+drives a kinematic omnidirectional integrator; the Isaac-side adapter that
+turns twists into TMR wheel commands is exercised on GPU by
+scripts/task3/verify_navigate.py.
 """
 
 from __future__ import annotations
@@ -18,14 +19,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from task3_autonomy.navigation import Pose2D  # noqa: E402
-from task3_autonomy.skills import NavigateTo  # noqa: E402
+from task3_autonomy.skills import NavigateTo, RotateTo  # noqa: E402
 
 DT = 0.05
 
 
-def drive(skill: NavigateTo, pose: Pose2D, max_steps: int) -> tuple[
-    Pose2D, list[Pose2D], bool
-]:
+def drive(
+    skill: NavigateTo, pose: Pose2D, max_steps: int
+) -> tuple[Pose2D, list[Pose2D], bool]:
     """Integrate the skill's twists kinematically (perfect omni base)."""
     trajectory = [pose]
     for _ in range(max_steps):
@@ -86,3 +87,23 @@ def test_done_state_is_sticky_and_stops():
     vx, vy, done_again = skill.compute(pose)
     assert done_again
     assert (vx, vy) == (0.0, 0.0)
+
+
+def test_rotate_to_uses_shortest_wrapped_direction_and_rate_limit():
+    skill = RotateTo(
+        math.radians(-179.0),
+        max_yaw_rate=0.5,
+        yaw_kp=2.0,
+        yaw_tolerance_rad=math.radians(0.5),
+    )
+    wz, done = skill.compute(Pose2D(0.0, 0.0, math.radians(179.0)))
+    assert not done
+    assert 0.0 < wz <= 0.5
+
+
+def test_rotate_to_finishes_within_tolerance_and_stays_stopped():
+    skill = RotateTo(1.0, yaw_tolerance_rad=0.03)
+    wz, done = skill.compute(Pose2D(0.0, 0.0, 1.02))
+    assert done
+    assert wz == 0.0
+    assert skill.compute(Pose2D(0.0, 0.0, -2.0)) == (0.0, True)

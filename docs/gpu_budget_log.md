@@ -164,6 +164,30 @@ each session, not retroactively.
   ran ~9× slower than nav9, consistent with an active WebRTC viewer).
   Total session GPU ≈ 3 h ≈ 6 EUR. sim-dev-g4b STOPPED at close.
 
+## Session log — 2026-07-17 21:25 UTC to 2026-07-18 (Codex, ongoing)
+
+- VM: `sim-dev-g4b`, spot `g4-standard-48`, external IP `34.61.210.0`.
+- Owner explicitly removed the sprint cost ceiling; the one-GPU quota rule is
+  still respected. No second GPU VM was started.
+- GPU work: public WebRTC diagnosis/proof; grasp calibration Runs 11–18;
+  tuning trials 01–06; official 10-run grasp reliability batch now running.
+- Verified visual result: Run 18, +0.1087 m final cup lift, 3.0 s hold, 11 MB
+  GIF. Frozen tuning confirmation: +0.0880 m, 3.0 s hold.
+- Elapsed VM time at official-batch launch: approximately 3.5 h in this Codex
+  segment (VM remains running; append final duration at session close).
+
+## Session log - 2026-07-18 00:42-01:12 UTC (Codex official batch)
+
+- Existing detached batch on `sim-dev-g4b` completed without restart: 10
+  sequential Isaac trials, 10/10 pass, 0.088 m measured lift and 3.0 s hold
+  per trial. Batch wall time reported by the controller: 1698.766 s (0.472 h).
+- Approximate incremental spot usage for the batch: 0.5 GPU h, roughly
+  0.8-1.0 EUR at the previously recorded $1.5-2/h estimate. This is a batch
+  estimate; the VM remains RUNNING for Stage 1 and must be stopped at the next
+  handoff if no further GPU work is active.
+- Evidence exported locally under `outputs/task3_grasp_reliability_official_20260718/`
+  and `proofs/phase2-grasp-reliability/` before Stage 1 work.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

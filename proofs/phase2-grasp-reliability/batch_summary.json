@@ -1,0 +1,2091 @@
+{
+  "batch_wall_time_seconds": 1698.766,
+  "gate_passed": true,
+  "pass_count": 10,
+  "pass_rate": 1.0,
+  "required_passes": 8,
+  "required_rate": 0.8,
+  "results": [
+    {
+      "batch_wall_time_seconds": 169.355,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 1,
+      "wall_time_seconds": 168.945
+    },
+    {
+      "batch_wall_time_seconds": 169.956,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 2,
+      "wall_time_seconds": 169.539
+    },
+    {
+      "batch_wall_time_seconds": 169.587,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 3,
+      "wall_time_seconds": 169.148
+    },
+    {
+      "batch_wall_time_seconds": 170.051,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 4,
+      "wall_time_seconds": 169.612
+    },
+    {
+      "batch_wall_time_seconds": 169.491,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 5,
+      "wall_time_seconds": 169.092
+    },
+    {
+      "batch_wall_time_seconds": 170.441,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 6,
+      "wall_time_seconds": 170.043
+    },
+    {
+      "batch_wall_time_seconds": 170.551,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 7,
+      "wall_time_seconds": 170.154
+    },
+    {
+      "batch_wall_time_seconds": 169.69,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 8,
+      "wall_time_seconds": 169.296
+    },
+    {
+      "batch_wall_time_seconds": 169.952,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 9,
+      "wall_time_seconds": 169.54
+    },
+    {
+      "batch_wall_time_seconds": 169.692,
+      "cup_end": [
+        -4.2146,
+        -1.643,
+        0.835
+      ],
+      "cup_lift_m": 0.088,
+      "cup_start": [
+        -4.1849,
+        -1.7527,
+        0.747
+      ],
+      "final_phase": "complete",
+      "hold_seconds": 3.0,
+      "min_lift_m": 0.08,
+      "passed": true,
+      "phases": [
+        {
+          "base": [
+            -3.057,
+            -3.038,
+            -2.721
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "raise_spine",
+          "right_ee": [
+            -3.907,
+            -2.835,
+            1.39
+          ],
+          "spine": 0.44,
+          "target_spine": 0.45,
+          "tick": 989
+        },
+        {
+          "base": [
+            -3.099,
+            -3.079,
+            -2.462
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "tuck_spine_up",
+          "right_ee": [
+            -3.707,
+            -3.215,
+            1.004
+          ],
+          "spine": 0.444,
+          "tick": 1489
+        },
+        {
+          "base": [
+            -3.296,
+            -1.735,
+            -3.12
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "navigate_stance_short",
+          "right_ee": [
+            -3.862,
+            -1.468,
+            1.009
+          ],
+          "spine": 0.446,
+          "tick": 3306
+        },
+        {
+          "base": [
+            -3.316,
+            -1.723,
+            3.098
+          ],
+          "cup": [
+            -4.185,
+            -1.753,
+            0.747
+          ],
+          "ok": true,
+          "phase": "pregrasp",
+          "right_ee": [
+            -4.139,
+            -1.745,
+            1.032
+          ],
+          "spine": 0.437,
+          "target": [
+            -4.145,
+            -1.75,
+            1.05
+          ],
+          "tick": 3498
+        },
+        {
+          "base": [
+            -3.295,
+            -1.752,
+            2.912
+          ],
+          "cup": [
+            -4.205,
+            -1.728,
+            0.748
+          ],
+          "ok": true,
+          "phase": "descend",
+          "position_error_m": 0.0787,
+          "right_ee": [
+            -4.155,
+            -1.754,
+            0.864
+          ],
+          "spine": 0.445,
+          "strict_reach": false,
+          "target": [
+            -4.145,
+            -1.693,
+            0.815
+          ],
+          "tick": 4698
+        },
+        {
+          "base": [
+            -3.323,
+            -1.784,
+            2.891
+          ],
+          "cup": [
+            -4.215,
+            -1.747,
+            0.747
+          ],
+          "gripper_position_rad": 0.4086,
+          "ok": true,
+          "phase": "close",
+          "right_ee": [
+            -4.191,
+            -1.757,
+            0.872
+          ],
+          "spine": 0.449,
+          "tick": 4998
+        },
+        {
+          "base": [
+            -3.287,
+            -1.716,
+            3.109
+          ],
+          "cup": [
+            -4.222,
+            -1.697,
+            0.892
+          ],
+          "ok": false,
+          "phase": "lift",
+          "right_ee": [
+            -4.199,
+            -1.711,
+            1.045
+          ],
+          "spine": 0.556,
+          "tick": 6198
+        },
+        {
+          "base": [
+            -3.315,
+            -1.76,
+            3.107
+          ],
+          "cup": [
+            -4.215,
+            -1.643,
+            0.835
+          ],
+          "held_s": 3.0,
+          "lifted_m": 0.088,
+          "ok": true,
+          "phase": "hold",
+          "right_ee": [
+            -4.199,
+            -1.672,
+            0.998
+          ],
+          "spine": 0.56,
+          "tick": 6798
+        }
+      ],
+      "sim_dt": 0.005,
+      "status": "PASS",
+      "trial": 10,
+      "wall_time_seconds": 169.289
+    }
+  ],
+  "trials": 10
+}

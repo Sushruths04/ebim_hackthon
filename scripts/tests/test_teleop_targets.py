@@ -214,14 +214,8 @@ def test_inactive_command_does_not_change_targets():
 
 LEFT_ARM = tuple(f"left_fr3v2_joint{i}" for i in range(1, 8))
 RIGHT_ARM = tuple(f"right_fr3v2_joint{i}" for i in range(1, 8))
-LEFT_GRIPPER = (
-    "left_fr3v2_finger_joint1",
-    "left_fr3v2_finger_joint2",
-)
-RIGHT_GRIPPER = (
-    "right_fr3v2_finger_joint1",
-    "right_fr3v2_finger_joint2",
-)
+LEFT_GRIPPER = ("left_gripper_joint",)
+RIGHT_GRIPPER = ("right_gripper_joint",)
 BASE = (
     "tmrv0_2_joint_0",
     "tmrv0_2_joint_1",
@@ -266,7 +260,7 @@ def test_joint_discovery_finds_exact_mobile_fr3_duo_groups_in_runtime_order():
 def test_joint_discovery_reports_all_missing_required_names():
     names = _joint_names()
     names.remove("left_fr3v2_joint3")
-    names.remove("right_fr3v2_finger_joint2")
+    names.remove("right_gripper_joint")
 
     with pytest.raises(RuntimeError) as error:
         discover_joint_groups(names)
@@ -274,7 +268,7 @@ def test_joint_discovery_reports_all_missing_required_names():
     message = str(error.value)
     assert "Missing required mobile FR3 Duo joints" in message
     assert "left_fr3v2_joint3" in message
-    assert "right_fr3v2_finger_joint2" in message
+    assert "right_gripper_joint" in message
 
 
 def test_joint_discovery_reports_duplicate_required_names():
@@ -307,7 +301,7 @@ def test_composer_clones_input_and_updates_only_supplied_groups():
         [0.1] * 7
     )
     assert result[0, list(groups.right_gripper)].tolist() == pytest.approx(
-        [0.025, 0.025]
+        [0.025]
     )
     assert result[0, list(groups.spine)].tolist() == pytest.approx([0.7])
     preserved = set(range(len(names))) - set(
@@ -339,11 +333,11 @@ def test_composer_updates_arms_and_grippers_for_multiple_environments():
     assert result[:, list(groups.right_arm)].tolist() == [[3.0] * 7, [3.0] * 7]
     assert torch.allclose(
         result[:, list(groups.left_gripper)],
-        torch.tensor([[0.01, 0.01], [0.02, 0.02]]),
+        torch.tensor([[0.01], [0.02]]),
     )
     assert torch.allclose(
         result[:, list(groups.right_gripper)],
-        torch.tensor([[0.03, 0.03], [0.03, 0.03]]),
+        torch.tensor([[0.03], [0.03]]),
     )
 
 
