@@ -4,11 +4,11 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 19:06 UTC (Codex,
+Last update: 2026-07-18 19:10 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED after the completed Step 0 session. Day 1
-remains complete; the Day 2 FSM proof is adapter-only. Codex has completed
-Step 0 and stopped before Step 1.
+GPU STATUS: `sim-dev-g4b` is STOPPED before the Step 1 restart. Day 1 remains
+complete; the Day 2 FSM proof is adapter-only. Codex is claiming Day 3 Step 1
+with the physics-only tray slide/pinch probe and will stop before Step 2.
 
 ## Physical tray investigation — 2026-07-18
 
@@ -171,7 +171,10 @@ geometry, mass, joint, or kinematic attachment was authored. Full raw result:
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **NEXT — Step 1:** slide tray to 6–8 cm overhang, edge pinch, dining XY gate
+- [ ] **CURRENT — Step 1 (Codex, 2026-07-18 19:10 UTC):** slide tray to
+  6–8 cm overhang, edge pinch, dining XY gate `>=7/10`; one escalation to a
+  two-arm corner pinch if needed. Physics-only probe:
+  `scripts/task3/probe_tray_slide.py`; no kinematic or scene edits.
   `>=7/10`; one escalation to a two-arm corner pinch if needed.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
