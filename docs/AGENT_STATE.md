@@ -4,12 +4,82 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 20:35 UTC (Codex,
+Last update: 2026-07-18 22:16 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED after the Day 3 Step 1 trial. Day 1
-remains complete; the Day 2 FSM proof is adapter-only. Day 3 Step 0 is
-complete. Step 1 was attempted with physics-only contact, but its `>=7/10`
-gate did not pass; do not proceed to Step 2 yet.
+GPU STATUS: `sim-dev-g4b` is STOPPED (verified TERMINATED) after 4 bounded
+Step 1 fix trials. Day 1 remains complete; the Day 2 FSM proof is
+adapter-only. Day 3 Step 0 is complete. Step 1's slide-to-overhang gate
+still does NOT pass after the fix + 4 trials; do not proceed to Step 2 yet.
+Owner review requested before any further trial or the two-arm escalation.
+
+## Day 3 Step 1 fix + 4-trial evidence run — 2026-07-18/19
+
+Root cause of the earlier Step 1 failure (commit dab4613) was that the
+pre-contact pose was ~1.0 m from stance -- past the proven ~0.83 m
+dead-ahead envelope -- so `arms.reach()` timed out by construction. Fix
+(commits 57f2ca7, b9d92d6, cc9ae02) rewrote
+`scripts/task3/probe_tray_slide.py` to mirror the proven cup pipeline: a
+local `TRAY_STANCE` puts the contact point (`tray_x+0.10`, `tray_y`) dead
+ahead (~0.86 m); pregrasp-above reach + closed-fist ramped vertical
+descend (never `reach()`, which cannot converge into contact) with
+contact-stall detection; a synchronized north drag ramps the arm push
+target and the base `hold_anchor` by the same offset every tick so the
+commanded arm/base separation never grows (new pure-math helper
+`synchronized_drag_targets` in `task3_autonomy/arms.py`, unit-tested).
+CPU gate 494/494, Ruff/py_compile clean throughout.
+
+4 bounded GPU trials (`outputs/task3_stage1_tray_slide_fix{1,2,3,4}_*`):
+
+| trial | descend_ee_z | failed_phase | moved_y_m | IK failures | change made after |
+|---|---|---|---|---|---|
+| fix1 | 0.80 | navigate_north_side | -0.045 (wrong direction) | 3x "no solution" | raise descend_ee_z: 0.80 m assumed the OPEN-gripper cup fingertip offset, but the probe closes the fist before descending; measured closed-fist contact stalls at ee_z~=0.852-0.854 m, so 0.80 demanded an infeasible ~5 cm press-through |
+| fix2 | 0.83 | navigate_north_side | +0.072 (right direction, weak coupling) | 0 | bisect deeper (0.815) for more press force while stayin IK-safe |
+| fix3 | 0.815 | navigate_north_side | +0.123 | 0 | diagnosed separate bug: `hold_anchor` was never cleared after manipulation, so `sim_tick()`'s anchor-hold twist silently overrode every `NavigateTo` command in the north-side drive() -- base moved ~0.01-0.02 m in a 20 s budget in all 3 trials. Fixed by clearing `hold_anchor` before free navigation and re-anchoring after arrival. |
+| fix4 | 0.815 (unchanged) | edge_precontact | +0.099 | 0 | navigation bug fix confirmed working (base actually reached the north-side stance this time); edge-pinch reach failed with 0.81 m position error, ik_succeeded=false -- diagnosis below |
+
+4-trial ceiling reached; per protocol, stopping here for owner review rather
+than continuing to iterate or escalating to two-arm corner-pinch.
+
+**Diagnosis of the remaining blocker (evidence-based, not yet fixed):**
+1. **Slide magnitude is short of the gate.** Best measured `moved_y_m` is
+   +0.123 m (fix3) against the `>=0.20 m` gate (or `>=0.05 m` overhang,
+   see caveat below); coupling between the commanded 0.26 m arm drag and
+   actual tray displacement is only ~28-47%, i.e. the closed fist is
+   slipping on the tray top rather than dragging it fully. Deeper contact
+   (smaller `descend_ee_z`) increases coupling but at 0.80 m breaks IK
+   feasibility during the lateral drag (fix1). The safe range measured so
+   far is `[0.815, 0.83]`; 0.815 is the best point found.
+2. **The `north_overhang_m` reading is unreliable.** `tray_bounds()` (via
+   `UsdGeom.BBoxCache.ComputeWorldBound`) returned the IDENTICAL
+   `bounds_min`/`bounds_max` in all 4 trials (`[-4.447627,-1.835848,...]` /
+   `[-4.110983,-1.399533,...]`) despite the tray's live PhysX pose (read
+   correctly via the `RigidPrim` view, `tray_pose()`) differing by up to
+   0.17 m in y across trials. That bbox exactly matches the tray's ORIGINAL
+   spawn-pose bounds from the Step 0 measurement -- the USD-stage bounding
+   box is not reflecting the live PhysX/Fabric transform. `moved_y_m` (from
+   the live `RigidPrim` pose) is the only trustworthy slide metric right
+   now; `north_overhang_m` should not be trusted until this is fixed.
+3. **The north-side edge-pinch approach point is unproven and likely
+   over-reaches.** With the tray only at y~=-1.499 (fix4), the edge target
+   is ~1.18 m diagonally from the north-side stance `(STANCE[0], -0.75)` =
+   `(-3.32, -0.75)` -- far past the proven ~0.83 m envelope, and IK
+   correctly failed to converge (`ik_succeeded=false`,
+   `position_error_m=0.81`). Even a FULLY successful slide (tray landing
+   around y~=-1.36 to -1.38) would still put the edge target ~1.09 m from
+   that same stance -- still over budget. This stance constant appears to
+   have never been exercised/tuned before (all prior trials failed earlier
+   in the pipeline); it likely needs its own local, tray-relative stance
+   (the same fix pattern already applied to the south-side push) rather
+   than the fixed `(STANCE[0], -0.75)`.
+
+Recommended next steps for whoever picks this up: (a) fix `tray_bounds()`
+to read live geometry (e.g. combine `tray_pose()` with a bbox computed
+once at the identity/spawn orientation, or query PhysX collision extents
+directly) so the overhang gate is trustworthy; (b) give the north-side
+edge-pinch approach its own local tray-relative stance, mirroring
+`TRAY_STANCE`; (c) re-examine whether 0.26 m push distance at ~50%
+coupling is enough once IK/navigation are no longer the limiting factor,
+or whether the two-arm corner-pinch escalation is warranted instead.
 
 ## Physical tray investigation — 2026-07-18
 
@@ -192,12 +262,18 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **Step 1 (Codex, attempted 2026-07-18 20:28–20:35 UTC):** slide tray to
-  6–8 cm overhang, edge pinch, dining XY gate `>=7/10`; one escalation to a
-  two-arm corner pinch if needed. The first explicit north-side physics-only
-  attempt moved the tray `3.8228 cm` north but failed at `push_precontact`;
-  `scripts/task3/probe_tray_slide.py` remains the active probe. No kinematic
-  or scene edits are permitted.
+- [ ] **Step 1 (Codex, fixed + 4 trials 2026-07-18 21:34–22:11 UTC):** slide
+  tray to 6–8 cm overhang, edge pinch, dining XY gate `>=7/10`; one
+  escalation to a two-arm corner pinch if needed. The reach-envelope bug is
+  fixed (pregrasp-above now converges every trial); best measured slide is
+  `+0.123 m` (fix3/fix4, still short of the `0.20 m` gate) and a separate
+  navigation bug (`hold_anchor` never cleared) is fixed and confirmed
+  working in fix4. Trial 4 now fails one phase further, at
+  `edge_precontact`, because the north-side approach stance
+  `(STANCE[0], -0.75)` over-reaches the tray by ~1.1-1.2 m -- see the
+  2026-07-18/19 evidence table and diagnosis above. 4-trial ceiling used;
+  stopped for owner review. `scripts/task3/probe_tray_slide.py` remains the
+  active probe. No kinematic or scene edits were made.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
 - [ ] Step 3: 10-run head-placement matrix, physical proof bundle, tag

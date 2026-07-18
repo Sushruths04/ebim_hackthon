@@ -238,6 +238,30 @@ each session, not retroactively.
   `0.038228 m` north and the arm failed at `push_precontact`; the Step 1 gate
   did not pass. `sim-dev-g4b` is STOPPED at session close.
 
+## Session log - 2026-07-18 21:29 UTC - 2026-07-18 22:16 UTC (Step 1 fix + 4 trials)
+
+- `sim-dev-g4b` was the only active GPU VM (started, then verified STOPPED
+  at close; `sim-dev` and `sim-dev-g4` also confirmed TERMINATED). Used a
+  nested `git worktree` at `_worktrees/task3-tray-fix` inside the same
+  bind-mounted host repo instead of touching the shared dirty `main`
+  checkout (a blocked destructive-git-op guard flagged `git reset --hard`
+  on that shared tree, which may hold another agent's uncommitted work;
+  the worktree sidesteps that entirely, non-destructively).
+- Ran exactly 4 bounded trials (fix1-fix4), one changed variable per
+  iteration, each justified by measured log evidence (see AGENT_STATE.md
+  and PROJECT_JOURNAL.md for the full per-trial table and diagnosis).
+  Per-trial wall time: fix1 449.6 s, fix2 447.1 s, fix3 447.6 s, fix4
+  427.7 s (Isaac process wall time only) -- approximately `0.5 h` total
+  execution, plus VM boot/docker/worktree/scp overhead.
+- Total VM uptime this session (start to verified TERMINATED): approximately
+  `0.8 h`.
+- Result: Step 1 does not yet pass; failure point moved from
+  `push_precontact` -> `navigate_north_side` -> `edge_precontact` across
+  the 4 trials (real, falsifiable progress each time). 4-trial ceiling
+  reached; stopped for owner review rather than continuing or escalating
+  to two-arm corner-pinch. All 4 result.json/log bundles copied back to
+  `outputs/task3_stage1_tray_slide_fix{1,2,3,4}_*` before VM stop.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

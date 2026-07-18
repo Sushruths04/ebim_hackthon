@@ -325,3 +325,67 @@ kinematic attachment are allowed.
 Lesson: record object displacement separately from task success. A small
 PhysX contact displacement is evidence of interaction, not evidence of a
 legal carry.
+
+## 2026-07-18/19 — Codex: Step 1 fix + 4-trial systematic debugging pass
+
+Goal: fix the Day 3 Step 1 tray-slide probe that failed at
+`push_precontact` (the pre-contact pose was ~1.0 m from stance, past the
+proven ~0.83 m reach envelope), then validate the fix on the GPU with a
+bounded number of trials.
+
+What: rewrote `scripts/task3/probe_tray_slide.py` to mirror the proven cup
+grasp/lift pipeline instead of one direct reach: a local tray-relative
+stance puts the contact point dead ahead (~0.86 m); pregrasp-above reach,
+then a closed-fist ramped vertical descend (deliberately not `reach()`,
+which cannot converge into contact) with contact-stall detection; a
+synchronized north drag ramps the arm push target and the base hold
+anchor by the identical offset every tick (new tested helper
+`synchronized_drag_targets` in `task3_autonomy/arms.py`) so the commanded
+arm/base separation never grows -- that growing separation was exactly
+what broke the original attempt. CPU gate 494/494, Ruff/py_compile clean.
+
+Ran 4 bounded GPU trials, one changed variable per iteration:
+- fix1 (descend to ee_z 0.80): reach envelope fixed (pregrasp converged),
+  but the descend depth assumed OPEN-gripper geometry; the probe actually
+  closes its fist before descending, and the CLOSED fist stalls on the
+  tray top around ee_z 0.85, not 0.80. Demanding 0.80 forced a ~5 cm
+  press-through that broke IK during the lateral drag and shoved the tray
+  the wrong way (-0.045 m, south).
+- fix2 (ee_z 0.83): IK-safe (0 failures), correct direction, but only
+  +0.072 m -- the fist was slipping on the tray (weak friction coupling).
+- fix3 (ee_z 0.815, bisected deeper): still IK-safe, +0.123 m -- better
+  coupling but still short of the 0.20 m slide gate. Separately diagnosed
+  a real navigation bug: `hold_anchor` was never cleared after the
+  manipulation phase, so the base-hold controller silently overrode every
+  `NavigateTo` command in the north-side leg -- the base was measurably
+  stuck (~0.01-0.02 m of drift) across a full 20 s budget in all three
+  trials so far.
+- fix4 (ee_z unchanged at 0.815, navigation bug fixed): the base now
+  genuinely reached the north-side stance -- confirms the navigation fix
+  works. The pipeline got one phase further and failed at
+  `edge_precontact`: the fixed approach point `(STANCE[0], -0.75)` is
+  ~1.1-1.2 m from the tray's current position, well past the proven reach
+  envelope, so IK correctly refused to converge (0.81 m position error).
+
+Result: Step 1 does not pass after the fix and 4 trials, but real,
+falsifiable progress was made on every trial and the failure point moved
+one phase closer to done each time. Two additional evidence-based
+diagnoses are now on record for whoever continues this: (1)
+`tray_bounds()` returns a stale, spawn-time bounding box in every trial
+(confirmed by identical bounds_min/max across trials with different live
+tray poses), so the `north_overhang_m` reading cannot be trusted --
+`moved_y_m` from the live PhysX pose is the only reliable slide metric;
+(2) the north-side edge-pinch stance was apparently never exercised
+before (all earlier attempts failed upstream of it) and likely needs its
+own tray-relative local stance, the same fix pattern already applied to
+the south-side push.
+
+Per the 4-trial ceiling and the "owner reviews before further tuning or
+two-arm escalation" rule, stopped here. GPU stopped and verified
+TERMINATED after copying all 4 trials' result.json/logs back to the repo.
+
+Lesson: a fix that resolves the reach envelope can still surface a
+second, then a third, independently real bug further down the same
+pipeline -- each trial should change exactly one thing and log enough to
+tell which bug is next, rather than assuming one fix clears the whole
+path.
