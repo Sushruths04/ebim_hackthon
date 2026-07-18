@@ -68,9 +68,15 @@ DINING_TARGET = (-2.85, 1.90)
 # in x from the proven west-facing stance); dead ahead from TRAY_STANCE.
 CONTACT_X_OFFSET_M = 0.10
 PREGRASP_EE_Z = 1.05
-# ~1.5-2 cm below the expected fingertip-contact height so the position PD
-# presses down onto the tray top rather than stopping just above it.
-DESCEND_EE_Z = 0.80
+# Trial 1 (2026-07-18) measured where a CLOSED fist actually stalls on the
+# tray top: contact_measured_ee_z ~= 0.852-0.854 m, not the ~0.766-0.79 m
+# implied by the OPEN-gripper cup-grasp fingertip offset. Commanding 0.80 m
+# demanded a ~5 cm press-through that the IK solver could not sustain while
+# also translating laterally ("Right arm IK failed: solver reported no
+# solution" during push_drag), and the tray was shoved south/west instead of
+# dragged north. 0.83 m is ~1.5-2 cm below the measured closed-fist contact
+# height, enough press force without an infeasible penetration depth.
+DESCEND_EE_Z = 0.83
 CONTACT_STALL_EPS_M = 0.01
 CONTACT_STALL_SECONDS = 0.3
 SLIDE_MOVED_Y_GATE_M = 0.20
@@ -188,6 +194,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--descend-seconds", type=float, default=2.0)
     parser.add_argument("--drag-seconds", type=float, default=5.0)
     parser.add_argument("--raise-seconds", type=float, default=2.0)
+    parser.add_argument(
+        "--descend-ee-z", type=float, default=DESCEND_EE_Z
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -535,7 +544,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         (contact_x, contact_y),
         top_down,
         PREGRASP_EE_Z,
-        DESCEND_EE_Z,
+        args.descend_ee_z,
         args.descend_seconds,
         detect_contact=True,
     )
@@ -552,7 +561,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
             drag_ramp_ticks,
         )
         arms.set_arm_target(
-            "right", (contact_x, arm_y, DESCEND_EE_Z), top_down
+            "right", (contact_x, arm_y, args.descend_ee_z), top_down
         )
         arms.command()
         hold_anchor = (drag_start_anchor[0], anchor_y)
@@ -571,7 +580,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         "right",
         (contact_x, contact_y + args.push_distance),
         top_down,
-        DESCEND_EE_Z,
+        args.descend_ee_z,
         PREGRASP_EE_Z,
         args.raise_seconds,
     )
@@ -669,6 +678,7 @@ def _result(
         "final_pose": [round(v, 6) for v in final],
         "net_translation_m": [round(final[i] - start[i], 6) for i in range(3)],
         "push_distance_commanded_m": args.push_distance,
+        "descend_ee_z_commanded_m": args.descend_ee_z,
         "north_edge_world_y": NORTH_COUNTER_EDGE_Y,
         "phases": phases,
     }
