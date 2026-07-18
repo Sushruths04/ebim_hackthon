@@ -4,12 +4,11 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 18:44 UTC (Codex,
+Last update: 2026-07-18 19:06 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is RUNNING for the completed Step 0 session and is
-scheduled to be STOPPED before handoff. Day 1 remains complete; the Day 2 FSM
-proof is adapter-only. Codex has completed Step 0 and is stopping before
-Step 1.
+GPU STATUS: `sim-dev-g4b` is STOPPED after the completed Step 0 session. Day 1
+remains complete; the Day 2 FSM proof is adapter-only. Codex has completed
+Step 0 and stopped before Step 1.
 
 ## Physical tray investigation — 2026-07-18
 
@@ -172,7 +171,7 @@ geometry, mass, joint, or kinematic attachment was authored. Full raw result:
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **CURRENT — Step 1:** slide tray to 6–8 cm overhang, edge pinch, dining XY gate
+- [ ] **NEXT — Step 1:** slide tray to 6–8 cm overhang, edge pinch, dining XY gate
   `>=7/10`; one escalation to a two-arm corner pinch if needed.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
