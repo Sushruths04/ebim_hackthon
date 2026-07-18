@@ -389,3 +389,57 @@ second, then a third, independently real bug further down the same
 pipeline -- each trial should change exactly one thing and log enough to
 tell which bug is next, rather than assuming one fix clears the whole
 path.
+
+## 2026-07-18/19 — Codex: Step 1 round 2 (owner-approved 3-fix plan)
+
+Goal: fix the three blockers round 1's evidence isolated (stale overhang
+measurement, weak single-stroke coupling, an over-reaching unvalidated
+north-side pinch stance), then validate with another bounded set of GPU
+trials, same systematic-debugging contract as round 1.
+
+What: (1) dropped the `UsdGeom.BBoxCache` overhang path -- it returned an
+identical, spawn-pose-stale bounding box in every round-1 trial regardless
+of the tray's actual PhysX pose -- for a new `north_overhang_m()` computed
+directly from the live tray-center y plus the Step 0 measured static
+half-extent; (2) replaced the single press-drag-raise stroke with up to
+3, each re-reading the live tray pose and re-aligning the base if it
+drifted, stopping early once the overhang/slide gate is met; (3) derived
+the north-side pinch stance from the live post-slide tray pose (mirroring
+the same fix already applied to the south-side push stance), checked
+against the room geometry before committing to it. All three were
+CPU-tested with 18 new unit tests before touching the GPU.
+
+Ran 4 more bounded GPU trials. r2t1 was the breakthrough: the
+slide-to-overhang gate passed outright for the first time (+0.2367 m
+moved, +0.0571 m overhang after 3 strokes), and the new north-stance
+navigation worked correctly (base actually arrived and rotated to face
+south). It failed one phase further than any prior trial, at
+edge_precontact, with the same failure signature (5x "IK failed: no
+solution") that had broken push_precontact in round 1 -- so r2t2 applied
+the identical fix (split into a pregrasp-above reach plus a ramped
+vertical-only descend). That worked cleanly (0 IK failures) and the
+pipeline advanced to edge_close, which failed: the gripper closed to
+essentially 0 rad, catching nothing. r2t3 and r2t4 each tested a
+different commanded pinch depth (tray center, then 3 cm below tray
+bottom) to see whether the closure failure was a z-targeting problem --
+across a 4.4 cm range of commanded targets, the measured stall height
+barely moved (0.813, 0.820, 0.826 m), which is strong evidence the
+problem is a real, fairly repeatable physical/kinematic contact (or a
+lateral misalignment) rather than a formula to keep bisecting.
+
+Result: the slide/overhang/navigation/pregrasp-descend chain is now
+solid end-to-end (0 IK failures at every one of those phases across all
+4 trials), but the full Step 1 single-edge gate still does not pass --
+edge_close never catches the tray. 4-trial ceiling reached for the
+second time; stopped for owner review rather than guessing at a 5th
+z-offset or jumping to the two-arm escalation. All 4 trials' result.json
+and logs copied back before the GPU stop; `sim-dev-g4b` verified
+TERMINATED.
+
+Lesson: a stall height that does not move when the commanded target
+moves by several centimeters is itself a diagnostic -- it means you are
+measuring a real contact or misalignment, not a convergence shortfall,
+and no amount of further numeric tuning of that one parameter will fix
+it. That is exactly the kind of result worth stopping on and reporting
+rather than spending remaining trial budget re-testing the same
+hypothesis with smaller steps.

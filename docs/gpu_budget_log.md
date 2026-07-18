@@ -262,6 +262,35 @@ each session, not retroactively.
   to two-arm corner-pinch. All 4 result.json/log bundles copied back to
   `outputs/task3_stage1_tray_slide_fix{1,2,3,4}_*` before VM stop.
 
+## Session log - 2026-07-18 23:50 UTC - 2026-07-19 00:35 UTC (Step 1 round 2, 4 trials)
+
+- `sim-dev-g4b` was the only active GPU VM this session (started, then
+  verified STOPPED/TERMINATED at close; `sim-dev` and `sim-dev-g4` also
+  confirmed TERMINATED). Reused the same nested `git worktree` at
+  `_worktrees/task3-tray-fix` from round 1 (fast-forwarded each commit),
+  leaving the shared dirty `main` checkout untouched.
+- Ran exactly 4 bounded trials (r2t1-r2t4), one changed variable per
+  iteration, each justified by measured log evidence (overhang fix +
+  multi-stroke baseline in r2t1; edge_precontact pregrasp/descend split in
+  r2t2; edge pinch z-offset bisection in r2t3/r2t4). Per-trial wall time:
+  r2t1 618.3 s, r2t2 588.6 s, r2t3 585.3 s, r2t4 598.5 s -- approximately
+  `0.66 h` of Isaac process wall time, plus VM boot/docker/scp overhead.
+- Total VM uptime this session (start to verified TERMINATED):
+  approximately `0.85 h`.
+- Result: the slide-to-overhang sub-gate passed outright in r2t1
+  (`+0.2367 m` moved, `+0.0571 m` overhang); navigation, the tray-relative
+  north stance, and the edge-pregrasp/descend reach are all solid (0 IK
+  failures at those phases in every trial). The full Step 1 gate still does
+  not pass -- `edge_close` never catches the tray across a 4.4 cm range of
+  commanded pinch depths, evidence of a real physical/kinematic contact or
+  lateral misalignment rather than a targeting-formula problem. 4-trial
+  ceiling reached for the second time; stopped for owner review rather than
+  continuing or escalating to two-arm corner-pinch. All 4 result.json/log
+  bundles copied to `outputs/task3_stage1_tray_slide_r2t{1,2,3,4}_*` before
+  the VM stop.
+- Combined Step 1 total across both rounds: 8 GPU trials, approximately
+  `1.65 h` VM uptime.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
