@@ -68,6 +68,7 @@ from run_episode import (  # noqa: E402
     make_headless_robot_usd,
     prepare_rigid_body_view_path,
 )
+from teleop_targets import _quaternion_from_rpy  # noqa: E402
 from verify_grasp_lift import (  # noqa: E402
     CORRIDOR_STOP,
     FACE_WEST_YAW_RAD,
@@ -76,8 +77,9 @@ from verify_grasp_lift import (  # noqa: E402
 )
 
 # Pure-math/constant helpers: no Isaac dependency, safe to import at module
-# scope (also used by _run_push_stroke() below, which stays module-level so
-# its branching does not count toward _run()'s cyclomatic complexity).
+# scope (also used by _run_push_stroke()/_run_edge_pinch() below, which stay
+# module-level so their branching does not count toward _run()'s cyclomatic
+# complexity).
 from task3_autonomy.arms import (  # noqa: E402
     GRIPPER_CLOSED_RAD,
     GRIPPER_OPEN_RAD,
@@ -133,15 +135,36 @@ FACE_SOUTH_YAW_RAD = -math.pi / 2.0
 # either the island or the partition.
 SAFE_LANE_MARGIN_M = 0.10
 
-# Round 2 trial r2t2: the inherited +0.014 m offset (from the untested,
-# west-approach legacy code) put the commanded wrist z above the tray's
-# measured center-thickness. r2t2 measured the descend stalling at ee_z
-# 0.813 (well above the 0.774 m commanded target), and the subsequent
-# close then closed to ~0 rad on nothing -- the fingers likely stopped on
-# the tray TOP surface rather than straddling its 13 mm thickness. tray_pose
-# already returns the tray's CENTER z, so the mid-thickness straddle point
-# is the tray center itself -- zero offset, not +0.014.
-EDGE_PINCH_Z_OFFSET_M = 0.0
+# Round 3: the round-2 z-offset tuning (r2t2 +0.014->0.0, r2t3 0.0, r2t4
+# -0.03) never fixed edge_close -- the wrist stalled at nearly the SAME
+# measured height (0.813, 0.820, 0.826 m) across a 4.4 cm range of
+# commanded targets, and the gripper always closed to ~0 rad (nothing
+# caught). That is not a targeting problem; it is the closing AXIS.
+# Verified with the repo's own quaternion math (_rotate_vector), not
+# armchair rpy algebra: at top_down = rpy(pi,0,0) the fingers close along
+# world Y (matches the empirical cup-grasp evidence, "south finger pushed
+# cup +Y"). The round-1/2 edge_y = rpy(pi, pi/2, 0) PITCHES about Y --
+# which is already the closing axis, so pitching about it changes nothing;
+# _rotate_vector confirms edge_y's closing axis is STILL world Y
+# (horizontal), identical to top_down's. A pure ROLL of +pi/2 instead
+# (no pitch, no yaw) rotates local Y to world Z (vertical -- correct for
+# straddling a horizontal 13 mm lip) and rotates local Z (the approach
+# axis) to world -Y (south -- correct for reaching INTO the tray from the
+# north stance). See scripts/tests/test_probe_tray_slide.py for the
+# regression test encoding this verification.
+EDGE_PINCH_ROLL_RAD = math.pi / 2.0
+# Aim slightly south of the tray's own measured edge (into solid material)
+# rather than exactly on the boundary, so the straddle has real material
+# between the jaws rather than landing on a razor's-edge coordinate.
+EDGE_PINCH_LIP_Y_MARGIN_M = 0.01
+# Pregrasp-out: stage north of the lip with fingers open before reaching
+# in horizontally, rather than descending vertically onto/near the tray.
+EDGE_PINCH_OUT_STANDOFF_M = 0.15
+# "Plausible" partial closure band: 0.9 rad <-> ~34 mm aperture, so a
+# 13 mm lip should stall the joint partway, not close to ~0 (empty) or
+# stay near fully open (barely touched).
+EDGE_PINCH_PLAUSIBLE_MIN_RAD = 0.15
+EDGE_PINCH_PLAUSIBLE_MAX_RAD = 0.55
 
 
 def north_overhang_m(
@@ -318,6 +341,247 @@ def _ramp_vertical_ee(
     }
 
 
+def _measure_fingertip_midpoint(
+    robot: Any, side: str
+) -> tuple[float, float, float] | None:
+    """Live world-frame midpoint between the two named fingertip bodies.
+
+    Reuses the exact body names the Step 0 probe measured
+    (``scripts/task3/probe_stage0.py``): ``left_left_2_link``/
+    ``left_right_2_link`` for the left arm, ``right_left_2_link``/
+    ``right_iight_2_link`` (USD typo preserved) for the right arm. Reads
+    directly off the articulation's own body poses (``robot.data.body_pos_w``),
+    the same data source Step 0 used -- no extra RigidPrim view needed.
+    Returns ``None`` if the expected bodies are not found (diagnosable
+    rather than a silent wrong answer).
+    """
+    if side not in ("left", "right"):
+        raise ValueError("side must be 'left' or 'right'")
+    names = (
+        ("left_left_2_link", "left_right_2_link")
+        if side == "left"
+        else ("right_left_2_link", "right_iight_2_link")
+    )
+    body_names = list(robot.body_names)
+    if not all(name in body_names for name in names):
+        return None
+    positions = robot.data.body_pos_w[0]
+    a = positions[body_names.index(names[0])]
+    b = positions[body_names.index(names[1])]
+    return (
+        float((a[0] + b[0]) / 2.0),
+        float((a[1] + b[1]) / 2.0),
+        float((a[2] + b[2]) / 2.0),
+    )
+
+
+def _ramp_horizontal_ee(
+    arms: Any,
+    step: Any,
+    tray_pose_fn: Any,
+    side: str,
+    xz: tuple[float, float],
+    quat: tuple[float, ...],
+    start_y: float,
+    end_y: float,
+    seconds: float,
+    dt: float,
+    *,
+    detect_contact: bool = False,
+    stall_eps_m: float = CONTACT_STALL_EPS_M,
+    stall_seconds: float = CONTACT_STALL_SECONDS,
+) -> dict[str, Any]:
+    """Time-bounded linear EE-y ramp (x, z held fixed), reissuing targets
+    every tick -- the reach-in sub-phase for the corrected (vertical
+    closing-axis) edge pinch: the wrist approaches the lip HORIZONTALLY
+    from the north rather than descending onto it, so only y has to
+    converge while x and z (calibrated from the measured fingertip
+    offset) stay fixed. Mirrors ``_ramp_vertical_ee()``: never uses
+    ``reach()``, since driving into contact must not "fail" a timeout,
+    and detects a y-stall (fingers caught on the lip while still
+    commanded further south) the same way the vertical ramp detects a
+    z-stall.
+    """
+    ramp_ticks = max(1, math.ceil(seconds / dt))
+    stall_start_tick: int | None = None
+    contact_tick: int | None = None
+    contact_measured_y: float | None = None
+    contact_tray_pose: tuple[float, float, float] | None = None
+    for tick_index in range(ramp_ticks):
+        commanded_y = linear_ramp_target(
+            start_y, end_y, tick_index + 1, ramp_ticks
+        )
+        arms.set_arm_target(side, (xz[0], commanded_y, xz[1]), quat)
+        arms.command()
+        step()
+        if not detect_contact:
+            continue
+        measured_y = arms.ee_world_poses()[0 if side == "left" else 1][0][1]
+        # Moving south (y decreasing): a stall shows up as the measured y
+        # staying north of (greater than) the still-decreasing commanded y.
+        if measured_y - commanded_y <= stall_eps_m:
+            stall_start_tick = None
+            continue
+        if stall_start_tick is None:
+            stall_start_tick = tick_index
+        elif (
+            contact_tick is None
+            and (tick_index - stall_start_tick) * dt >= stall_seconds
+        ):
+            contact_tick = tick_index
+            contact_measured_y = measured_y
+            contact_tray_pose = tray_pose_fn()
+    final_measured_y = arms.ee_world_poses()[0 if side == "left" else 1][0][1]
+    return {
+        "final_commanded_ee_y": round(end_y, 6),
+        "final_measured_ee_y": round(final_measured_y, 6),
+        "contact_detected": contact_tick is not None,
+        "contact_tick": contact_tick,
+        "contact_measured_ee_y": (
+            round(contact_measured_y, 6)
+            if contact_measured_y is not None
+            else None
+        ),
+        "contact_tray_pose": (
+            [round(v, 6) for v in contact_tray_pose]
+            if contact_tray_pose is not None
+            else None
+        ),
+    }
+
+
+def _run_edge_pinch(
+    *,
+    arms: Any,
+    robot: Any,
+    reach: Any,
+    ramp_horizontal: Any,
+    sim_tick: Any,
+    log: Any,
+    log_reach_failure: Any,
+    tray_pose_fn: Any,
+    pinch_target_xy: tuple[float, float],
+    tray_z: float,
+    dt: float,
+    args: argparse.Namespace,
+) -> tuple[bool, str | None, dict[str, Any]]:
+    """Corrected-orientation single-arm edge pinch; module-level so its
+    own branching does not count toward ``_run()``'s cyclomatic
+    complexity.
+
+    Sequence: pregrasp-OUT (fingers open, closing axis vertical via
+    ``EDGE_PINCH_ROLL_RAD``, held safely north of the lip) -> measure the
+    live fingertip midpoint there to calibrate the wrist-to-fingertip
+    offset for THIS orientation (never assume/guess it) -> reach-IN
+    horizontally to the calibrated wrist target -> log the fingertip
+    midpoint again immediately before closing (so a miss is diagnosable)
+    -> ``grasp()`` -> ``lift()`` if holding. Returns
+    ``(passed, failed_phase, info)``.
+    """
+    edge_pinch_quat = _quaternion_from_rpy(EDGE_PINCH_ROLL_RAD, 0.0, 0.0)
+    lip_xy = (
+        pinch_target_xy[0],
+        pinch_target_xy[1] - EDGE_PINCH_LIP_Y_MARGIN_M,
+    )
+    pregrasp_out = (
+        lip_xy[0],
+        lip_xy[1] + EDGE_PINCH_OUT_STANDOFF_M,
+        PREGRASP_EE_Z,
+    )
+    arms.set_gripper("right", GRIPPER_OPEN_RAD)
+    if not reach("right", pregrasp_out, edge_pinch_quat, 8.0):
+        log_reach_failure(
+            "edge_pregrasp_out", "right", pregrasp_out, edge_pinch_quat
+        )
+        return False, "edge_pregrasp_out", {}
+
+    fingertip_mid = _measure_fingertip_midpoint(robot, "right")
+    log(
+        "edge_pregrasp_out",
+        ok=True,
+        target=list(pregrasp_out),
+        fingertip_midpoint=(
+            [round(v, 6) for v in fingertip_mid] if fingertip_mid else None
+        ),
+    )
+    if fingertip_mid is None:
+        return False, "edge_fingertip_measurement", {}
+
+    offset = tuple(fingertip_mid[i] - pregrasp_out[i] for i in range(3))
+    lip_target = (lip_xy[0], lip_xy[1], tray_z)
+    wrist_target = tuple(lip_target[i] - offset[i] for i in range(3))
+    log(
+        "edge_calibration",
+        ok=True,
+        wrist_to_fingertip_offset=[round(v, 6) for v in offset],
+        lip_target=[round(v, 6) for v in lip_target],
+        wrist_target=[round(v, 6) for v in wrist_target],
+    )
+
+    reach_in_info = ramp_horizontal(
+        "right",
+        (wrist_target[0], wrist_target[2]),
+        edge_pinch_quat,
+        pregrasp_out[1],
+        wrist_target[1],
+        args.reach_in_seconds,
+        detect_contact=True,
+    )
+    log("edge_reach_in", ok=True, **reach_in_info)
+
+    fingertip_mid_preclose = _measure_fingertip_midpoint(robot, "right")
+    log(
+        "edge_preclose_fingertips",
+        ok=True,
+        fingertip_midpoint=(
+            [round(v, 6) for v in fingertip_mid_preclose]
+            if fingertip_mid_preclose
+            else None
+        ),
+        lip_target=[round(v, 6) for v in lip_target],
+    )
+
+    holding = arms.grasp("right", step=sim_tick, dt=dt, settle_seconds=1.5)
+    gripper_rad = arms.gripper_position("right")
+    pinch_plausible = (
+        EDGE_PINCH_PLAUSIBLE_MIN_RAD
+        <= gripper_rad
+        <= EDGE_PINCH_PLAUSIBLE_MAX_RAD
+    )
+    log(
+        "edge_close",
+        ok=holding,
+        gripper_rad=round(gripper_rad, 6),
+        pinch_plausible=pinch_plausible,
+    )
+    lift_ok = False
+    lift_m = 0.0
+    if holding:
+        before_lift_z = tray_pose_fn()[2]
+        lift_ok = arms.lift(
+            "right",
+            0.10,
+            step=sim_tick,
+            dt=dt,
+            timeout_s=5.0,
+            position_tolerance_m=0.04,
+            spine_assist_m=0.08,
+        )
+        lift_m = tray_pose_fn()[2] - before_lift_z
+        log("edge_lift", ok=lift_ok, lift_m=round(lift_m, 6))
+
+    passed = bool(holding and lift_ok and pinch_plausible)
+    return (
+        passed,
+        None if passed else "edge_pinch",
+        {
+            "gripper_rad": round(gripper_rad, 6),
+            "pinch_plausible": pinch_plausible,
+            "lift_m": round(lift_m, 6),
+        },
+    )
+
+
 def _run_push_stroke(
     stroke_index: int,
     *,
@@ -475,9 +739,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--descend-ee-z", type=float, default=DESCEND_EE_Z
     )
-    parser.add_argument(
-        "--edge-pinch-z-offset", type=float, default=EDGE_PINCH_Z_OFFSET_M
-    )
+    parser.add_argument("--reach-in-seconds", type=float, default=2.0)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -527,7 +789,6 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         reset_robot_to_default_state,
         yaw_to_quat,
     )
-    from teleop_targets import _quaternion_from_rpy
 
     from isaacsim.core.prims import RigidPrim
 
@@ -725,6 +986,30 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
             detect_contact=detect_contact,
         )
 
+    def ramp_horizontal(
+        side: str,
+        xz: tuple[float, float],
+        quat: tuple[float, ...],
+        start_y: float,
+        end_y: float,
+        seconds: float,
+        *,
+        detect_contact: bool = False,
+    ) -> dict[str, Any]:
+        return _ramp_horizontal_ee(
+            arms,
+            sim_tick,
+            tray_pose,
+            side,
+            xz,
+            quat,
+            start_y,
+            end_y,
+            seconds,
+            sim.cfg.dt,
+            detect_contact=detect_contact,
+        )
+
     # Stabilize and tuck exactly as the proven cup pipeline does.
     spine_ok = arms.move_spine(
         0.45,
@@ -900,68 +1185,36 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     )
 
     tray_now = tray_pose()  # tray does not move during navigate/rotate
-    edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
-    edge_z = tray_now[2] + args.edge_pinch_z_offset
-    # Round 2 trial r2t1: one direct reach combining this much position
-    # change with the ~90-degree wrist rotation to edge_y produced 5x
-    # "Right arm IK failed: solver reported no solution" -- the identical
-    # failure class that broke push_precontact in round 1. Apply the same
-    # fix: pregrasp-above first (rotate the wrist while still high, less
-    # constrained), then a ramped vertical descend onto the pinch height
-    # (holding the edge orientation fixed, so only z has to converge).
-    edge_pregrasp_above = (
-        pinch_target_xy[0],
-        pinch_target_xy[1],
-        PREGRASP_EE_Z,
+    # Round 3: corrected closing-axis orientation (see EDGE_PINCH_ROLL_RAD
+    # above) plus a horizontal pregrasp-out -> reach-in approach instead of
+    # a vertical descend, with the wrist-to-fingertip offset measured live
+    # (never assumed) at the pregrasp-out stance. Module-level so its own
+    # branching does not count toward this function's cyclomatic
+    # complexity.
+    # edge_info is already captured via the edge_close/edge_lift phase
+    # log entries above; nothing further is needed from it here.
+    edge_passed, edge_failed_phase, _edge_info = _run_edge_pinch(
+        arms=arms,
+        robot=robot,
+        reach=reach,
+        ramp_horizontal=ramp_horizontal,
+        sim_tick=sim_tick,
+        log=log,
+        log_reach_failure=log_reach_failure,
+        tray_pose_fn=tray_pose,
+        pinch_target_xy=pinch_target_xy,
+        tray_z=tray_now[2],
+        dt=sim.cfg.dt,
+        args=args,
     )
-    if not reach("right", edge_pregrasp_above, edge_y, 8.0):
-        log_reach_failure(
-            "edge_pregrasp_above", "right", edge_pregrasp_above, edge_y
-        )
+    if edge_failed_phase is not None:
         return _result(
-            False, "edge_pregrasp_above", phases, start, tray_pose(), args
-        )
-    log("edge_pregrasp_above", ok=True, target=list(edge_pregrasp_above))
-
-    edge_descend_info = ramp_vertical(
-        "right",
-        (pinch_target_xy[0], pinch_target_xy[1]),
-        edge_y,
-        PREGRASP_EE_Z,
-        edge_z,
-        args.descend_seconds,
-        detect_contact=True,
-    )
-    log("edge_descend", ok=True, **edge_descend_info)
-    lift_ok = False
-    holding = arms.grasp(
-        "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
-    )
-    log(
-        "edge_close",
-        ok=holding,
-        gripper_rad=round(arms.gripper_position("right"), 6),
-    )
-    if holding:
-        lift_ok = arms.lift(
-            "right",
-            0.10,
-            step=sim_tick,
-            dt=sim.cfg.dt,
-            timeout_s=5.0,
-            position_tolerance_m=0.04,
-            spine_assist_m=0.08,
-        )
-        log(
-            "edge_lift",
-            ok=lift_ok,
-            lift_m=round(tray_pose()[2] - after_push[2], 6),
+            False, edge_failed_phase, phases, start, tray_pose(), args
         )
     final = tray_pose()
-    passed = bool(holding and lift_ok)
     return _result(
-        passed,
-        "complete" if passed else "edge_pinch",
+        edge_passed,
+        "complete" if edge_passed else "edge_pinch",
         phases,
         start,
         final,

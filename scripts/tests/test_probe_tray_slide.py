@@ -9,23 +9,29 @@ without Isaac Sim (all Isaac-dependent code lives inside main()/_run()).
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "task3"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "common"))
 
 from probe_tray_slide import (  # noqa: E402
+    EDGE_PINCH_ROLL_RAD,
     KITCHEN_PARTITION_SOUTH_FACE_Y,
     NORTH_COUNTER_EDGE_Y,
     TRAY_HALF_EXTENT_Y_M,
+    _measure_fingertip_midpoint,
     north_overhang_m,
     north_pinch_stance,
     north_pinch_target,
     stance_in_safe_lane,
     stroke_needs_realign,
 )
+from teleop_targets import _quaternion_from_rpy, _rotate_vector  # noqa: E402
 
 
 def test_north_overhang_zero_at_counter_edge():
@@ -100,3 +106,112 @@ def test_stance_in_safe_lane_uses_documented_room_geometry_defaults():
 )
 def test_stroke_needs_realign(contact_y, base_y, expected):
     assert stroke_needs_realign(contact_y, base_y) is expected
+
+
+# --- Round 3: closing-axis orientation verification -----------------------
+#
+# Regression test for the round-3 diagnosis: rounds 1-2's edge_y quaternion
+# (rpy(pi, pi/2, 0)) left the gripper's closing axis on world Y (horizontal)
+# -- identical to top_down's closing axis -- because pitching about an axis
+# that IS already the closing axis does not rotate it. That is why edge_close
+# always closed to ~0 rad across three different z-targets: the fingers were
+# never oriented to straddle a horizontal lip in the first place. A pure roll
+# of +pi/2 (no pitch, no yaw) instead rotates the closing axis to world Z.
+#
+# The local closing-axis vector is (0, 1, 0): _rotate_vector at the KNOWN
+# top_down orientation (rpy(pi, 0, 0)) must reproduce the empirically
+# observed "closes along world Y" behavior from prior cup-grasp runs, which
+# anchors what "the closing axis" means in this gripper's own frame before
+# asserting anything about candidate orientations.
+_CLOSING_AXIS_LOCAL = (0.0, 1.0, 0.0)
+_APPROACH_AXIS_LOCAL = (0.0, 0.0, 1.0)
+
+
+def _closing_axis_world(roll: float, pitch: float, yaw: float) -> tuple:
+    quat = _quaternion_from_rpy(roll, pitch, yaw)
+    return _rotate_vector(quat, _CLOSING_AXIS_LOCAL)
+
+
+def _approach_axis_world(roll: float, pitch: float, yaw: float) -> tuple:
+    quat = _quaternion_from_rpy(roll, pitch, yaw)
+    return _rotate_vector(quat, _APPROACH_AXIS_LOCAL)
+
+
+def test_top_down_closing_axis_is_horizontal_world_y():
+    # Anchors the convention: top_down = rpy(pi, 0, 0) is the proven
+    # top-down grasp orientation (cup pipeline, tray push), and prior runs
+    # observed the fingers close along world Y ("south finger pushed cup
+    # +0.07 m in Y"). This must hold, or the local axis assignment below
+    # is wrong.
+    axis = _closing_axis_world(math.pi, 0.0, 0.0)
+    assert abs(axis[0]) < 1e-9
+    assert abs(axis[2]) < 1e-9
+    assert abs(abs(axis[1]) - 1.0) < 1e-9
+
+
+def test_round1_2_edge_quat_closing_axis_is_still_horizontal():
+    # The bug: rpy(pi, pi/2, 0) pitches about Y, which is already the
+    # closing axis, so it stays horizontal -- confirmed by direct
+    # computation, not armchair rotation algebra.
+    axis = _closing_axis_world(math.pi, math.pi / 2.0, 0.0)
+    assert abs(axis[0]) < 1e-9
+    assert abs(axis[2]) < 1e-9
+    assert abs(abs(axis[1]) - 1.0) < 1e-9
+
+
+def test_edge_pinch_roll_rad_gives_vertical_closing_axis():
+    # The round-3 fix: EDGE_PINCH_ROLL_RAD (pure roll, no pitch/yaw) must
+    # rotate the closing axis to world Z (vertical), correct for
+    # straddling a horizontal lip.
+    axis = _closing_axis_world(EDGE_PINCH_ROLL_RAD, 0.0, 0.0)
+    assert abs(axis[0]) < 1e-9
+    assert abs(axis[1]) < 1e-9
+    assert abs(abs(axis[2]) - 1.0) < 1e-9
+
+
+def test_edge_pinch_roll_rad_gives_south_facing_approach_axis():
+    # The wrist must point INTO the tray (south, world -Y) from the
+    # north stance, not away from it.
+    axis = _approach_axis_world(EDGE_PINCH_ROLL_RAD, 0.0, 0.0)
+    assert abs(axis[0]) < 1e-9
+    assert abs(axis[2]) < 1e-9
+    assert axis[1] == pytest.approx(-1.0, abs=1e-9)
+
+
+# --- Round 3: fingertip midpoint measurement -------------------------------
+
+
+def _fake_robot(body_names, body_positions):
+    return SimpleNamespace(
+        body_names=body_names,
+        data=SimpleNamespace(body_pos_w=[body_positions]),
+    )
+
+
+def test_measure_fingertip_midpoint_right_arm():
+    names = [
+        "spine_link",
+        "right_left_2_link",
+        "right_iight_2_link",
+        "left_left_2_link",
+    ]
+    positions = [
+        (0.0, 0.0, 0.0),
+        (-4.2, -1.16, 0.78),
+        (-4.2, -1.16, 0.75),
+        (0.0, 0.0, 0.0),
+    ]
+    robot = _fake_robot(names, positions)
+    midpoint = _measure_fingertip_midpoint(robot, "right")
+    assert midpoint == pytest.approx((-4.2, -1.16, 0.765))
+
+
+def test_measure_fingertip_midpoint_missing_bodies_returns_none():
+    robot = _fake_robot(["spine_link"], [(0.0, 0.0, 0.0)])
+    assert _measure_fingertip_midpoint(robot, "right") is None
+
+
+def test_measure_fingertip_midpoint_rejects_bad_side():
+    robot = _fake_robot(["spine_link"], [(0.0, 0.0, 0.0)])
+    with pytest.raises(ValueError, match="side"):
+        _measure_fingertip_midpoint(robot, "up")
