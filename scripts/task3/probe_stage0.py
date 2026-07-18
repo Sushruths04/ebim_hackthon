@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -43,7 +42,9 @@ NORTH_COUNTER_EDGE_Y = -1.22
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--head-placement", choices=("a", "b", "c"), default="a")
+    parser.add_argument(
+        "--head-placement", choices=("a", "b", "c"), default="a"
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -56,7 +57,11 @@ def parse_args() -> argparse.Namespace:
 def _to_float_list(value: Any) -> list[float]:
     if hasattr(value, "tolist"):
         value = value.tolist()
-    if isinstance(value, (list, tuple)) and value and isinstance(value[0], (list, tuple)):
+    if (
+        isinstance(value, (list, tuple))
+        and value
+        and isinstance(value[0], (list, tuple))
+    ):
         value = value[0]
     return [float(item) for item in value]
 
@@ -69,7 +74,9 @@ def _first_runtime_mass(view: Any) -> tuple[float | None, str | None]:
                 values = _to_float_list(method())
                 if values:
                     return values[0], f"{type(view).__name__}.{method_name}"
-            except Exception as exc:  # pragma: no cover - Isaac-version dependent
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - Isaac-version dependent
                 return None, f"{type(view).__name__}.{method_name}: {exc}"
     for attr_name in ("_physics_view", "_root_physx_view", "root_physx_view"):
         physics_view = getattr(view, attr_name, None)
@@ -80,8 +87,12 @@ def _first_runtime_mass(view: Any) -> tuple[float | None, str | None]:
             try:
                 values = _to_float_list(method())
                 if values:
-                    return values[0], f"{type(physics_view).__name__}.get_masses"
-            except Exception as exc:  # pragma: no cover - Isaac-version dependent
+                    return values[
+                        0
+                    ], f"{type(physics_view).__name__}.get_masses"
+            except (
+                Exception
+            ) as exc:  # pragma: no cover - Isaac-version dependent
                 return None, f"{type(physics_view).__name__}.get_masses: {exc}"
     return None, None
 
@@ -91,7 +102,9 @@ def _candidate_finger_bodies(robot: Any) -> list[dict[str, Any]]:
     candidates = []
     for index, name in enumerate(robot.body_names):
         lowered = name.lower()
-        if any(token in lowered for token in ("finger", "gripper", "pad", "tip")):
+        if any(
+            token in lowered for token in ("finger", "gripper", "pad", "tip")
+        ):
             candidates.append(
                 {
                     "index": index,
@@ -115,6 +128,34 @@ def _pair_separation(left: dict[str, Any], right: dict[str, Any]) -> float:
 
 def _measure_fingertips(robot: Any) -> dict[str, Any]:
     candidates = _candidate_finger_bodies(robot)
+    body_positions = robot.data.body_pos_w[0]
+    by_name = {
+        name: {
+            "index": index,
+            "name": name,
+            "position_world": [
+                round(float(value), 6) for value in body_positions[index]
+            ],
+        }
+        for index, name in enumerate(robot.body_names)
+    }
+    arm_apertures = {}
+    for arm in ("left", "right"):
+        names = (
+            ("left_left_2_link", "left_right_2_link")
+            if arm == "left"
+            else ("right_left_2_link", "right_iight_2_link")
+        )
+        if all(name in by_name for name in names):
+            arm_apertures[arm] = {
+                "body_names": list(names),
+                "separation_m": round(
+                    _pair_separation(by_name[names[0]], by_name[names[1]]), 6
+                ),
+                "positions_world": [
+                    by_name[name]["position_world"] for name in names
+                ],
+            }
     pair_candidates = []
     for left in candidates:
         for right in candidates:
@@ -131,20 +172,65 @@ def _measure_fingertips(robot: Any) -> dict[str, Any]:
             )
     return {
         "commanded_open_rad": 0.9,
+        "arm_apertures": arm_apertures,
+        "all_body_names": list(robot.body_names),
         "body_candidates": candidates,
         "pair_candidates": pair_candidates,
-        "note": "Choose the pair whose names identify the two fingertips; raw candidates are preserved.",
+        "note": (
+            "Choose the pair whose names identify the two fingertips; "
+            "raw candidates are preserved."
+        ),
     }
 
 
-def _world_bounds(stage: Any, root_path: str) -> tuple[list[float], list[float]]:
+def _stage_gripper_geometry(stage: Any) -> list[dict[str, Any]]:
+    """Return raw world bounds for authored gripper/finger geometry."""
     from pxr import Usd, UsdGeom
 
     cache = UsdGeom.BBoxCache(
         Usd.TimeCode.Default(),
         [UsdGeom.Tokens.default_, UsdGeom.Tokens.render, UsdGeom.Tokens.proxy],
     )
-    bounds = cache.ComputeWorldBound(stage.GetPrimAtPath(root_path)).ComputeAlignedBox()
+    records = []
+    for prim in stage.Traverse():
+        path = str(prim.GetPath())
+        lowered = path.lower()
+        if "/robot/" not in lowered or not any(
+            token in lowered for token in ("finger", "gripper", "pad")
+        ):
+            continue
+        try:
+            box = cache.ComputeWorldBound(prim).ComputeAlignedBox()
+            minimum = [round(float(value), 6) for value in box.GetMin()]
+            maximum = [round(float(value), 6) for value in box.GetMax()]
+        except Exception:
+            continue
+        size = [maximum[i] - minimum[i] for i in range(3)]
+        if max(size) <= 1.0e-5:
+            continue
+        records.append(
+            {
+                "path": path,
+                "bbox_min_world": minimum,
+                "bbox_max_world": maximum,
+                "bbox_size_m": [round(value, 6) for value in size],
+            }
+        )
+    return records
+
+
+def _world_bounds(
+    stage: Any, root_path: str
+) -> tuple[list[float], list[float]]:
+    from pxr import Usd, UsdGeom
+
+    cache = UsdGeom.BBoxCache(
+        Usd.TimeCode.Default(),
+        [UsdGeom.Tokens.default_, UsdGeom.Tokens.render, UsdGeom.Tokens.proxy],
+    )
+    bounds = cache.ComputeWorldBound(
+        stage.GetPrimAtPath(root_path)
+    ).ComputeAlignedBox()
     return [round(float(value), 6) for value in bounds.GetMin()], [
         round(float(value), 6) for value in bounds.GetMax()
     ]
@@ -156,13 +242,11 @@ def main() -> None:
 
     from isaaclab.app import AppLauncher
 
-    simulation_app = AppLauncher({"headless": True, "enable_cameras": False}).app
+    simulation_app = AppLauncher(
+        {"headless": True, "enable_cameras": False}
+    ).app
     try:
         from integration_test import resolve_prim_path
-        from isaacsim.core.prims import RigidPrim
-        import isaaclab.sim as sim_utils
-        from isaaclab.scene import InteractiveScene
-        from isaaclab.sim import SimulationContext
         from scene_robot_room_keyboard import (
             configure_keyboard_control_stage,
             configure_robot_room_stage,
@@ -170,10 +254,19 @@ def main() -> None:
             reset_robot_to_default_state,
             yaw_to_quat,
         )
-        from task3_autonomy.arms import DualArmController, GRIPPER_OPEN_RAD
+
+        from isaacsim.core.prims import RigidPrim
+
+        import isaaclab.sim as sim_utils
+        from isaaclab.scene import InteractiveScene
+        from isaaclab.sim import SimulationContext
+
+        from task3_autonomy.arms import GRIPPER_OPEN_RAD, DualArmController
 
         sim = SimulationContext(
-            sim_utils.SimulationCfg(dt=0.005, device="cuda:0", gravity=(0.0, 0.0, -9.81))
+            sim_utils.SimulationCfg(
+                dt=0.005, device="cuda:0", gravity=(0.0, 0.0, -9.81)
+            )
         )
         configure_keyboard_control_stage(
             configure_robot_room_stage,
@@ -192,7 +285,6 @@ def main() -> None:
             )
             for name in OBJECTS
         }
-        _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
         scene = InteractiveScene(
             make_control_scene_cfg(
                 num_envs=1,
@@ -203,6 +295,7 @@ def main() -> None:
                 robot_rotation=yaw_to_quat(ROBOT_SPAWN_YAW),
             )
         )
+        _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
         sim.reset()
         scene.reset()
         robot = scene["robot"]
@@ -237,12 +330,16 @@ def main() -> None:
         for name, view in views.items():
             positions, _ = view.get_world_poses()
             position = _to_float_list(positions)
-            bbox_min, bbox_max = _world_bounds(sim.stage, resolve_prim_path(sim.stage, name))
+            bbox_min, bbox_max = _world_bounds(
+                sim.stage, resolve_prim_path(sim.stage, name)
+            )
             mass_kg, mass_source = _first_runtime_mass(view)
             authored_mass = None
             from pxr import UsdPhysics
 
-            mass_attr = UsdPhysics.MassAPI(sim.stage.GetPrimAtPath(object_paths[name])).GetMassAttr()
+            mass_attr = UsdPhysics.MassAPI(
+                sim.stage.GetPrimAtPath(object_paths[name])
+            ).GetMassAttr()
             if mass_attr and mass_attr.HasAuthoredValue():
                 authored_mass = float(mass_attr.Get())
             objects[name] = {
@@ -250,33 +347,51 @@ def main() -> None:
                 "pose_world": [round(value, 6) for value in position],
                 "bbox_min_world": bbox_min,
                 "bbox_max_world": bbox_max,
-                "bbox_size_m": [round(bbox_max[i] - bbox_min[i], 6) for i in range(3)],
-                "distance_to_counter_east_edge_m": round(EAST_COUNTER_EDGE_X - bbox_max[0], 6),
-                "distance_to_counter_north_edge_m": round(NORTH_COUNTER_EDGE_Y - bbox_max[1], 6),
-                "runtime_mass_kg": None if mass_kg is None else round(mass_kg, 6),
+                "bbox_size_m": [
+                    round(bbox_max[i] - bbox_min[i], 6) for i in range(3)
+                ],
+                "distance_to_counter_east_edge_m": round(
+                    EAST_COUNTER_EDGE_X - bbox_max[0], 6
+                ),
+                "distance_to_counter_north_edge_m": round(
+                    NORTH_COUNTER_EDGE_Y - bbox_max[1], 6
+                ),
+                "runtime_mass_kg": None
+                if mass_kg is None
+                else round(mass_kg, 6),
                 "runtime_mass_source": mass_source,
                 "authored_mass_kg": authored_mass,
             }
 
         result = {
             "probe": "task3_stage0",
-            "scene": "unmodified organizer scene; runtime nested-body normalization only",
+            "scene": (
+                "unmodified organizer scene; runtime nested-body "
+                "normalization only"
+            ),
             "head_placement": args.head_placement,
             "counter_edges_world": {
                 "east_x": EAST_COUNTER_EDGE_X,
                 "north_y": NORTH_COUNTER_EDGE_Y,
-                "distance_definition": "edge coordinate minus object bbox max coordinate",
+                "distance_definition": (
+                    "edge coordinate minus object bbox max coordinate"
+                ),
             },
             "gripper": {
                 "left_joint_rad": round(arms.gripper_position("left"), 6),
                 "right_joint_rad": round(arms.gripper_position("right"), 6),
                 "fingertip_measurement": fingertips,
+                "stage_gripper_geometry": _stage_gripper_geometry(sim.stage),
             },
             "objects": objects,
         }
         output_path = args.output_dir / "result.json"
-        output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-        print("STAGE0_RESULT " + json.dumps(result, sort_keys=True), flush=True)
+        output_path.write_text(
+            json.dumps(result, indent=2, sort_keys=True) + "\n"
+        )
+        print(
+            "STAGE0_RESULT " + json.dumps(result, sort_keys=True), flush=True
+        )
     finally:
         simulation_app.close()
 

@@ -280,3 +280,25 @@ Next: model a proper two-contact tray handle/edge in the scene asset, validate
 both arms against measured handle poses, then add the physical carry state
 machine and rerun a multi-trial proof. Do not tag physical Stage 1 until the
 tray clears `0.08 m` and holds continuously under PhysX.
+
+## 2026-07-18 18:44-19:05 UTC — Codex: Day 3 Step 0 probes
+
+Goal: establish the real manipulation envelope and unmodified object geometry
+before attempting physical Stage 1.
+
+What was done: restarted `sim-dev-g4b` as the only GPU VM and ran the
+head-placement-`a` Step 0 probe in the existing Isaac Lab container. The probe
+opened both ChangingTek grippers to `0.9 rad`, read fingertip link positions
+from Isaac Lab articulation state, read object poses from `RigidPrim`, queried
+runtime masses through `RigidPrim.get_masses()`, and recorded world bounds and
+gaps to the measured island east/north edges. No tray fixture, mass override,
+kinematic attach, or object motion was used.
+
+Evidence: `outputs/task3_stage0_probe_20260718/result.json`. Both grippers
+measured `0.034000 m` fingertip separation. The unmodified tray mass is
+`0.300000 kg`, with bounds `0.336644 x 0.436315 x 0.013141 m`; the full
+five-object table and raw body/link names are in the JSON.
+
+Lesson: the tray is lighter than the earlier diagnostic assumption, but its
+13 mm flat geometry remains the limiting affordance. Step 1 should therefore
+use the planned slide-to-overhang edge pinch, with no scene edits.

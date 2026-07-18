@@ -6,10 +6,10 @@
 
 Last update: 2026-07-18 18:44 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED before the Step 0 restart. Day 1 remains
-complete; the Day 2 FSM proof is adapter-only. Current claim: Codex is running
-Day 3 Step 0 probes from `docs/task3_day3_tray_plan_2026-07-18.md` and will
-stop before Step 1.
+GPU STATUS: `sim-dev-g4b` is RUNNING for the completed Step 0 session and is
+scheduled to be STOPPED before handoff. Day 1 remains complete; the Day 2 FSM
+proof is adapter-only. Codex has completed Step 0 and is stopping before
+Step 1.
 
 ## Physical tray investigation — 2026-07-18
 
@@ -35,6 +35,33 @@ tray does not have a separate lift gate.
   next physical task is Step 0 measurement, then slide-to-overhang edge pinch;
   escalate once to a two-arm corner pinch only if the single-edge method
   fails.
+
+## Day 3 Step 0 measurements — 2026-07-18
+
+Completed in the unmodified organizer scene at head placement `a` using
+PhysX/Fabric runtime reads. The only stage normalization was disabling nested
+rigid-body schemas so the existing `RigidPrim` views could bind; no tray
+geometry, mass, joint, or kinematic attachment was authored. Full raw result:
+`outputs/task3_stage0_probe_20260718/result.json`.
+
+- Gripper open command `0.9 rad`; measured joint positions were left
+  `0.899995 rad`, right `0.899944 rad`. Fingertip bodies were
+  `left_left_2_link`/`left_right_2_link` and
+  `right_left_2_link`/`right_iight_2_link` (the latter preserves the USD typo).
+  World fingertip separations: **left `0.034000 m`, right `0.034000 m`**.
+- Unmodified tray runtime mass: **`0.300000 kg`** via
+  `RigidPrim.get_masses()`; its authored USD mass is also `0.300000 kg`.
+  This replaces the earlier diagnostic-only `0.35 kg` fixture measurement.
+- Counter edge references: east `x=-3.77`, north `y=-1.22`; each gap below
+  is edge coordinate minus object world-bbox maximum coordinate.
+
+| object | PhysX pose `(x,y,z)` | world bbox size (m) | runtime mass (kg) | east gap (m) | north gap (m) |
+|---|---|---:|---:|---:|---:|
+| `simple_tray` | `(-4.279305,-1.617691,0.759661)` | `0.336644 × 0.436315 × 0.013141` | `0.300000` | `0.340983` | `0.179533` |
+| `bowl2` | `(-4.298296,-1.499874,0.746420)` | `0.118367 × 0.117874 × 0.055793` | `0.220000` | `0.469334` | `0.221006` |
+| `spoon2` | `(-4.341526,-1.678126,0.760765)` | `0.125166 × 0.047448 × 0.029423` | `0.050000` | `0.547419` | `0.427435` |
+| `plate2` | `(-4.308727,-1.660848,0.747168)` | `0.215316 × 0.215320 × 0.023251` | `0.220000` | `0.431065` | `0.333191` |
+| `cup` | `(-4.184931,-1.752757,0.747003)` | `0.080053 × 0.081109 × 0.087307` | `0.093608` | `0.374844` | `0.491608` |
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -140,12 +167,12 @@ tray does not have a separate lift gate.
   **Official batch complete:** 10/10 passed at +0.0880 m and 3.0 s hold;
   `gate_passed=true`, required `8/10`. Proof:
   `proofs/phase2-grasp-reliability/`.
-- [ ] **CURRENT — Step 0 (Codex, 2026-07-18 18:44 UTC):** start
+- [x] **Step 0 (Codex, 2026-07-18 18:44–19:05 UTC):** started
   `sim-dev-g4b`; measure open-0.9-rad fingertip aperture, unmodified-scene
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
-  here; commit and push; stop before Step 1.
-- [ ] Step 1: slide tray to 6–8 cm overhang, edge pinch, dining XY gate
+  in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
+- [ ] **CURRENT — Step 1:** slide tray to 6–8 cm overhang, edge pinch, dining XY gate
   `>=7/10`; one escalation to a two-arm corner pinch if needed.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.

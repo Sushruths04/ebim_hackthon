@@ -210,6 +210,22 @@ each session, not retroactively.
   `sim-dev-g4b` must be STOPPED after evidence export; do not count this as a
   Day 2 physical proof.
 
+## Session log - 2026-07-18 18:44-19:05 UTC (Day 3 Step 0)
+
+- `sim-dev-g4b` was started as the only active GPU VM. The pre-existing Isaac
+  container had exited with code 137 after the prior session and was restarted;
+  no second container or overlapping Isaac process was launched.
+- Four short headless probe launches were needed while correcting the readout:
+  one setup-order correction, one fingertip-link pairing correction, and one
+  USD-name typo correction. Each run persisted its result before the known Kit
+  shutdown hang; only exact completed probe PIDs were terminated afterward.
+- The final probe measured both grippers at `0.034000 m` fingertip separation
+  with open command `0.9 rad`. Runtime masses were tray `0.300000 kg`, bowl
+  `0.220000 kg`, spoon `0.050000 kg`, plate `0.220000 kg`, and cup `0.093608
+  kg`. Raw evidence is in `outputs/task3_stage0_probe_20260718/result.json`.
+- Approximate incremental GPU use: `~0.25 h` wall-clock probe time including
+  Isaac startup/shutdown overhead. The VM is STOPPED at session close.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
