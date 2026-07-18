@@ -231,7 +231,7 @@ Why it matters: the frozen grasp/lift pipeline now has a reproducible proof
 bundle at `proofs/phase2-grasp-reliability/`. Because the scene and controller
 are deterministic, this is repeatability evidence rather than a claim of
 robustness to physical variation. The VM batch parent exited cleanly; the VM
-remains running for the next Stage 1 FSM session.
+exited cleanly. The VM was stopped after the Day 2 GPU work completed.
 
 Lesson: package the machine-readable gate, per-trial evidence, visual proof,
 and exact reproduction command together before moving to the next phase.

@@ -183,8 +183,7 @@ each session, not retroactively.
   per trial. Batch wall time reported by the controller: 1698.766 s (0.472 h).
 - Approximate incremental spot usage for the batch: 0.5 GPU h, roughly
   0.8-1.0 EUR at the previously recorded $1.5-2/h estimate. This is a batch
-  estimate; the VM remains RUNNING for Stage 1 and must be stopped at the next
-  handoff if no further GPU work is active.
+  estimate; the VM was STOPPED after the Stage 1 visual proof completed.
 - Evidence exported locally under `outputs/task3_grasp_reliability_official_20260718/`
   and `proofs/phase2-grasp-reliability/` before Stage 1 work.
 
@@ -195,9 +194,8 @@ each session, not retroactively.
 - Visual pass: one headless render/video run, 50 pulled RGB frames, 22.4 MB
   GIF. Approximate active GPU time: 0.1 h.
 - Combined incremental Stage 1 estimate: 0.4 GPU h, roughly 0.6-0.8 EUR at
-  the previously recorded spot estimate. `sim-dev-g4b` remains RUNNING for
-  the next physical tray-contact work; stop it at handoff if no GPU process
-  remains.
+  the previously recorded spot estimate. `sim-dev-g4b` was STOPPED after the
+  final visual proof; restart only for the physical tray-contact gate.
 
 ## Outstanding blockers (as of 2026-07-16)
 

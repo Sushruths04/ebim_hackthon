@@ -6,12 +6,12 @@
 
 Last update: 2026-07-18 01:15 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS change: `sim-dev-g4b` is RUNNING (external IP
-`34.61.210.0`). Public Run 18 passed the grasp/lift/hold gate and its Kit
-process (PID 12426) is still serving the owner-confirmed WebRTC stream.
+GPU STATUS change: `sim-dev-g4b` is STOPPED after the Day 2 runs (external IP
+`34.61.210.0` reserved in the handoff). Public Run 18 passed the grasp/lift/
+hold gate and its visual proof is preserved locally.
 Log `/tmp/task3_grasp_skip18_margin_public.log`; output
-`outputs/task3_verify_grasp_skip18_margin_public/`. Codex owns stopping the
-exact Kit process before the reliability batch and the VM at handoff.
+`outputs/task3_verify_grasp_skip18_margin_public/`. No Kit process remains
+active; Codex stopped the VM after exporting the Day 2 proof.
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
