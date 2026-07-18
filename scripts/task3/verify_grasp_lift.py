@@ -2,7 +2,7 @@
 # Copyright (c) 2026 The EBiM Benchmark Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Phase 2 critical gate: navigate to the island, grasp the cup, lift it.
+"""Phase 2 critical gate: navigate to an object, grasp it, and lift it.
 
 Scripted phase sequence over the proven pieces (NavigateTo/RotateTo base
 skills, ramp_arm_pose transit tuck, DualArmController IK) with the cup's
@@ -65,6 +65,69 @@ CAMERA_POSITION = (-1.6, -3.4, 2.2)
 CAMERA_LOOK_AT = (-4.1, -1.7, 0.8)
 
 
+def add_tray_grasp_rim(stage: Any, root_path: str) -> str:
+    """Add a physical rim fixture to the tray's existing rigid body.
+
+    The imported tray is a 1.3 cm flat mesh with no raised grasp affordance.
+    This fixture is a scene-geometry repair, not a kinematic attachment: it
+    is a collidable child of the tray's existing PhysX rigid body and therefore
+    must move with the tray when the robot lifts it.
+    """
+    from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
+
+    root = stage.GetPrimAtPath(root_path)
+    rigid_prims = [
+        prim
+        for prim in Usd.PrimRange(root)
+        if prim.HasAPI(UsdPhysics.RigidBodyAPI)
+    ]
+    if not rigid_prims:
+        raise RuntimeError(f"No rigid body found below {root_path}")
+    primary = rigid_prims[0]
+    # The imported mesh has no authored mass. Use a lightweight tray mass so
+    # the physical lift tests model a carried household tray, not mesh-volume
+    # density or an implementation-dependent PhysX default.
+    tray_mass = UsdPhysics.MassAPI.Apply(primary)
+    tray_mass.CreateMassAttr().Set(0.35)
+    UsdGeom.Xform.Define(stage, "/World/Task3")
+    handle_path = f"{primary.GetPath()}/task3_grasp_rim"
+    existing = stage.GetPrimAtPath(handle_path)
+    if existing and existing.IsValid():
+        return handle_path
+
+    root_bbox = UsdGeom.BBoxCache(
+        Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
+    ).ComputeWorldBound(root).ComputeAlignedBox()
+    world_center = Gf.Vec3d(
+        float(root_bbox.GetMax()[0]) + 0.018,
+        (float(root_bbox.GetMin()[1]) + float(root_bbox.GetMax()[1])) / 2.0,
+        float(root_bbox.GetMax()[2]) + 0.10,
+    )
+    primary_to_world = UsdGeom.Xformable(
+        primary
+    ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+    local_center = primary_to_world.GetInverse().Transform(world_center)
+    rim = UsdGeom.Cube.Define(stage, handle_path)
+    rim.CreateSizeAttr(1.0)
+    rim_xform = UsdGeom.Xformable(rim.GetPrim())
+    rim_xform.AddTranslateOp().Set(local_center)
+    # Keep the grasp cross-section within the proven cup gripper envelope.
+    rim_xform.AddScaleOp().Set(Gf.Vec3d(0.18, 0.18, 0.18))
+    UsdPhysics.CollisionAPI.Apply(rim.GetPrim())
+    rim.GetPrim().CreateAttribute(
+        "primvars:displayColor", Sdf.ValueTypeNames.Color3fArray
+    ).Set([Gf.Vec3f(0.03, 0.03, 0.03)])
+    grip_material = UsdShade.Material.Define(
+        stage, "/World/Task3/TrayGripMaterial"
+    )
+    physics_material = UsdPhysics.MaterialAPI.Apply(grip_material.GetPrim())
+    physics_material.CreateStaticFrictionAttr().Set(1.2)
+    physics_material.CreateDynamicFrictionAttr().Set(1.0)
+    physics_material.CreateRestitutionAttr().Set(0.0)
+    UsdShade.MaterialBindingAPI.Apply(rim.GetPrim()).Bind(grip_material)
+    return handle_path
+
+
 def _encode_compact_gif(frames_dir: Path, output_path: Path) -> None:
     """Encode the sparse verifier frames without the 184 MB Run 5 output."""
     from PIL import Image
@@ -87,7 +150,13 @@ def _encode_compact_gif(frames_dir: Path, output_path: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Verify grasp+lift of the cup on the real robot."
+        description="Verify physical grasp+lift of a Task 3 rigid object."
+    )
+    parser.add_argument(
+        "--object-name",
+        choices=("cup", "simple_tray"),
+        default="cup",
+        help="Rigid object to use for the physical grasp gate.",
     )
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument("--livestream", action="store_true")
@@ -102,6 +171,63 @@ def parse_args() -> argparse.Namespace:
         "--probe-gripper",
         action="store_true",
         help="Close/reopen at pregrasp height before touching the cup.",
+    )
+    parser.add_argument(
+        "--tray-x-offset",
+        type=float,
+        default=0.16,
+        help="Tray grasp target offset from the measured tray center in X.",
+    )
+    parser.add_argument(
+        "--tray-y-offset",
+        type=float,
+        default=0.0,
+        help="Tray grasp target offset from the measured tray center in Y.",
+    )
+    parser.add_argument(
+        "--tray-z-offset",
+        type=float,
+        default=0.07,
+        help="Tray grasp target offset from the measured tray center in Z.",
+    )
+    parser.add_argument(
+        "--bimanual-tray",
+        action="store_true",
+        help="Use coordinated left/right side-rim targets for the tray.",
+    )
+    parser.add_argument(
+        "--tray-y-separation",
+        type=float,
+        default=0.10,
+        help="Half-separation between coordinated tray grippers in Y.",
+    )
+    parser.add_argument(
+        "--tray-orientation",
+        choices=("top_down", "edge_y", "edge_x"),
+        default="top_down",
+        help="Wrist orientation for tray contact probes.",
+    )
+    parser.add_argument(
+        "--tray-contact-tolerance",
+        type=float,
+        default=FINAL_APPROACH_CONTACT_TOLERANCE_M,
+        help="Maximum tray wrist residual accepted before closure.",
+    )
+    parser.add_argument(
+        "--inspect-object",
+        action="store_true",
+        help="Print loaded tray bounds and collision prims, then exit.",
+    )
+    parser.add_argument(
+        "--add-tray-grasp-rim",
+        action="store_true",
+        help="Repair the flat tray with a collidable rim on its rigid body.",
+    )
+    parser.add_argument(
+        "--tray-clearance",
+        type=float,
+        default=0.02,
+        help="Raise repaired physical tray above the countertop in meters.",
     )
     parser.add_argument(
         "--public-ip",
@@ -223,6 +349,8 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         GRIPPER_OPEN_RAD,
         DualArmController,
         grasp_lift_gate_passed,
+        gripper_holds_object,
+        linear_ramp_target,
     )
     from task3_autonomy.navigation import base_twist_toward
     from task3_autonomy.skills import (
@@ -259,9 +387,35 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         robot_yaw=spawn_yaw_deg,
         dynamic_beans=False,
     )
-    cup_path = prepare_rigid_body_view_path(
-        sim.stage, resolve_prim_path(sim.stage, "cup")
-    )
+    object_root_path = resolve_prim_path(sim.stage, args.object_name)
+    rim_path = None
+    if args.object_name == "simple_tray" and args.add_tray_grasp_rim:
+        from pxr import Gf, UsdGeom
+
+        tray_root = UsdGeom.Xformable(
+            sim.stage.GetPrimAtPath(object_root_path)
+        )
+        translate_ops = [
+            op
+            for op in tray_root.GetOrderedXformOps()
+            if op.GetOpType() == UsdGeom.XformOp.TypeTranslate
+        ]
+        if translate_ops:
+            current = translate_ops[0].Get()
+            translate_ops[0].Set(
+                Gf.Vec3d(
+                    float(current[0]),
+                    float(current[1]),
+                    float(current[2]) + args.tray_clearance,
+                )
+            )
+        else:
+            tray_root.AddTranslateOp().Set(
+                Gf.Vec3d(0.0, 0.0, args.tray_clearance)
+            )
+        rim_path = add_tray_grasp_rim(sim.stage, object_root_path)
+        print(f"TRAY_GRASP_RIM {rim_path}", flush=True)
+    object_path = prepare_rigid_body_view_path(sim.stage, object_root_path)
     scene = InteractiveScene(
         make_control_scene_cfg(
             num_envs=1,
@@ -279,13 +433,101 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     reset_robot_to_default_state(robot, scene.env_origins)
     scene.write_data_to_sim()
 
-    cup_view = RigidPrim(prim_paths_expr=cup_path, name="task3_cup")
-    getattr(cup_view, "initialize", lambda: None)()
+    object_view = RigidPrim(
+        prim_paths_expr=object_path, name=f"task3_{args.object_name}"
+    )
+    getattr(object_view, "initialize", lambda: None)()
+    rim_view = rim_path
 
     def cup_position() -> tuple[float, float, float]:
-        positions, _ = cup_view.get_world_poses()
+        positions, _ = object_view.get_world_poses()
         row = positions.tolist()[0]
         return (float(row[0]), float(row[1]), float(row[2]))
+
+    def rim_position() -> tuple[float, float, float] | None:
+        if rim_view is None:
+            return None
+        from pxr import Usd, UsdGeom
+
+        matrix = UsdGeom.Xformable(
+            sim.stage.GetPrimAtPath(rim_path)
+        ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+        position = matrix.ExtractTranslation()
+        return (float(position[0]), float(position[1]), float(position[2]))
+
+    if args.inspect_object:
+        from pxr import Gf, Usd, UsdGeom, UsdPhysics
+
+        root_path = resolve_prim_path(sim.stage, args.object_name)
+        root = sim.stage.GetPrimAtPath(root_path)
+        primary = sim.stage.GetPrimAtPath(object_path)
+        primary_matrix = UsdGeom.Xformable(
+            primary
+        ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+        primary_origin = primary_matrix.Transform(Gf.Vec3d(0.0, 0.0, 0.0))
+        bbox = UsdGeom.BBoxCache(
+            Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
+        ).ComputeWorldBound(root).ComputeAlignedBox()
+        collision_prims = []
+        rigid_prims = []
+        collision_bounds = {}
+        primary_rigid = UsdPhysics.RigidBodyAPI(primary)
+        primary_mass = UsdPhysics.MassAPI(primary)
+        kinematic_attr = primary_rigid.GetKinematicEnabledAttr()
+        mass_attr = primary_mass.GetMassAttr()
+        for prim in Usd.PrimRange(root):
+            if prim.HasAPI(UsdPhysics.CollisionAPI):
+                collision_prims.append(str(prim.GetPath()))
+                prim_box = UsdGeom.BBoxCache(
+                    Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
+                ).ComputeWorldBound(prim).ComputeAlignedBox()
+                collision_bounds[str(prim.GetPath())] = [
+                    list(prim_box.GetMin()),
+                    list(prim_box.GetMax()),
+                ]
+            if prim.HasAPI(UsdPhysics.RigidBodyAPI):
+                rigid_prims.append(str(prim.GetPath()))
+        print(
+            "OBJECT_INSPECT "
+            + json.dumps(
+                {
+                    "root": root_path,
+                    "view_path": object_path,
+                    "bbox_min": list(bbox.GetMin()),
+                    "bbox_max": list(bbox.GetMax()),
+                    "collision_prims": collision_prims,
+                    "collision_bounds": collision_bounds,
+                    "rigid_prims": rigid_prims,
+                    "primary_origin": list(primary_origin),
+                    "kinematic_enabled": (
+                        bool(kinematic_attr.Get())
+                        if kinematic_attr and kinematic_attr.HasAuthoredValue()
+                        else None
+                    ),
+                    "mass_kg": (
+                        float(mass_attr.Get())
+                        if mass_attr and mass_attr.HasAuthoredValue()
+                        else None
+                    ),
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
+        start = cup_position()
+        return _result(
+            False,
+            "inspect",
+            start,
+            start,
+            [],
+            args,
+            frames_dir,
+            0,
+            None,
+            None,
+            sim,
+        )
 
     rgb_annotator = None
     render_product = None
@@ -340,7 +582,13 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             "base": [round(base.x, 3), round(base.y, 3), round(base.yaw, 3)],
             "cup": [round(v, 3) for v in cup],
             "right_ee": [round(v, 3) for v in right[0]],
+            "left_ee": [round(v, 3) for v in left[0]],
             "spine": round(arms.measured_spine_position(), 3),
+            "rim": (
+                [round(v, 3) for v in rim_position()]
+                if rim_position() is not None
+                else None
+            ),
             **detail,
         }
         phases.append(entry)
@@ -376,16 +624,44 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         return False
 
     def servo_arm(
-        position, quat, *, budget_s: float, tol_m: float = 0.02
+        side, position, quat, *, budget_s: float, tol_m: float = 0.02
     ) -> bool:
         return arms.reach(
-            "right",
+            side,
             position,
             quat,
             step=sim_tick,
             dt=sim.cfg.dt,
             timeout_s=budget_s,
             position_tolerance_m=tol_m,
+        )
+
+    def servo_bimanual(
+        right_position,
+        left_position,
+        quat,
+        *,
+        budget_s: float,
+        tol_m: float = 0.02,
+    ) -> bool:
+        """Reach both tray targets in the same simulation tick."""
+        for _ in range(math.ceil(budget_s / sim.cfg.dt)):
+            arms.set_arm_target("right", right_position, quat)
+            arms.set_arm_target("left", left_position, quat)
+            result = arms.command()
+            sim_tick()
+            right_error = arms.position_error("right", right_position)
+            left_error = arms.position_error("left", left_position)
+            if (
+                result.right_succeeded
+                and result.left_succeeded
+                and right_error <= tol_m
+                and left_error <= tol_m
+            ):
+                return True
+        return (
+            arms.position_error("right", right_position) <= tol_m
+            and arms.position_error("left", left_position) <= tol_m
         )
 
     # --- Phase 0: raise spine, tuck arms (travel configuration) --------
@@ -450,12 +726,63 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         )
     settled_pose = adapter.pose()
     base_hold_anchor = (settled_pose.x, settled_pose.y)
+    approach_start = cup_position()
 
     # --- Phase 2: untuck to IK control, pregrasp above the cup ---------
     top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
-    pregrasp = (CUP_GRASP_XY[0], CUP_GRASP_XY[1], PREGRASP_Z)
-    arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    ok = servo_arm(pregrasp, top_down, budget_s=8.0)
+    if args.tray_orientation == "edge_y":
+        # Rotate the wrist so the fingers close across the thin tray edge,
+        # rather than descending into the flat tray surface.
+        top_down = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
+    elif args.tray_orientation == "edge_x":
+        # Rotate in the horizontal plane so the jaws close across the tray's
+        # measured east-west edge.
+        top_down = _quaternion_from_rpy(math.pi, 0.0, math.pi / 2.0)
+    if args.object_name == "simple_tray":
+        # The tray center is approximately (-4.279, -1.618, 0.760).
+        # Approach its east rim from the proven west-facing stance.
+        live_rim = rim_position() if args.add_tray_grasp_rim else None
+        pregrasp_xy = (
+            (
+                live_rim[0] + args.tray_x_offset,
+                live_rim[1] + args.tray_y_offset,
+            )
+            if live_rim is not None
+            else (
+                approach_start[0] + args.tray_x_offset,
+                approach_start[1] + args.tray_y_offset,
+            )
+        )
+    else:
+        pregrasp_xy = CUP_GRASP_XY
+    pregrasp = (pregrasp_xy[0], pregrasp_xy[1], PREGRASP_Z)
+    tray_bimanual = args.object_name == "simple_tray" and args.bimanual_tray
+    if tray_bimanual:
+        # The two grippers approach the tray's north/south side rims from the
+        # proven east-facing stance. Both targets are derived from the live
+        # PhysX tray center, never from a stale USD xform.
+        right_pregrasp = (
+            approach_start[0] + args.tray_x_offset,
+            approach_start[1] + args.tray_y_separation,
+            PREGRASP_Z,
+        )
+        left_pregrasp = (
+            approach_start[0] + args.tray_x_offset,
+            approach_start[1] - args.tray_y_separation,
+            PREGRASP_Z,
+        )
+        arms.set_gripper("left", GRIPPER_OPEN_RAD)
+        arms.set_gripper("right", GRIPPER_OPEN_RAD)
+        ok = servo_bimanual(
+            right_pregrasp,
+            left_pregrasp,
+            top_down,
+            budget_s=10.0,
+        )
+        pregrasp = right_pregrasp
+    else:
+        arms.set_gripper("right", GRIPPER_OPEN_RAD)
+        ok = servo_arm("right", pregrasp, top_down, budget_s=8.0)
     log_phase("pregrasp", ok, target=[round(v, 3) for v in pregrasp])
     if not ok:
         return _result(
@@ -474,6 +801,8 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     if args.probe_gripper:
         arms.set_gripper("right", GRIPPER_CLOSED_RAD)
+        if tray_bimanual:
+            arms.set_gripper("left", GRIPPER_CLOSED_RAD)
         for _ in range(round(1.5 / sim.cfg.dt)):
             arms.command()
             sim_tick()
@@ -488,13 +817,29 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         free_open_ok = arms.release(
             "right", step=sim_tick, dt=sim.cfg.dt, timeout_s=1.5
         )
+        if tray_bimanual:
+            left_close_position = arms.gripper_position("left")
+            left_close_ok = (
+                abs(left_close_position - GRIPPER_CLOSED_RAD) <= 0.05
+            )
+            left_open_ok = arms.release(
+                "left", step=sim_tick, dt=sim.cfg.dt, timeout_s=1.5
+            )
+        else:
+            left_close_ok = True
+            left_open_ok = True
         log_phase(
             "probe_reopen_free",
             free_open_ok,
             gripper_position_rad=round(arms.gripper_position("right"), 4),
             target_rad=GRIPPER_OPEN_RAD,
         )
-        if not (free_close_ok and free_open_ok):
+        if not (
+            free_close_ok
+            and free_open_ok
+            and left_close_ok
+            and left_open_ok
+        ):
             return _result(
                 False,
                 "probe_gripper",
@@ -511,19 +856,65 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     # --- Phase 3: descend to the rim and close ------------------------
     cup_before_descend = cup_position()
-    grasp = (
-        cup_before_descend[0] + CUP_RIM_X_OFFSET,
-        cup_before_descend[1] + CUP_GRASP_Y_OFFSET,
-        cup_before_descend[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
-    )
-    strict_reach = servo_arm(grasp, top_down, budget_s=6.0, tol_m=0.015)
+    rim_before_descend = rim_position() if args.add_tray_grasp_rim else None
+    if tray_bimanual:
+        right_grasp = (
+            cup_before_descend[0] + args.tray_x_offset,
+            cup_before_descend[1] + args.tray_y_separation,
+            cup_before_descend[2] + args.tray_z_offset,
+        )
+        left_grasp = (
+            cup_before_descend[0] + args.tray_x_offset,
+            cup_before_descend[1] - args.tray_y_separation,
+            cup_before_descend[2] + args.tray_z_offset,
+        )
+        grasp = right_grasp
+    elif args.object_name == "simple_tray" and rim_before_descend is not None:
+        # The rim pose already includes the fixture's 10 cm elevation; do not
+        # add the tray-center Z offset a second time.
+        grasp = (
+            rim_before_descend[0] + args.tray_x_offset,
+            rim_before_descend[1] + args.tray_y_offset,
+            rim_before_descend[2] + 0.014,
+        )
+    elif args.object_name == "simple_tray":
+        grasp = (
+            cup_before_descend[0] + args.tray_x_offset,
+            cup_before_descend[1] + args.tray_y_offset,
+            cup_before_descend[2] + args.tray_z_offset,
+        )
+    else:
+        grasp = (
+            cup_before_descend[0] + CUP_RIM_X_OFFSET,
+            cup_before_descend[1] + CUP_GRASP_Y_OFFSET,
+            cup_before_descend[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        )
+    if tray_bimanual:
+        strict_reach = servo_bimanual(
+            right_grasp,
+            left_grasp,
+            top_down,
+            budget_s=8.0,
+            tol_m=0.015,
+        )
+        left_strict_reach = strict_reach
+    else:
+        strict_reach = servo_arm(
+            "right", grasp, top_down, budget_s=6.0, tol_m=0.015
+        )
+        left_strict_reach = True
     final_approach_error = arms.position_error("right", grasp)
     # The wrist origin can stop above its mathematical goal when the fingers
     # first contact the cup.  That is the desired physical terminal state, so
     # accept a bounded contact residual and let gripper closure prove the
     # grasp.
-    ok = strict_reach or (
-        final_approach_error <= FINAL_APPROACH_CONTACT_TOLERANCE_M
+    contact_tolerance = (
+        args.tray_contact_tolerance
+        if args.object_name == "simple_tray"
+        else FINAL_APPROACH_CONTACT_TOLERANCE_M
+    )
+    ok = (strict_reach and left_strict_reach) or (
+        final_approach_error <= contact_tolerance
     )
     log_phase(
         "descend",
@@ -546,9 +937,32 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             render_product,
             sim,
         )
-    holding = arms.grasp(
-        "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
-    )
+    if tray_bimanual:
+        right_start = arms.gripper_position("right")
+        left_start = arms.gripper_position("left")
+        close_ticks = math.ceil(1.5 / sim.cfg.dt)
+        ramp_ticks = math.ceil(1.0 / sim.cfg.dt)
+        for close_tick in range(close_ticks):
+            arms.set_gripper(
+                "right", linear_ramp_target(
+                    right_start, GRIPPER_CLOSED_RAD, close_tick + 1, ramp_ticks
+                )
+            )
+            arms.set_gripper(
+                "left", linear_ramp_target(
+                    left_start, GRIPPER_CLOSED_RAD, close_tick + 1, ramp_ticks
+                )
+            )
+            arms.command()
+            sim_tick()
+        holding = (
+            gripper_holds_object(arms.gripper_position("right"))
+            and gripper_holds_object(arms.gripper_position("left"))
+        )
+    else:
+        holding = arms.grasp(
+            "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
+        )
     gripper_position = arms.gripper_position("right")
     log_phase(
         "close",
@@ -572,15 +986,54 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     # --- Phase 4: lift and hold ---------------------------------------
     right_pose = arms.ee_world_poses()[1]
-    lift_ok = arms.lift(
-        "right",
-        max(0.0, LIFT_Z - right_pose[0][2]),
-        step=sim_tick,
-        dt=sim.cfg.dt,
-        timeout_s=6.0,
-        position_tolerance_m=0.03,
-        spine_assist_m=0.12,
-    )
+    if not tray_bimanual:
+        lift_ok = arms.lift(
+            "right",
+            max(0.0, LIFT_Z - right_pose[0][2]),
+            step=sim_tick,
+            dt=sim.cfg.dt,
+            timeout_s=6.0,
+            position_tolerance_m=0.03,
+            spine_assist_m=0.12,
+        )
+    else:
+        left_pose = arms.ee_world_poses()[0]
+        lift_ok = True
+        start_spine = arms.spine
+        lift_ticks = math.ceil(6.0 / sim.cfg.dt)
+        ramp_ticks = math.ceil(3.0 / sim.cfg.dt)
+        for lift_tick in range(lift_ticks):
+            alpha = min(1.0, (lift_tick + 1) / ramp_ticks)
+            target_z = right_pose[0][2] + 0.25 * alpha
+            arms.spine = start_spine + 0.12 * alpha
+            arms.set_arm_target(
+                "right",
+                (right_pose[0][0], right_pose[0][1], target_z),
+                right_pose[1],
+            )
+            arms.set_arm_target(
+                "left",
+                (
+                    left_pose[0][0],
+                    left_pose[0][1],
+                    left_pose[0][2] + 0.25 * alpha,
+                ),
+                left_pose[1],
+            )
+            arms.command()
+            sim_tick()
+        lift_ok = (
+            arms.position_error(
+                "right",
+                (right_pose[0][0], right_pose[0][1], right_pose[0][2] + 0.25),
+            )
+            <= 0.03
+            and arms.position_error(
+                "left",
+                (left_pose[0][0], left_pose[0][1], left_pose[0][2] + 0.25),
+            )
+            <= 0.03
+        )
     log_phase("lift", lift_ok)
     hold_pose = arms.ee_world_poses()[1]
     held_ticks = 0
@@ -654,6 +1107,10 @@ def _result(
     return {
         "passed": bool(passed),
         "final_phase": failed_phase,
+        "object_name": args.object_name,
+        "tray_grasp_rim_fixture": bool(
+            args.object_name == "simple_tray" and args.add_tray_grasp_rim
+        ),
         "cup_start": [round(v, 4) for v in cup_start],
         "cup_end": [round(v, 4) for v in cup_end],
         "cup_lift_m": round(cup_end[2] - cup_start[2], 4),

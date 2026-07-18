@@ -107,3 +107,21 @@ Do not collect 50–100 episodes with the current recorder yet. Inspection of
 
 First fix unique episode directories, validate one saved episode, and load it
 with the actual training dataloader before large-scale collection.
+
+## Physical tray continuation — 2026-07-18 04:25 UTC
+
+The official cup batch and the Stage 1 kinematic adapter proof are complete,
+but physical Stage 1 is still open. The imported tray is a flat mesh with
+world bounds about `0.337 x 0.436 x 0.013 m`; its original bottom intersected
+the countertop at `z=0.7466 m`. The optional physical-repair path in
+`scripts/task3/verify_grasp_lift.py` now exposes a collision-child grasp
+fixture, explicit `0.35 kg` mass, friction material, live-rim targeting, and
+`0.02 m` tray clearance. This is a scene repair, not a kinematic attach.
+
+Measured GPU diagnostics covered fixed-joint, embedded-child, cube/cylinder,
+friction, mass, clearance, and bimanual variants. All physical tray attempts
+failed the object-space gate with `0.0 m` tray lift; the best single-arm pinch
+was about `0.57 rad`. The two-arm path also needs stable IK/contact targets.
+Do not tag or claim physical Stage 1 until a purpose-modeled two-contact
+affordance produces `>=0.08 m` tray lift and continuous hold under PhysX.
+Stop `sim-dev-g4b` after exporting any further evidence.

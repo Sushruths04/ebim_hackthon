@@ -4,18 +4,34 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 01:15 UTC (Codex,
+Last update: 2026-07-18 04:25 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS change: `sim-dev-g4b` is STOPPED after the Day 2 runs (external IP
-`34.61.210.0` reserved in the handoff). Public Run 18 passed the grasp/lift/
-hold gate and its visual proof is preserved locally.
-Log `/tmp/task3_grasp_skip18_margin_public.log`; output
-`outputs/task3_verify_grasp_skip18_margin_public/`. No Kit process remains
-active; Codex stopped the VM after exporting the Day 2 proof.
+GPU STATUS: `sim-dev-g4b` was used for isolated physical-tray diagnostics and
+must be STOPPED at session close. Day 1 remains complete; Day 2's official
+FSM adapter proof remains complete, but the physical tray-contact gate is not
+passed.
+
+## Physical tray investigation — 2026-07-18
+
+- The imported `simple_tray` is a flat mesh: world bounds about
+  `0.337 x 0.436 x 0.013 m`, with no raised grasp affordance.
+- The tray is dynamic (`kinematic_enabled=false`) and was explicitly set to
+  `0.35 kg` for the diagnostic. Its original bottom was `z=0.7466 m`, below
+  the countertop contact plane; the repair path now raises it by `0.02 m`,
+  producing `z=0.7666 m` clearance.
+- Physical fixture attempts were measured, not inferred: separate fixed-joint
+  rim, embedded collision child, cube/cylinder handles, explicit friction,
+  and lightweight mass all produced `0.0 m` tray lift. The best single-arm
+  closure was approximately `0.57 rad`, but the tray did not follow the arm.
+- The synchronized two-arm path reached only a marginal pregrasp and then
+  failed IK/contact sequencing. No physical Stage 1 carry proof exists yet.
+- Do not describe the fixture path or the Day 2 adapter as full autonomy. The
+  next engineering task is a purpose-modeled two-contact tray affordance and
+  a physical carry controller, followed by a fresh multi-trial gate.
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
-  SPOT, us-central1-b): RUNNING — THE PRIMARY BOX.** Isaac render VERIFIED
+  SPOT, us-central1-b): STOPPED after the physical tray diagnostics.** Isaac render VERIFIED
   (`outputs/task3_g4_render/rgb_0000.png`, app wall-time 9.4 s warm).
   Driver: `nvidia-driver-580-open` (apt) — Blackwell passthrough needs the
   OPEN kernel modules. `/dev/nvidia-uvm` must exist (persisted via
@@ -114,12 +130,9 @@ active; Codex stopped the VM after exporting the Day 2 proof.
   rad pinch. The official fresh 10-run batch is next. CPU gate is 451/451;
   changed files are Ruff-clean.
 
-  **Live official batch:** trials 01–03 passed (each +0.0880 m, 3.0 s);
-  trial 04/10 is active. Batch controller/log:
-  `/tmp/task3_grasp_reliability_official_20260718.log`; outputs:
-  `outputs/task3_grasp_reliability_official_20260718/`. Do not launch a second
-  Kit process while PID 15504 (batch parent) remains active. Compact resume:
-  `docs/CODEX_HANDOFF_2026-07-18.md`.
+  **Official batch complete:** 10/10 passed at +0.0880 m and 3.0 s hold;
+  `gate_passed=true`, required `8/10`. Proof:
+  `proofs/phase2-grasp-reliability/`.
 - [ ] Run evaluation, assemble proof, and create the Day 1 tag.
 - [ ] Update journal/budget, commit, push, and leave exact resume commands.
 

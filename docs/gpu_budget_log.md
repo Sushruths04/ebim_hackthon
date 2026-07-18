@@ -197,6 +197,19 @@ each session, not retroactively.
   the previously recorded spot estimate. `sim-dev-g4b` was STOPPED after the
   final visual proof; restart only for the physical tray-contact gate.
 
+## Session log - 2026-07-18 03:40-04:25 UTC (physical tray diagnostics)
+
+- `sim-dev-g4b` was restarted as the only active GPU VM. No Isaac processes
+  overlapped; each diagnostic was run sequentially in
+  `isaac-lab-2-3-2-workshop`.
+- Nine short physical-tray diagnostics consumed approximately 2.0 GPU h
+  including Isaac startup/shutdown overhead, estimated at roughly 3-4 EUR at
+  the recorded spot rate. The runs tested geometry, joint embedding, mass,
+  friction, clearance, and a two-arm reach path.
+- The physical gate did not pass: measured tray lift remained `0.0 m`.
+  `sim-dev-g4b` must be STOPPED after evidence export; do not count this as a
+  Day 2 physical proof.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

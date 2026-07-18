@@ -255,3 +255,28 @@ rigid-contact evidence.
 
 Lesson: make the FSM and grading contract executable first, then replace the
 adapter behind the same state milestones without changing the acceptance path.
+
+## 2026-07-18 03:40-04:25 UTC - Codex: physical tray-contact investigation
+
+Goal: replace the Day 2 kinematic tray adapter with measured PhysX tray
+contact so the robot itself carries the tray.
+
+The imported tray was inspected in-simulator: a single flat collision mesh,
+approximately `0.337 x 0.436 x 0.013 m`, with no grasp affordance. Diagnostics
+tested live pose targeting, a fixed-joint rim, an embedded collision child,
+cube and cylinder handles, explicit friction, and an explicit `0.35 kg` mass.
+The original tray bottom was `z=0.7466 m`; it intersected the countertop, so
+the physical repair path adds `0.02 m` clearance and measured `z=0.7666 m`.
+
+Result: every physical tray attempt failed the actual object-space gate with
+`0.0 m` tray lift. The best single-arm closure was approximately `0.57 rad`,
+but the tray stayed at its starting height. A two-arm test also failed IK and
+contact sequencing at the current targets. These results are evidence of a
+missing/unsuitable grasp affordance and unstable dual-arm targeting, not proof
+of autonomous tray carrying. The Day 2 kinematic adapter proof remains valid
+only for FSM ordering and grading-path validation.
+
+Next: model a proper two-contact tray handle/edge in the scene asset, validate
+both arms against measured handle poses, then add the physical carry state
+machine and rerun a multi-trial proof. Do not tag physical Stage 1 until the
+tray clears `0.08 m` and holds continuously under PhysX.
