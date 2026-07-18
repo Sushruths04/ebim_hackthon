@@ -226,6 +226,18 @@ each session, not retroactively.
 - Approximate incremental GPU use: `~0.25 h` wall-clock probe time including
   Isaac startup/shutdown overhead. The VM is STOPPED at session close.
 
+## Session log - 2026-07-18 20:28-20:35 UTC (Day 3 Step 1 trial)
+
+- `sim-dev-g4b` was restarted as the only active GPU VM. One explicit
+  head-placement-`a` north-side physics-only tray trial ran in the existing
+  container; no overlapping GPU instance or Isaac process was used.
+- Probe wall time was approximately `0.10 h` including startup/shutdown
+  overhead. The raw JSON was exported to
+  `outputs/task3_stage1_tray_slide_north_20260718/result.json` before close.
+- Result: navigation and real contact occurred, but the tray moved only
+  `0.038228 m` north and the arm failed at `push_precontact`; the Step 1 gate
+  did not pass. `sim-dev-g4b` is STOPPED at session close.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

@@ -302,3 +302,26 @@ five-object table and raw body/link names are in the JSON.
 Lesson: the tray is lighter than the earlier diagnostic assumption, but its
 13 mm flat geometry remains the limiting affordance. Step 1 should therefore
 use the planned slide-to-overhang edge pinch, with no scene edits.
+
+## 2026-07-18 20:28-20:35 UTC — Codex: Day 3 Step 1 physics-only trial
+
+Goal: test the standard slide-to-overhang approach on the unmodified tray,
+without a kinematic adapter or scene repair.
+
+The head-placement-`a` probe navigated to the tray stance and attempted a
+north-side physical push using real arm targets and PhysX pose reads. The tray
+moved from `(-4.279305,-1.617691,0.759661)` to
+`(-4.286008,-1.579463,0.759662)`: `0.038228 m` north, with essentially zero
+vertical motion. The arm timed out before reaching `push_precontact`, so there
+was no edge pinch, lift, carry, or dining placement. Raw evidence is in
+`outputs/task3_stage1_tray_slide_north_20260718/result.json`.
+
+Result: **Step 1 gate not passed**. Navigation and genuine tray contact are
+working, but the current pre-contact target/approach does not produce the
+required overhang and grasp. The next authorized escalation is one two-arm
+corner-pinch attempt; no asset edits, mass edits, object teleports, or
+kinematic attachment are allowed.
+
+Lesson: record object displacement separately from task success. A small
+PhysX contact displacement is evidence of interaction, not evidence of a
+legal carry.

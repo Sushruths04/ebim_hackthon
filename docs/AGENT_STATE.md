@@ -4,11 +4,12 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 19:10 UTC (Codex,
+Last update: 2026-07-18 20:35 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED before the Step 1 restart. Day 1 remains
-complete; the Day 2 FSM proof is adapter-only. Codex is claiming Day 3 Step 1
-with the physics-only tray slide/pinch probe and will stop before Step 2.
+GPU STATUS: `sim-dev-g4b` is STOPPED after the Day 3 Step 1 trial. Day 1
+remains complete; the Day 2 FSM proof is adapter-only. Day 3 Step 0 is
+complete. Step 1 was attempted with physics-only contact, but its `>=7/10`
+gate did not pass; do not proceed to Step 2 yet.
 
 ## Physical tray investigation — 2026-07-18
 
@@ -61,6 +62,26 @@ geometry, mass, joint, or kinematic attachment was authored. Full raw result:
 | `spoon2` | `(-4.341526,-1.678126,0.760765)` | `0.125166 × 0.047448 × 0.029423` | `0.050000` | `0.547419` | `0.427435` |
 | `plate2` | `(-4.308727,-1.660848,0.747168)` | `0.215316 × 0.215320 × 0.023251` | `0.220000` | `0.431065` | `0.333191` |
 | `cup` | `(-4.184931,-1.752757,0.747003)` | `0.080053 × 0.081109 × 0.087307` | `0.093608` | `0.374844` | `0.491608` |
+
+## Day 3 Step 1 physical tray trial — 2026-07-18 20:28–20:35 UTC
+
+Ran one explicit north-side slide-to-edge attempt in the unmodified scene at
+head placement `a`. The probe used real navigation, arm joint targets,
+gripper contact, and PhysX `RigidPrim` pose reads. It did not write an object
+transform, add geometry, alter mass, attach a kinematic body, or use the Day 2
+adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json`.
+
+- Navigation reached the physical stance at `(-3.2937,-1.7322)` while the
+  tray remained at `(-4.279305,-1.617691,0.759661)`.
+- The contact attempt moved the tray physically north by `0.038228 m` with
+  only `0.000001 m` vertical change; this is contact evidence, not a
+  grasp/carry pass.
+- The arm timed out at `push_precontact`, so no overhang measurement, edge
+  pinch, lift, or dining placement occurred. Result `passed=false`.
+- Current blocker: the commanded north-side pre-contact pose was not reached;
+  the tray needs a better physics-legal approach/contact sequence. One
+  two-arm corner-pinch escalation remains available, but no scene repair is
+  authorized.
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -171,11 +192,12 @@ geometry, mass, joint, or kinematic attachment was authored. Full raw result:
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **CURRENT — Step 1 (Codex, 2026-07-18 19:10 UTC):** slide tray to
+- [ ] **Step 1 (Codex, attempted 2026-07-18 20:28–20:35 UTC):** slide tray to
   6–8 cm overhang, edge pinch, dining XY gate `>=7/10`; one escalation to a
-  two-arm corner pinch if needed. Physics-only probe:
-  `scripts/task3/probe_tray_slide.py`; no kinematic or scene edits.
-  `>=7/10`; one escalation to a two-arm corner pinch if needed.
+  two-arm corner pinch if needed. The first explicit north-side physics-only
+  attempt moved the tray `3.8228 cm` north but failed at `push_precontact`;
+  `scripts/task3/probe_tray_slide.py` remains the active probe. No kinematic
+  or scene edits are permitted.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
 - [ ] Step 3: 10-run head-placement matrix, physical proof bundle, tag

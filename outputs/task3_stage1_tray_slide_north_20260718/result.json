@@ -1,0 +1,122 @@
+{
+  "failed_phase": "push_precontact",
+  "final_pose": [
+    -4.286008,
+    -1.579463,
+    0.759662
+  ],
+  "head_placement": "a",
+  "mode": "physics_contact_only",
+  "net_translation_m": [
+    -0.006703,
+    0.038228,
+    1e-06
+  ],
+  "north_edge_world_y": -1.22,
+  "object_name": "simple_tray",
+  "passed": false,
+  "phases": [
+    {
+      "base": [
+        -4.600578,
+        2.692008,
+        -1.573123
+      ],
+      "measured_spine": 0.420162,
+      "ok": true,
+      "phase": "raise_spine",
+      "tick": 870,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.17521,
+        -1.572482,
+        -1.557946
+      ],
+      "ok": true,
+      "phase": "navigate_corridor_stop",
+      "tick": 4372,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.103477,
+        -3.00912,
+        -1.506632
+      ],
+      "ok": true,
+      "phase": "navigate_rotate_spot",
+      "tick": 11373,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.040056,
+        -2.827342,
+        -3.107982
+      ],
+      "ok": true,
+      "phase": "rotate_west",
+      "tick": 13219,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.2937,
+        -1.7322,
+        -3.0911
+      ],
+      "phase": "at_stance",
+      "tick": 14591,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.366189,
+        -1.834366,
+        2.5443
+      ],
+      "ok": false,
+      "phase": "push_precontact",
+      "target": [
+        -4.2793049812316895,
+        -1.4376910400390626,
+        0.8146608400344849
+      ],
+      "tick": 16591,
+      "tray": [
+        -4.286008,
+        -1.579463,
+        0.759662
+      ]
+    }
+  ],
+  "push_distance_commanded_m": 0.28,
+  "start_pose": [
+    -4.279305,
+    -1.617691,
+    0.759661
+  ],
+  "wall_time_seconds": 363.741
+}
