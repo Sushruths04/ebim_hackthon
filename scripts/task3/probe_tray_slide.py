@@ -133,6 +133,16 @@ FACE_SOUTH_YAW_RAD = -math.pi / 2.0
 # either the island or the partition.
 SAFE_LANE_MARGIN_M = 0.10
 
+# Round 2 trial r2t2: the inherited +0.014 m offset (from the untested,
+# west-approach legacy code) put the commanded wrist z above the tray's
+# measured center-thickness. r2t2 measured the descend stalling at ee_z
+# 0.813 (well above the 0.774 m commanded target), and the subsequent
+# close then closed to ~0 rad on nothing -- the fingers likely stopped on
+# the tray TOP surface rather than straddling its 13 mm thickness. tray_pose
+# already returns the tray's CENTER z, so the mid-thickness straddle point
+# is the tray center itself -- zero offset, not +0.014.
+EDGE_PINCH_Z_OFFSET_M = 0.0
+
 
 def north_overhang_m(
     tray_y: float,
@@ -464,6 +474,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--raise-seconds", type=float, default=2.0)
     parser.add_argument(
         "--descend-ee-z", type=float, default=DESCEND_EE_Z
+    )
+    parser.add_argument(
+        "--edge-pinch-z-offset", type=float, default=EDGE_PINCH_Z_OFFSET_M
     )
     parser.add_argument(
         "--output-dir",
@@ -888,7 +901,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
 
     tray_now = tray_pose()  # tray does not move during navigate/rotate
     edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
-    edge_z = tray_now[2] + 0.014
+    edge_z = tray_now[2] + args.edge_pinch_z_offset
     # Round 2 trial r2t1: one direct reach combining this much position
     # change with the ~90-degree wrist rotation to edge_y produced 5x
     # "Right arm IK failed: solver reported no solution" -- the identical
