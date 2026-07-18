@@ -63,6 +63,25 @@ def linear_ramp_target(
     return start + (end - start) * alpha
 
 
+def synchronized_drag_targets(
+    arm_start_y: float,
+    anchor_start_y: float,
+    distance: float,
+    completed_steps: int,
+    total_steps: int,
+) -> tuple[float, float]:
+    """Advance an arm push target and a base hold anchor by one shared offset.
+
+    Both must move north together so the arm's commanded reach relative to
+    the base never grows past the proven envelope: the Step 1 trial 1 root
+    cause was a single unsynchronized reach ~1.0 m from stance, well past the
+    proven ~0.83 m dead-ahead ceiling. Sharing one ramp offset guarantees the
+    arm/base separation stays exactly constant for every step.
+    """
+    offset = linear_ramp_target(0.0, distance, completed_steps, total_steps)
+    return arm_start_y + offset, anchor_start_y + offset
+
+
 def ordered_joint_targets(
     targets: Mapping[str, float], joint_names: Sequence[str]
 ) -> list[float] | None:

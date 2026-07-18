@@ -34,6 +34,7 @@ from task3_autonomy.arms import (  # noqa: E402
     linear_ramp_target,
     one_step_reach_command,
     ordered_joint_targets,
+    synchronized_drag_targets,
 )
 
 
@@ -82,6 +83,26 @@ def test_linear_ramp_target_clamps_at_end():
 def test_linear_ramp_target_rejects_invalid_inputs(args):
     with pytest.raises(ValueError, match="ramp"):
         linear_ramp_target(*args)
+
+
+@pytest.mark.parametrize("completed_steps", [0, 1, 3, 5, 8])
+def test_synchronized_drag_targets_preserve_relative_offset(completed_steps):
+    arm_start_y = -1.62
+    anchor_start_y = -1.72
+    starting_gap = arm_start_y - anchor_start_y
+    arm_y, anchor_y = synchronized_drag_targets(
+        arm_start_y, anchor_start_y, 0.26, completed_steps, 5
+    )
+    assert arm_y - anchor_y == pytest.approx(starting_gap)
+
+
+def test_synchronized_drag_targets_ramp_endpoints():
+    arm_y, anchor_y = synchronized_drag_targets(-1.62, -1.72, 0.26, 0, 5)
+    assert arm_y == pytest.approx(-1.62)
+    assert anchor_y == pytest.approx(-1.72)
+    arm_y, anchor_y = synchronized_drag_targets(-1.62, -1.72, 0.26, 5, 5)
+    assert arm_y == pytest.approx(-1.62 + 0.26)
+    assert anchor_y == pytest.approx(-1.72 + 0.26)
 
 
 def test_lift_ramps_vertical_target_before_accepting_convergence():

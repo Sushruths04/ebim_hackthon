@@ -7,6 +7,17 @@
 The tray remains the organizer asset. This script uses only robot joint
 targets, contact, and PhysX pose reads. It intentionally contains no
 kinematic object motion, added geometry, mass override, or fixed joint.
+
+Fix (2026-07-18): the first trial failed at ``push_precontact`` because a
+single direct reach targeted a pose ~1.0 m from the stance -- past the
+proven ~0.83 m dead-ahead envelope from the cup pipeline -- and swept the
+outstretched arm through the tray airspace. This revision mirrors the proven
+cup pipeline instead: a local ``TRAY_STANCE`` puts the contact point dead
+ahead (~0.86 m), a pregrasp-above reach is followed by a closed-fist ramped
+vertical descend onto the tray top (not a single ``reach()``, which would
+never converge into contact), then a synchronized north drag that ramps the
+arm's push target and the base hold anchor by the same offset every tick so
+the commanded arm/base separation never grows.
 """
 
 from __future__ import annotations
@@ -43,9 +54,129 @@ from verify_grasp_lift import (  # noqa: E402
     STANCE,
 )
 
+# Pure-math helpers: no Isaac dependency, safe to import at module scope.
+from task3_autonomy.arms import (  # noqa: E402
+    linear_ramp_target,
+    synchronized_drag_targets,
+)
+
 TRAY_NAME = "simple_tray"
 NORTH_COUNTER_EDGE_Y = -1.22
 DINING_TARGET = (-2.85, 1.90)
+
+# Same depth as the proven cup grasp (CUP_GRASP_XY = tray/cup center + 0.10 m
+# in x from the proven west-facing stance); dead ahead from TRAY_STANCE.
+CONTACT_X_OFFSET_M = 0.10
+PREGRASP_EE_Z = 1.05
+# ~1.5-2 cm below the expected fingertip-contact height so the position PD
+# presses down onto the tray top rather than stopping just above it.
+DESCEND_EE_Z = 0.80
+CONTACT_STALL_EPS_M = 0.01
+CONTACT_STALL_SECONDS = 0.3
+SLIDE_MOVED_Y_GATE_M = 0.20
+SLIDE_OVERHANG_GATE_M = 0.05
+
+
+def _reach_failure_detail(
+    arms: Any,
+    side: str,
+    position: tuple[float, float, float],
+    quat: tuple[float, ...],
+) -> dict[str, Any]:
+    """Measured EE pose, position/orientation error, and IK flag.
+
+    Diagnostic-only IK solve: ``arms.command()`` here does not call
+    ``step()``, so it does not advance physics or actuate anything -- it
+    only reports whether Lula could converge on the failed target from the
+    current configuration.
+    """
+    ik_result = arms.command()
+    ik_succeeded = (
+        ik_result.left_succeeded
+        if side == "left"
+        else ik_result.right_succeeded
+    )
+    ee_position, ee_quat = arms.ee_world_poses()[0 if side == "left" else 1]
+    position_error, orientation_error = arms.pose_error(side, position, quat)
+    return {
+        "target": [round(v, 4) for v in position],
+        "measured_ee_position": [round(v, 6) for v in ee_position],
+        "measured_ee_quat": [round(v, 6) for v in ee_quat],
+        "position_error_m": round(position_error, 6),
+        "orientation_error_rad": round(orientation_error, 6),
+        "ik_succeeded": bool(ik_succeeded),
+    }
+
+
+def _ramp_vertical_ee(
+    arms: Any,
+    step: Any,
+    tray_pose_fn: Any,
+    side: str,
+    xy: tuple[float, float],
+    quat: tuple[float, ...],
+    start_z: float,
+    end_z: float,
+    seconds: float,
+    dt: float,
+    *,
+    detect_contact: bool = False,
+    stall_eps_m: float = CONTACT_STALL_EPS_M,
+    stall_seconds: float = CONTACT_STALL_SECONDS,
+) -> dict[str, Any]:
+    """Time-bounded linear EE-z ramp, reissuing targets every tick.
+
+    This intentionally does not use ``reach()``: descending into contact
+    must never converge (the position PD is meant to keep pressing), and
+    ``reach()`` would report a spurious timeout failure. When
+    ``detect_contact`` is set, log the first tick where the measured EE z
+    stalls above the (still-descending) commanded z for more than
+    ``stall_seconds`` -- evidence the fingers are on the tray top.
+    """
+    ramp_ticks = max(1, math.ceil(seconds / dt))
+    stall_start_tick: int | None = None
+    contact_tick: int | None = None
+    contact_measured_z: float | None = None
+    contact_tray_pose: tuple[float, float, float] | None = None
+    for tick_index in range(ramp_ticks):
+        commanded_z = linear_ramp_target(
+            start_z, end_z, tick_index + 1, ramp_ticks
+        )
+        arms.set_arm_target(side, (xy[0], xy[1], commanded_z), quat)
+        arms.command()
+        step()
+        if not detect_contact:
+            continue
+        measured_z = arms.ee_world_poses()[0 if side == "left" else 1][0][2]
+        if measured_z - commanded_z <= stall_eps_m:
+            stall_start_tick = None
+            continue
+        if stall_start_tick is None:
+            stall_start_tick = tick_index
+        elif (
+            contact_tick is None
+            and (tick_index - stall_start_tick) * dt >= stall_seconds
+        ):
+            contact_tick = tick_index
+            contact_measured_z = measured_z
+            contact_tray_pose = tray_pose_fn()
+    final_measured_z = arms.ee_world_poses()[0 if side == "left" else 1][0][2]
+    return {
+        "final_commanded_ee_z": round(end_z, 6),
+        "final_measured_ee_z": round(final_measured_z, 6),
+        "contact_detected": contact_tick is not None,
+        "contact_tick": contact_tick,
+        "contact_measured_ee_z": (
+            round(contact_measured_z, 6)
+            if contact_measured_z is not None
+            else None
+        ),
+        "contact_tray_pose": (
+            [round(v, 6) for v in contact_tray_pose]
+            if contact_tray_pose is not None
+            else None
+        ),
+    }
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,10 +184,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--head-placement", choices=("a", "b", "c"), default="a"
     )
-    parser.add_argument("--push-distance", type=float, default=0.28)
-    parser.add_argument("--push-y-offset", type=float, default=0.18)
-    parser.add_argument("--push-z-offset", type=float, default=0.055)
-    parser.add_argument("--push-seconds", type=float, default=3.0)
+    parser.add_argument("--push-distance", type=float, default=0.26)
+    parser.add_argument("--descend-seconds", type=float, default=2.0)
+    parser.add_argument("--drag-seconds", type=float, default=5.0)
+    parser.add_argument("--raise-seconds", type=float, default=2.0)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -188,6 +319,14 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         ).ComputeAlignedBox()
         return list(box.GetMin()), list(box.GetMax())
 
+    # Local tray stance: put the contact point dead ahead so the reach stays
+    # inside the proven ~0.83 m envelope (CUP_GRASP_XY dead-ahead distance
+    # from STANCE), instead of the ~1.0 m diagonal reach that failed trial 1.
+    initial_tray_pose = tray_pose()
+    contact_x = initial_tray_pose[0] + CONTACT_X_OFFSET_M
+    contact_y = initial_tray_pose[1]
+    tray_stance = (STANCE[0], contact_y)
+
     adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
     arms = DualArmController(robot, simulation_app)
     phases: list[dict[str, Any]] = []
@@ -275,6 +414,44 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
             position_tolerance_m=0.025,
         )
 
+    def log_reach_failure(
+        name: str,
+        side: str,
+        position: tuple[float, float, float],
+        quat: tuple[float, ...],
+        **detail: Any,
+    ) -> None:
+        log(
+            name,
+            ok=False,
+            **_reach_failure_detail(arms, side, position, quat),
+            **detail,
+        )
+
+    def ramp_vertical(
+        side: str,
+        xy: tuple[float, float],
+        quat: tuple[float, ...],
+        start_z: float,
+        end_z: float,
+        seconds: float,
+        *,
+        detect_contact: bool = False,
+    ) -> dict[str, Any]:
+        return _ramp_vertical_ee(
+            arms,
+            sim_tick,
+            tray_pose,
+            side,
+            xy,
+            quat,
+            start_z,
+            end_z,
+            seconds,
+            sim.cfg.dt,
+            detect_contact=detect_contact,
+        )
+
     # Stabilize and tuck exactly as the proven cup pipeline does.
     spine_ok = arms.move_spine(
         0.45,
@@ -315,8 +492,8 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         return _result(
             False, "rotate_west", phases, tray_pose(), tray_pose(), args
         )
-    if not drive(STANCE, 0.25, 20.0):
-        log("navigate_stance", ok=False)
+    if not drive(tray_stance, 0.25, 20.0):
+        log("navigate_stance", ok=False, target=list(tray_stance))
         return _result(
             False, "navigate_stance", phases, tray_pose(), tray_pose(), args
         )
@@ -325,45 +502,97 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     log(
         "at_stance",
         base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
+        tray_stance=list(tray_stance),
     )
 
     start = tray_pose()
     top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
-    # Push from the south edge toward the north edge. The closed gripper is a
-    # contact pusher; it is never attached to the tray.
-    push_start = (
-        start[0],
-        start[1] + args.push_y_offset,
-        start[2] + args.push_z_offset,
-    )
-    push_end = (
-        push_start[0],
-        push_start[1] + args.push_distance,
-        push_start[2],
-    )
+    # Press-and-drag from the top of the tray: pregrasp above the contact
+    # point, close the fist (a rigid pusher, never attached to the tray),
+    # ramp down onto the tray top, then drag the contact point (and the base
+    # under it) north together. This mirrors the proven cup pipeline's
+    # pregrasp-above + ramped-descend structure instead of one direct reach.
+    pregrasp_above = (contact_x, contact_y, PREGRASP_EE_Z)
     arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    if not reach("right", push_start, top_down, 10.0):
-        log("push_precontact", ok=False, target=push_start)
-        return _result(
-            False, "push_precontact", phases, start, tray_pose(), args
+    if not reach("right", pregrasp_above, top_down, 8.0):
+        log_reach_failure(
+            "push_pregrasp_above", "right", pregrasp_above, top_down
         )
+        return _result(
+            False, "push_pregrasp_above", phases, start, tray_pose(), args
+        )
+    log("push_pregrasp_above", ok=True, target=list(pregrasp_above))
+
     arms.set_gripper("right", GRIPPER_CLOSED_RAD)
     for _ in range(math.ceil(1.0 / sim.cfg.dt)):
         arms.command()
         sim_tick()
     closed = arms.gripper_position("right")
-    log("push_close", ok=True, gripper_rad=round(closed, 6), target=push_start)
-    for _ in range(math.ceil(args.push_seconds / sim.cfg.dt)):
-        arms.set_arm_target("right", push_end, top_down)
+    log("push_close", ok=True, gripper_rad=round(closed, 6))
+
+    descend_info = ramp_vertical(
+        "right",
+        (contact_x, contact_y),
+        top_down,
+        PREGRASP_EE_Z,
+        DESCEND_EE_Z,
+        args.descend_seconds,
+        detect_contact=True,
+    )
+    log("push_descend", ok=True, **descend_info)
+
+    drag_start_anchor = hold_anchor
+    drag_ramp_ticks = max(1, math.ceil(args.drag_seconds / sim.cfg.dt))
+    for tick_index in range(drag_ramp_ticks):
+        arm_y, anchor_y = synchronized_drag_targets(
+            contact_y,
+            drag_start_anchor[1],
+            args.push_distance,
+            tick_index + 1,
+            drag_ramp_ticks,
+        )
+        arms.set_arm_target(
+            "right", (contact_x, arm_y, DESCEND_EE_Z), top_down
+        )
         arms.command()
+        hold_anchor = (drag_start_anchor[0], anchor_y)
         sim_tick()
+    log(
+        "push_drag",
+        ok=True,
+        target_arm_y=round(contact_y + args.push_distance, 6),
+        target_anchor=[
+            round(drag_start_anchor[0], 6),
+            round(drag_start_anchor[1] + args.push_distance, 6),
+        ],
+    )
+
+    raise_info = ramp_vertical(
+        "right",
+        (contact_x, contact_y + args.push_distance),
+        top_down,
+        DESCEND_EE_Z,
+        PREGRASP_EE_Z,
+        args.raise_seconds,
+    )
+    arms.set_gripper("right", GRIPPER_OPEN_RAD)
+    arms.command()
+    sim_tick()
+    pose = adapter.pose()
+    hold_anchor = (pose.x, pose.y)
+    log("push_raise", ok=True, **raise_info)
+
     after_push = tray_pose()
     bounds_after_push = tray_bounds()
     moved_y = after_push[1] - start[1]
     overhang_north = bounds_after_push[1][1] - NORTH_COUNTER_EDGE_Y
+    slide_ok = (
+        moved_y >= SLIDE_MOVED_Y_GATE_M
+        or overhang_north >= SLIDE_OVERHANG_GATE_M
+    )
     log(
         "push_result",
-        ok=moved_y > 0.02,
+        ok=slide_ok,
         moved_y_m=round(moved_y, 6),
         north_overhang_m=round(overhang_north, 6),
         bounds_min=[round(v, 6) for v in bounds_after_push[0]],
@@ -371,9 +600,6 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     )
 
     # Move to the north side of the island, then try a true thin-edge pinch.
-    arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    arms.command()
-    sim_tick()
     if not drive((STANCE[0], -0.75), 0.25, 20.0):
         log("navigate_north_side", ok=False)
         return _result(
@@ -383,33 +609,36 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     edge_y = _quaternion_from_rpy(math.pi, math.pi / 2.0, 0.0)
     edge_target = (tray_now[0], tray_now[1] + 0.02, tray_now[2] + 0.014)
     edge_ok = reach("right", edge_target, edge_y, 10.0)
-    log("edge_precontact", ok=edge_ok, target=edge_target)
-    holding = False
+    if not edge_ok:
+        log_reach_failure("edge_precontact", "right", edge_target, edge_y)
+        return _result(
+            False, "edge_precontact", phases, start, tray_pose(), args
+        )
+    log("edge_precontact", ok=True, target=list(edge_target))
     lift_ok = False
-    if edge_ok:
-        holding = arms.grasp(
-            "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
+    holding = arms.grasp(
+        "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
+    )
+    log(
+        "edge_close",
+        ok=holding,
+        gripper_rad=round(arms.gripper_position("right"), 6),
+    )
+    if holding:
+        lift_ok = arms.lift(
+            "right",
+            0.10,
+            step=sim_tick,
+            dt=sim.cfg.dt,
+            timeout_s=5.0,
+            position_tolerance_m=0.04,
+            spine_assist_m=0.08,
         )
         log(
-            "edge_close",
-            ok=holding,
-            gripper_rad=round(arms.gripper_position("right"), 6),
+            "edge_lift",
+            ok=lift_ok,
+            lift_m=round(tray_pose()[2] - after_push[2], 6),
         )
-        if holding:
-            lift_ok = arms.lift(
-                "right",
-                0.10,
-                step=sim_tick,
-                dt=sim.cfg.dt,
-                timeout_s=5.0,
-                position_tolerance_m=0.04,
-                spine_assist_m=0.08,
-            )
-            log(
-                "edge_lift",
-                ok=lift_ok,
-                lift_m=round(tray_pose()[2] - after_push[2], 6),
-            )
     final = tray_pose()
     passed = bool(holding and lift_ok)
     return _result(
