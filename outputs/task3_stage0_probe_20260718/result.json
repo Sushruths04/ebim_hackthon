@@ -1,0 +1,787 @@
+{
+  "counter_edges_world": {
+    "distance_definition": "edge coordinate minus object bbox max coordinate",
+    "east_x": -3.77,
+    "north_y": -1.22
+  },
+  "gripper": {
+    "fingertip_measurement": {
+      "all_body_names": [
+        "base",
+        "base_link",
+        "rocker_arm_link",
+        "argo_drive_front_fixed_link",
+        "base_inertia",
+        "caster_front_left_fixed_link",
+        "franka_spine",
+        "front_mounting_point",
+        "imu_mounting_point",
+        "left_mounting_point",
+        "lidar_front_mounting_point",
+        "lidar_rear_mounting_point",
+        "rear_mounting_point",
+        "right_mounting_point",
+        "argo_drive_rear_fixed_link",
+        "caster_rear_right_fixed_link",
+        "argo_drive_front_steering_link",
+        "caster_front_left_steering_link",
+        "franka_spine_support",
+        "argo_drive_rear_steering_link",
+        "caster_rear_right_steering_link",
+        "argo_drive_front_link",
+        "caster_front_left_link",
+        "mount_link",
+        "argo_drive_rear_link",
+        "caster_rear_right_link",
+        "head_link",
+        "left_base",
+        "right_base",
+        "head_camera_mounting_point",
+        "left_fr3v2_link0",
+        "right_fr3v2_link0",
+        "left_fr3v2_link1",
+        "left_fr3v2_link0_accelerometer_bottom",
+        "left_fr3v2_link0_accelerometer_top",
+        "right_fr3v2_link1",
+        "right_fr3v2_link0_accelerometer_bottom",
+        "right_fr3v2_link0_accelerometer_top",
+        "left_fr3v2_link2",
+        "left_fr3v2_link1_accelerometer_bottom",
+        "left_fr3v2_link1_accelerometer_top",
+        "right_fr3v2_link2",
+        "right_fr3v2_link1_accelerometer_bottom",
+        "right_fr3v2_link1_accelerometer_top",
+        "left_fr3v2_link3",
+        "left_fr3v2_link2_accelerometer_bottom",
+        "left_fr3v2_link2_accelerometer_top",
+        "right_fr3v2_link3",
+        "right_fr3v2_link2_accelerometer_bottom",
+        "right_fr3v2_link2_accelerometer_top",
+        "left_fr3v2_link4",
+        "left_fr3v2_link3_accelerometer_bottom",
+        "left_fr3v2_link3_accelerometer_top",
+        "right_fr3v2_link4",
+        "right_fr3v2_link3_accelerometer_bottom",
+        "right_fr3v2_link3_accelerometer_top",
+        "left_fr3v2_link5",
+        "left_fr3v2_link4_accelerometer_bottom",
+        "left_fr3v2_link4_accelerometer_top",
+        "right_fr3v2_link5",
+        "right_fr3v2_link4_accelerometer_bottom",
+        "right_fr3v2_link4_accelerometer_top",
+        "left_fr3v2_link6",
+        "left_fr3v2_link5_accelerometer_bottom",
+        "left_fr3v2_link5_accelerometer_top",
+        "right_fr3v2_link6",
+        "right_fr3v2_link5_accelerometer_bottom",
+        "right_fr3v2_link5_accelerometer_top",
+        "left_fr3v2_link7",
+        "right_fr3v2_link7",
+        "left_fr3v2_link8",
+        "right_fr3v2_link8",
+        "left_gripper_base",
+        "right_gripper_base",
+        "left_left_1_link",
+        "left_left_2_link",
+        "left_right_1_link",
+        "left_right_2_link",
+        "right_left_1_link",
+        "right_left_2_link",
+        "right_right_1_link",
+        "right_iight_2_link",
+        "left_left_support_link",
+        "left_right_support_link",
+        "right_left_support_link",
+        "right_right_support_link"
+      ],
+      "arm_apertures": {
+        "left": {
+          "body_names": [
+            "left_left_2_link",
+            "left_right_2_link"
+          ],
+          "positions_world": [
+            [
+              -4.073784,
+              1.978649,
+              0.935054
+            ],
+            [
+              -4.090531,
+              2.007958,
+              0.939117
+            ]
+          ],
+          "separation_m": 0.034
+        },
+        "right": {
+          "body_names": [
+            "right_left_2_link",
+            "right_iight_2_link"
+          ],
+          "positions_world": [
+            [
+              -5.115064,
+              2.0096,
+              0.938108
+            ],
+            [
+              -5.132277,
+              1.980605,
+              0.933745
+            ]
+          ],
+          "separation_m": 0.034
+        }
+      },
+      "body_candidates": [
+        {
+          "index": 72,
+          "name": "left_gripper_base",
+          "position_world": [
+            -3.979255,
+            2.046864,
+            0.974853
+          ]
+        },
+        {
+          "index": 73,
+          "name": "right_gripper_base",
+          "position_world": [
+            -5.225595,
+            2.04977,
+            0.974746
+          ]
+        }
+      ],
+      "commanded_open_rad": 0.9,
+      "note": "Choose the pair whose names identify the two fingertips; raw candidates are preserved.",
+      "pair_candidates": [
+        {
+          "names": [
+            "left_gripper_base",
+            "right_gripper_base"
+          ],
+          "separation_m": 1.246343
+        }
+      ]
+    },
+    "left_joint_rad": 0.899995,
+    "right_joint_rad": 0.899944,
+    "stage_gripper_geometry": [
+      {
+        "bbox_max_world": [
+          -3.840532,
+          2.032159,
+          1.154187
+        ],
+        "bbox_min_world": [
+          -4.033213,
+          1.828166,
+          0.969345
+        ],
+        "bbox_size_m": [
+          0.192681,
+          0.203993,
+          0.184842
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base"
+      },
+      {
+        "bbox_max_world": [
+          -3.860587,
+          2.032159,
+          1.125332
+        ],
+        "bbox_min_world": [
+          -4.033213,
+          1.897255,
+          0.969345
+        ],
+        "bbox_size_m": [
+          0.172626,
+          0.134904,
+          0.155987
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/visuals"
+      },
+      {
+        "bbox_max_world": [
+          -3.840532,
+          2.018972,
+          1.154187
+        ],
+        "bbox_min_world": [
+          -4.032788,
+          1.828166,
+          0.996758
+        ],
+        "bbox_size_m": [
+          0.192256,
+          0.190806,
+          0.157429
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand"
+      },
+      {
+        "bbox_max_world": [
+          -3.840532,
+          2.018918,
+          1.154187
+        ],
+        "bbox_min_world": [
+          -4.03263,
+          1.828166,
+          0.996889
+        ],
+        "bbox_size_m": [
+          0.192098,
+          0.190752,
+          0.157298
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/node_20s_camera_stand"
+      },
+      {
+        "bbox_max_world": [
+          -3.864047,
+          1.980472,
+          1.117834
+        ],
+        "bbox_min_world": [
+          -3.916212,
+          1.910585,
+          1.070778
+        ],
+        "bbox_size_m": [
+          0.052165,
+          0.069887,
+          0.047056
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/node_20s_camera_stand/Mesh_0_002"
+      },
+      {
+        "bbox_max_world": [
+          -3.847571,
+          1.996585,
+          1.135641
+        ],
+        "bbox_min_world": [
+          -3.93414,
+          1.894955,
+          1.051765
+        ],
+        "bbox_size_m": [
+          0.086569,
+          0.10163,
+          0.083876
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/node_20s_camera_stand/Mesh_13"
+      },
+      {
+        "bbox_max_world": [
+          -3.840584,
+          2.018918,
+          1.154187
+        ],
+        "bbox_min_world": [
+          -4.03263,
+          1.828207,
+          0.996969
+        ],
+        "bbox_size_m": [
+          0.192046,
+          0.190711,
+          0.157218
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/node_20s_camera_stand/Mesh_17"
+      },
+      {
+        "bbox_max_world": [
+          -3.911248,
+          1.928266,
+          1.100663
+        ],
+        "bbox_min_world": [
+          -3.940167,
+          1.898532,
+          1.075356
+        ],
+        "bbox_size_m": [
+          0.028919,
+          0.029734,
+          0.025307
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/node_20s_camera_stand/Mesh_2"
+      },
+      {
+        "bbox_max_world": [
+          -3.956672,
+          1.921482,
+          1.084683
+        ],
+        "bbox_min_world": [
+          -4.019048,
+          1.86189,
+          1.033065
+        ],
+        "bbox_size_m": [
+          0.062376,
+          0.059592,
+          0.051618
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/d405"
+      },
+      {
+        "bbox_max_world": [
+          -3.956672,
+          1.921482,
+          1.084683
+        ],
+        "bbox_min_world": [
+          -4.019048,
+          1.86189,
+          1.033065
+        ],
+        "bbox_size_m": [
+          0.062376,
+          0.059592,
+          0.051618
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/d405/d405"
+      },
+      {
+        "bbox_max_world": [
+          -3.96891,
+          1.920185,
+          1.069186
+        ],
+        "bbox_min_world": [
+          -4.017542,
+          1.877089,
+          1.034085
+        ],
+        "bbox_size_m": [
+          0.048632,
+          0.043096,
+          0.035101
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/d405/d405/d4052"
+      },
+      {
+        "bbox_max_world": [
+          -3.963401,
+          1.921384,
+          1.075718
+        ],
+        "bbox_min_world": [
+          -4.018955,
+          1.870514,
+          1.033128
+        ],
+        "bbox_size_m": [
+          0.055554,
+          0.05087,
+          0.04259
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/d405/d405/d4051"
+      },
+      {
+        "bbox_max_world": [
+          -3.956672,
+          1.921482,
+          1.084683
+        ],
+        "bbox_min_world": [
+          -4.019048,
+          1.86189,
+          1.033065
+        ],
+        "bbox_size_m": [
+          0.062376,
+          0.059592,
+          0.051618
+        ],
+        "path": "/World/envs/env_0/Robot/left_ChangingTek_AG2F120S/left_gripper_base/_20s_camera_stand/d405/d405/d405"
+      },
+      {
+        "bbox_max_world": [
+          -5.162814,
+          2.048444,
+          1.197643
+        ],
+        "bbox_min_world": [
+          -5.359461,
+          1.892701,
+          0.969492
+        ],
+        "bbox_size_m": [
+          0.196647,
+          0.155743,
+          0.228151
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base"
+      },
+      {
+        "bbox_max_world": [
+          -5.166802,
+          2.032277,
+          1.125186
+        ],
+        "bbox_min_world": [
+          -5.339398,
+          1.897136,
+          0.969492
+        ],
+        "bbox_size_m": [
+          0.172596,
+          0.135141,
+          0.155694
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/visuals"
+      },
+      {
+        "bbox_max_world": [
+          -5.162814,
+          2.048444,
+          1.197643
+        ],
+        "bbox_min_world": [
+          -5.359461,
+          1.892701,
+          0.996828
+        ],
+        "bbox_size_m": [
+          0.196647,
+          0.155743,
+          0.200815
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand"
+      },
+      {
+        "bbox_max_world": [
+          -5.162972,
+          2.048391,
+          1.197643
+        ],
+        "bbox_min_world": [
+          -5.359461,
+          1.892701,
+          0.996959
+        ],
+        "bbox_size_m": [
+          0.196489,
+          0.15569,
+          0.200684
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/node_20s_camera_stand"
+      },
+      {
+        "bbox_max_world": [
+          -5.283309,
+          1.976854,
+          1.122569
+        ],
+        "bbox_min_world": [
+          -5.336418,
+          1.914507,
+          1.066184
+        ],
+        "bbox_size_m": [
+          0.053109,
+          0.062347,
+          0.056385
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/node_20s_camera_stand/Mesh_0_002"
+      },
+      {
+        "bbox_max_world": [
+          -5.265854,
+          1.996751,
+          1.135704
+        ],
+        "bbox_min_world": [
+          -5.352421,
+          1.895104,
+          1.051848
+        ],
+        "bbox_size_m": [
+          0.086567,
+          0.101647,
+          0.083856
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/node_20s_camera_stand/Mesh_13"
+      },
+      {
+        "bbox_max_world": [
+          -5.162972,
+          2.048299,
+          1.197643
+        ],
+        "bbox_min_world": [
+          -5.359415,
+          1.892701,
+          0.996977
+        ],
+        "bbox_size_m": [
+          0.196443,
+          0.155598,
+          0.200666
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/node_20s_camera_stand/Mesh_17"
+      },
+      {
+        "bbox_max_world": [
+          -5.257063,
+          1.981761,
+          1.12803
+        ],
+        "bbox_min_world": [
+          -5.286365,
+          1.955083,
+          1.098942
+        ],
+        "bbox_size_m": [
+          0.029302,
+          0.026678,
+          0.029088
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/node_20s_camera_stand/Mesh_2"
+      },
+      {
+        "bbox_max_world": [
+          -5.176319,
+          2.028786,
+          1.131633
+        ],
+        "bbox_min_world": [
+          -5.237829,
+          1.970801,
+          1.086225
+        ],
+        "bbox_size_m": [
+          0.06151,
+          0.057985,
+          0.045408
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/d405"
+      },
+      {
+        "bbox_max_world": [
+          -5.176319,
+          2.028786,
+          1.131633
+        ],
+        "bbox_min_world": [
+          -5.237829,
+          1.970801,
+          1.086225
+        ],
+        "bbox_size_m": [
+          0.06151,
+          0.057985,
+          0.045408
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/d405/d405"
+      },
+      {
+        "bbox_max_world": [
+          -5.177811,
+          2.027266,
+          1.11058
+        ],
+        "bbox_min_world": [
+          -5.226198,
+          1.97356,
+          1.086938
+        ],
+        "bbox_size_m": [
+          0.048387,
+          0.053706,
+          0.023642
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/d405/d405/d4052"
+      },
+      {
+        "bbox_max_world": [
+          -5.176404,
+          2.028781,
+          1.119052
+        ],
+        "bbox_min_world": [
+          -5.231471,
+          1.97158,
+          1.086314
+        ],
+        "bbox_size_m": [
+          0.055067,
+          0.057201,
+          0.032738
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/d405/d405/d4051"
+      },
+      {
+        "bbox_max_world": [
+          -5.176319,
+          2.028786,
+          1.131633
+        ],
+        "bbox_min_world": [
+          -5.237829,
+          1.970801,
+          1.086225
+        ],
+        "bbox_size_m": [
+          0.06151,
+          0.057985,
+          0.045408
+        ],
+        "path": "/World/envs/env_0/Robot/right_ChangingTek_AG2F120S/right_gripper_base/right_20s_camera_stand/d405/d405/d405"
+      }
+    ]
+  },
+  "head_placement": "a",
+  "objects": {
+    "bowl2": {
+      "authored_mass_kg": 0.2199999988079071,
+      "bbox_max_world": [
+        -4.239334,
+        -1.441006,
+        0.80285
+      ],
+      "bbox_min_world": [
+        -4.357701,
+        -1.55888,
+        0.747057
+      ],
+      "bbox_size_m": [
+        0.118367,
+        0.117874,
+        0.055793
+      ],
+      "distance_to_counter_east_edge_m": 0.469334,
+      "distance_to_counter_north_edge_m": 0.221006,
+      "physx_view_path": "/World/Environment/RobotRoom/Asset/bowl2/Cylinder_003",
+      "pose_world": [
+        -4.298296,
+        -1.499874,
+        0.74642
+      ],
+      "runtime_mass_kg": 0.22,
+      "runtime_mass_source": "RigidPrim.get_masses"
+    },
+    "cup": {
+      "authored_mass_kg": null,
+      "bbox_max_world": [
+        -4.144844,
+        -1.711608,
+        0.833597
+      ],
+      "bbox_min_world": [
+        -4.224897,
+        -1.792717,
+        0.74629
+      ],
+      "bbox_size_m": [
+        0.080053,
+        0.081109,
+        0.087307
+      ],
+      "distance_to_counter_east_edge_m": 0.374844,
+      "distance_to_counter_north_edge_m": 0.491608,
+      "physx_view_path": "/World/Environment/RobotRoom/Asset/cup/Cylinder_002",
+      "pose_world": [
+        -4.184931,
+        -1.752757,
+        0.747003
+      ],
+      "runtime_mass_kg": 0.093608,
+      "runtime_mass_source": "RigidPrim.get_masses"
+    },
+    "plate2": {
+      "authored_mass_kg": 0.2199999988079071,
+      "bbox_max_world": [
+        -4.201065,
+        -1.553191,
+        0.770414
+      ],
+      "bbox_min_world": [
+        -4.416381,
+        -1.768511,
+        0.747163
+      ],
+      "bbox_size_m": [
+        0.215316,
+        0.21532,
+        0.023251
+      ],
+      "distance_to_counter_east_edge_m": 0.431065,
+      "distance_to_counter_north_edge_m": 0.333191,
+      "physx_view_path": "/World/Environment/RobotRoom/Asset/plate2/Cylinder_004",
+      "pose_world": [
+        -4.308727,
+        -1.660848,
+        0.747168
+      ],
+      "runtime_mass_kg": 0.22,
+      "runtime_mass_source": "RigidPrim.get_masses"
+    },
+    "simple_tray": {
+      "authored_mass_kg": 0.30000001192092896,
+      "bbox_max_world": [
+        -4.110983,
+        -1.399533,
+        0.759724
+      ],
+      "bbox_min_world": [
+        -4.447627,
+        -1.835848,
+        0.746583
+      ],
+      "bbox_size_m": [
+        0.336644,
+        0.436315,
+        0.013141
+      ],
+      "distance_to_counter_east_edge_m": 0.340983,
+      "distance_to_counter_north_edge_m": 0.179533,
+      "physx_view_path": "/World/Environment/RobotRoom/Asset/simple_tray/node_5208c3bf54042328e3cd00331cd2f46_fbx/RootNode/TAVA_002/TAVA_002_Material_003_0/TAVA_002_Material_003_0",
+      "pose_world": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ],
+      "runtime_mass_kg": 0.3,
+      "runtime_mass_source": "RigidPrim.get_masses"
+    },
+    "spoon2": {
+      "authored_mass_kg": 0.05000000074505806,
+      "bbox_max_world": [
+        -4.317419,
+        -1.647435,
+        0.779259
+      ],
+      "bbox_min_world": [
+        -4.442585,
+        -1.694883,
+        0.749836
+      ],
+      "bbox_size_m": [
+        0.125166,
+        0.047448,
+        0.029423
+      ],
+      "distance_to_counter_east_edge_m": 0.547419,
+      "distance_to_counter_north_edge_m": 0.427435,
+      "physx_view_path": "/World/Environment/RobotRoom/Asset/spoon2/Tea_Spoon",
+      "pose_world": [
+        -4.341526,
+        -1.678126,
+        0.760765
+      ],
+      "runtime_mass_kg": 0.05,
+      "runtime_mass_source": "RigidPrim.get_masses"
+    }
+  },
+  "probe": "task3_stage0",
+  "scene": "unmodified organizer scene; runtime nested-body normalization only"
+}
