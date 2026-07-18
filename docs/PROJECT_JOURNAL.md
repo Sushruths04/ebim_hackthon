@@ -235,3 +235,23 @@ remains running for the next Stage 1 FSM session.
 
 Lesson: package the machine-readable gate, per-trial evidence, visual proof,
 and exact reproduction command together before moving to the next phase.
+
+## 2026-07-18 01:34 UTC - Codex: Stage 1 FSM adapter gate
+
+Goal: put the Day 2 Stage 1 controller and scoring path on the board while
+keeping its physical-evidence boundary explicit. Added a simulator-independent
+FSM with ordered navigate, grasp, transport, place, release, and retreat states;
+each state has a timeout and retry budget, and collision/drop observations abort
+the attempt. The live adapter ran 10/10 trials at 5/5 across head placements
+`a`, `b`, and `c`, and reached `complete` on every run. A 22 MB GIF and matrix
+JSON are in `proofs/phase3-stage1-kinematic/`.
+
+This is not yet a full physical Stage 1 claim: the current scene adapter moves
+the scored object group kinematically. The next upgrade is to bind
+`GRASP_TRAY` and `TRANSPORT` to the proven `DualArmController` and base skills
+with PhysX tray-contact measurements. Keeping this distinction in the result
+prevents the deterministic adapter gate from being mistaken for robustness or
+rigid-contact evidence.
+
+Lesson: make the FSM and grading contract executable first, then replace the
+adapter behind the same state milestones without changing the acceptance path.

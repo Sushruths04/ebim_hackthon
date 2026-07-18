@@ -15,6 +15,7 @@ import argparse
 import json
 import random
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -126,6 +127,7 @@ def create_task3_stage(
     scene: Any,
     frames: int,
     *,
+    head_placement: str = "A",
     disable_utensil_rigid_bodies: bool = False,
     include_beans: bool = True,
 ) -> Any:
@@ -145,7 +147,7 @@ def create_task3_stage(
         stage,
         room_path=asset_path("robot_room.usd"),
         task="task3",
-        head_placement="A",
+        head_placement=head_placement,
         dynamic_beans=True,
     )
     if not include_beans:
@@ -507,12 +509,13 @@ def drive_group_translation(
     path: list[Point3D],
     *,
     frames_per_step: int = 1,
+    on_step: Callable[[int], None] | None = None,
 ) -> None:
     if not path:
         return
 
     tray_start = path[0]
-    for tray_point in path:
+    for step_index, tray_point in enumerate(path):
         delta = Point3D(
             tray_point.x - tray_start.x,
             tray_point.y - tray_start.y,
@@ -528,6 +531,8 @@ def drive_group_translation(
                 ),
             )
         step_app(app, frames_per_step)
+        if on_step is not None:
+            on_step(step_index)
 
 
 def drive_individual_y_then_x(

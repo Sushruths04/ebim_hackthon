@@ -188,6 +188,17 @@ each session, not retroactively.
 - Evidence exported locally under `outputs/task3_grasp_reliability_official_20260718/`
   and `proofs/phase2-grasp-reliability/` before Stage 1 work.
 
+## Session log - 2026-07-18 01:22-01:34 UTC (Codex Stage 1 adapter)
+
+- GPU matrix: 10 headless Stage 1 runs in one Isaac process, 10/10 pass at
+  5/5, cycling head placements `a/b/c`. Approximate active GPU time: 0.3 h.
+- Visual pass: one headless render/video run, 50 pulled RGB frames, 22.4 MB
+  GIF. Approximate active GPU time: 0.1 h.
+- Combined incremental Stage 1 estimate: 0.4 GPU h, roughly 0.6-0.8 EUR at
+  the previously recorded spot estimate. `sim-dev-g4b` remains RUNNING for
+  the next physical tray-contact work; stop it at handoff if no GPU process
+  remains.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

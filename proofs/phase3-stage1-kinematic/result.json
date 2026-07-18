@@ -1,0 +1,546 @@
+{
+  "gate_passed": true,
+  "head_placements": [
+    "a",
+    "b",
+    "c"
+  ],
+  "mode": "kinematic_scene_adapter",
+  "pass_count": 10,
+  "pass_rate": 1.0,
+  "required_head_placements": 3,
+  "required_passes": 7,
+  "runs": [
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "a",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 1
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "b",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 2
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "c",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 3
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "a",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 4
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "b",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 5
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "c",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 6
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "a",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 7
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "b",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 8
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "c",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 9
+    },
+    {
+      "final_positions": {
+        "bowl2": [
+          -2.868161204403798,
+          2.0181017318374668,
+          0.7542400587544876
+        ],
+        "cup": [
+          -2.753720355237373,
+          1.76707252497421,
+          0.7524557463831767
+        ],
+        "plate2": [
+          -2.8770657510485322,
+          1.8572202305183263,
+          0.7484226929590359
+        ],
+        "simple_tray": [
+          -2.85,
+          1.9000000000000001,
+          0.7671291503455926
+        ],
+        "spoon2": [
+          -2.9095398256490133,
+          1.8389068509897237,
+          0.7668559478445494
+        ]
+      },
+      "fsm_history": [
+        "navigate_pickup",
+        "grasp_tray",
+        "transport",
+        "place",
+        "release",
+        "retreat",
+        "complete"
+      ],
+      "fsm_state": "complete",
+      "head_placement": "a",
+      "max_score": 5,
+      "mode": "kinematic_scene_adapter",
+      "objects_failed": [],
+      "objects_passed": [
+        "simple_tray",
+        "bowl2",
+        "spoon2",
+        "plate2",
+        "cup"
+      ],
+      "passed": true,
+      "score": 5,
+      "trial": 10
+    }
+  ],
+  "trials": 10
+}

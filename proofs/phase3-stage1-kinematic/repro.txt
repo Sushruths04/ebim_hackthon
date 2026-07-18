@@ -1,0 +1,11 @@
+# CPU FSM contract
+pytest -q task3_autonomy/tests/test_stage1_fsm.py
+
+# Day 2 matrix, inside isaac-lab-2-3-2-workshop with the repository mounted at
+# /workspace/EBiM_Challenge. This is the kinematic scene adapter proof; it
+# validates the FSM and official grading path, not physical tray contact.
+/workspace/isaaclab/isaaclab.sh -p scripts/task3/run_stage1_fsm.py --trials 10 --head-placements a b c --out-dir outputs/task3_stage1_fsm_official_20260718
+
+# Visual proof pass (one run is sufficient for video; the matrix above is the
+# acceptance result).
+/workspace/isaaclab/isaaclab.sh -p scripts/task3/run_stage1_fsm.py --trials 1 --head-placements a --record-video --out-dir outputs/task3_stage1_fsm_visual_final_20260718

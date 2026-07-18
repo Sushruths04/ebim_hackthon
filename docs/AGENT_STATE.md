@@ -193,7 +193,16 @@ exact Kit process before the reliability batch and the VM at handoff.
   wrist lift target from z=1.05 to 1.10 m and **passed**: cup start z=0.7470,
   peak z=0.9420 (+0.1950 m), final z=0.8557 (+0.1087 m), with 3.0 s sustained
   hold. Exact JSON/GIF are preserved locally and on the VM. Day 1 is
-  **complete on this branch pending the Day 1 commit/push**.
+  **complete and pushed in commit `cf37203`**.
+
+- [x] Day 2 Stage 1 controller and live kinematic-scene matrix: **10/10
+  PASS at 5/5**, across head placements `a/b/c`; proof is in
+  `proofs/phase3-stage1-kinematic/` with a 22 MB GIF. The runner records the
+  mode as `kinematic_scene_adapter`.
+- [ ] Physical Stage 1 tray-contact gate remains open: the existing matrix
+  validates the FSM ordering and official grading predicates, but does not
+  yet validate rigid tray grasp under PhysX. Do not oversell the adapter proof
+  as full physical autonomy.
 
 Phase 1 is CLOSED: proof bundle `proofs/phase1-harness/` (c1681b2) with
 SPAWN_MATCH True, tag `v0.1-harness` pushed. Re-confirmed 2026-07-17 ~18:30:
@@ -204,14 +213,16 @@ stages, total_steps); only timestamps/paths differ.
 1. [GPU/Claude] Fix nonfatal PhysX error spam: disable_robot_external_wrenches() calls addTorque/setLinearVelocity which are illegal with eENABLE_DIRECT_GPU_API — guard or replace with Isaac Lab tensor API.
    Reported done in the interrupted Claude session; Codex must verify the
    committed/diff state and test evidence before moving it to DONE.
-3. [GPU/Codex, claimed] Finish `reach()` → `grasp()`/`lift()` →
-   **`verify_grasp_lift.py` ≥8/10 gate**. Navigation and quat→RPY are
-   already committed/proven (`73f6098`, `f6c6582`).
+3. [x] [GPU/Codex] Finish `reach()` → `grasp()`/`lift()` →
+  **`verify_grasp_lift.py` ≥8/10 gate**. Navigation and quat→RPY are
+  already committed/proven (`73f6098`, `f6c6582`).
 4. [CPU/Codex] Dockerfile skeleton + README submission section drafts;
    `docs/simdev_setup.md`; PROJECT_JOURNAL scaffold.
 5. [CPU/OpenCode] `scripts/task3/make_proof_bundle.py` helper; 15-run batch
    script; `--record-lerobot` design (code + unit tests only).
-6. [GPU/Claude] Phase 3: Stage 1 FSM → `v0.1-stage1`; then Stage 4 → 2 → 3.
+6. [x] [GPU/Codex, 2026-07-18] Stage 1 FSM controller and kinematic proof
+   complete; physical tray-contact validation remains next before a final
+   `v0.1-stage1` tag.
 
 ## BLOCKERS
 - Lab account expiry ≈ Jul 19–20: export ritual (plan §5 Day 3) is mandatory.
