@@ -4,14 +4,20 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-18 04:25 UTC (Codex,
+Last update: 2026-07-18 18:44 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` was used for isolated physical-tray diagnostics and
-must be STOPPED at session close. Day 1 remains complete; Day 2's official
-FSM adapter proof remains complete, but the physical tray-contact gate is not
-passed.
+GPU STATUS: `sim-dev-g4b` is STOPPED before the Step 0 restart. Day 1 remains
+complete; the Day 2 FSM proof is adapter-only. Current claim: Codex is running
+Day 3 Step 0 probes from `docs/task3_day3_tray_plan_2026-07-18.md` and will
+stop before Step 1.
 
 ## Physical tray investigation — 2026-07-18
+
+The Day 3 plan supersedes the earlier purpose-modeled-handle proposal. The
+submission path must use the unmodified organizer scene and physics-legal
+manipulation; no kinematic attach, added tray geometry, or authored mass edit.
+The official Stage 1 predicate is final XY in dining for each object, so the
+tray does not have a separate lift gate.
 
 - The imported `simple_tray` is a flat mesh: world bounds about
   `0.337 x 0.436 x 0.013 m`, with no raised grasp affordance.
@@ -26,8 +32,9 @@ passed.
 - The synchronized two-arm path reached only a marginal pregrasp and then
   failed IK/contact sequencing. No physical Stage 1 carry proof exists yet.
 - Do not describe the fixture path or the Day 2 adapter as full autonomy. The
-  next engineering task is a purpose-modeled two-contact tray affordance and
-  a physical carry controller, followed by a fresh multi-trial gate.
+  next physical task is Step 0 measurement, then slide-to-overhang edge pinch;
+  escalate once to a two-arm corner pinch only if the single-edge method
+  fails.
 
 ## GPU STATUS (final verdict 2026-07-17 ~13:10 UTC)
 - **`sim-dev-g4b` (g4-standard-48 = FULL RTX PRO 6000 Blackwell 96 GB,
@@ -133,6 +140,21 @@ passed.
   **Official batch complete:** 10/10 passed at +0.0880 m and 3.0 s hold;
   `gate_passed=true`, required `8/10`. Proof:
   `proofs/phase2-grasp-reliability/`.
+- [ ] **CURRENT — Step 0 (Codex, 2026-07-18 18:44 UTC):** start
+  `sim-dev-g4b`; measure open-0.9-rad fingertip aperture, unmodified-scene
+  runtime tray mass, and pose/bounds/edge distances for
+  `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
+  here; commit and push; stop before Step 1.
+- [ ] Step 1: slide tray to 6–8 cm overhang, edge pinch, dining XY gate
+  `>=7/10`; one escalation to a two-arm corner pinch if needed.
+- [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
+  Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
+- [ ] Step 3: 10-run head-placement matrix, physical proof bundle, tag
+  `v0.1-stage1`, and video handoff.
+- [ ] Step 4: utensils to sink, gate `>=6/10`; export code/proofs/JSONs and
+  videos immediately after this exit criterion.
+- [ ] Step 5: Stage 2 then Stage 3, shipping partial credit if time-boxes
+  expire; complete the chained episode and packaging only after export.
 - [ ] Run evaluation, assemble proof, and create the Day 1 tag.
 - [ ] Update journal/budget, commit, push, and leave exact resume commands.
 
