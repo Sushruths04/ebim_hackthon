@@ -65,6 +65,20 @@ CAMERA_POSITION = (-1.6, -3.4, 2.2)
 CAMERA_LOOK_AT = (-4.1, -1.7, 0.8)
 
 
+def cup_grasp_target(
+    cup_position: tuple[float, float, float],
+    *,
+    rim_x_offset: float,
+    grasp_y_offset: float,
+) -> tuple[float, float, float]:
+    """Return the physical cup-rim target from its live PhysX position."""
+    return (
+        cup_position[0] + rim_x_offset,
+        cup_position[1] + grasp_y_offset,
+        cup_position[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+    )
+
+
 def add_tray_grasp_rim(stage: Any, root_path: str) -> str:
     """Add a physical rim fixture to the tray's existing rigid body.
 
@@ -173,6 +187,18 @@ def parse_args() -> argparse.Namespace:
         "--probe-gripper",
         action="store_true",
         help="Close/reopen at pregrasp height before touching the cup.",
+    )
+    parser.add_argument(
+        "--cup-rim-x-offset",
+        type=float,
+        default=CUP_RIM_X_OFFSET,
+        help="Live cup X offset for the final rim target in meters.",
+    )
+    parser.add_argument(
+        "--cup-grasp-y-offset",
+        type=float,
+        default=CUP_GRASP_Y_OFFSET,
+        help="Live cup Y offset for the final rim target in meters.",
     )
     parser.add_argument(
         "--tray-x-offset",
@@ -949,10 +975,10 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             cup_before_descend[2] + args.tray_z_offset,
         )
     elif args.object_name == "cup":
-        grasp = (
-            cup_before_descend[0] + CUP_RIM_X_OFFSET,
-            cup_before_descend[1] + CUP_GRASP_Y_OFFSET,
-            cup_before_descend[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        grasp = cup_grasp_target(
+            cup_before_descend,
+            rim_x_offset=args.cup_rim_x_offset,
+            grasp_y_offset=args.cup_grasp_y_offset,
         )
     else:
         grasp = (
@@ -1016,10 +1042,10 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         # grasp closing to 0.076. Re-read the cup's LIVE pose and re-target the
         # grasp onto where it actually ended up before closing.
         live_cup = cup_position()
-        grasp = (
-            live_cup[0] + CUP_RIM_X_OFFSET,
-            live_cup[1] + CUP_GRASP_Y_OFFSET,
-            live_cup[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        grasp = cup_grasp_target(
+            live_cup,
+            rim_x_offset=args.cup_rim_x_offset,
+            grasp_y_offset=args.cup_grasp_y_offset,
         )
         servo_arm("right", grasp, top_down, budget_s=4.0, tol_m=0.02)
         log_phase(
