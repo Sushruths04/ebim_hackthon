@@ -4,13 +4,24 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 10:50 UTC (Codex,
+Last update: 2026-07-19 12:05 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED after Round 10. Day 1 remains complete;
+GPU STATUS: `sim-dev-g4b` is STOPPED after Round 11. Day 1 remains complete;
 the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
 slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
+
+## Day 3 Step 1 Round 11 result — 2026-07-19 11:55 UTC
+
+Round 11 increased the contact drag duration to 8 s, but coupling was weaker:
+four strokes ended at `-0.013220 m` overhang. The actual-overhang gate stopped
+the run before pinch or carry. Raw evidence:
+`outputs/task3_stage1_tray_slide_r11_20260719/result.json`.
+
+The next bounded contact trial uses a slightly deeper commanded press,
+`--descend-ee-z 0.810`, with the proven 5 s drag. This stays above the prior
+0.80 m IK failure boundary and changes only contact depth.
 
 ## Day 3 Step 1 Round 10 result — 2026-07-19 10:40 UTC
 
@@ -454,7 +465,7 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **Step 1 (Codex, rounds 1–10, 2026-07-18/19, 16 trials
+- [ ] **Step 1 (Codex, rounds 1–11, 2026-07-18/19, 17 trials
   total):** slide tray to 6-8 cm overhang, edge pinch, dining XY gate
   `>=7/10`; one escalation to a two-arm corner pinch if needed. Round 1
   fixed the reach-envelope and hold_anchor-clobbering navigation bugs.
@@ -489,6 +500,7 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   door-route waypoints, but final dining carry stalled with the tray still in
   the kitchen. Round 10 did not pass the overhang gate (`+0.024374 m`), so
   the carry hand-target update remains untested on a fresh gate-passing run.
+  Round 11's 8 s drag also failed the slide gate (`-0.013220 m` overhang).
   `scripts/task3/probe_tray_slide.py` remains active. No kinematic or scene
   edits were made in any round.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,

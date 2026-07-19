@@ -561,3 +561,16 @@ does not test the new carry target. Raw result:
 
 Next: increase only the bounded contact drag duration to improve the measured
 tray/hand coupling, then re-test the already-implemented carry path.
+
+## 2026-07-19 11:00-11:55 UTC — Codex: Round 11 longer-drag regression
+
+Goal: test whether extending the physical press-drag from 5 s to 8 s improves
+the inconsistent tray coupling.
+
+Four strokes completed, but the tray ended at `-0.013220 m` north overhang.
+The actual-overhang gate stopped the episode before pinch and carry. Longer
+drag did not improve this run. Raw result:
+`outputs/task3_stage1_tray_slide_r11_20260719/result.json`.
+
+Next: one bounded trial with the original 5 s drag and a measured 5 mm deeper
+press (`0.810 m`), still within the known physical IK-safe range.
