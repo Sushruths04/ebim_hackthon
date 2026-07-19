@@ -98,6 +98,28 @@ visually before each change. GPU account expiry is imminent -- weigh each run.
   9-18). Commits `fec842e`, `d7814f6`, `961a0d6`, `5da4498` are the verified
   progress; navigate_stance (the handed-off blocker) stays SOLVED.
 
+**r14/r15 update (Claude, 2026-07-19) -- base-heading hypothesis DISPROVEN:**
+Tested whether matching the proven skip-nav grasp heading (~167 deg; run18
+grasps at 165-169) fixes the loose transport grip. r14 (`587d1ca`) targeted
+167 deg but rotate_west stalled 4.26 deg short (rotational floor across the
++/-180 boundary), so r15 (`40e2fb2`) widened the rotate tolerance to 6 deg.
+r15 reached the grasp at ~171 deg but the grip got WORSE, not better: gripper
+0.6167 (vs r13's 0.34), cup lift 0.0. So base heading is NOT the dominant
+cause. Both commits were REVERTED (`cc98835`, `7f798d1`); the branch is back
+at the r13 grasp behavior (west heading, 4 deg rotate tol, live-cup re-center,
+stiff base-hold) -- the best grasp so far (gripper 0.34).
+
+HANDOFF -- remaining grasp-calibration is Codex's grind (6 runs r10-r15
+explored it): the transport gripper contacts the cup off the finger axis and
+grips loose (0.34-0.6) vs the proven 0.076, so the cup slips on lift. Heading,
+base-drift, and live-cup re-centering were each tried; none fully cage the cup.
+Next levers (GIF-first, one per run): (a) the descend/close DEPTH and finger
+close dynamics -- the proven pipeline needed a slow close ramp + force settle
+(Run 17); (b) transform CUP_RIM_X_OFFSET/CUP_GRASP_Y_OFFSET into the live base
+frame; (c) diff the proven skip-nav grasp GIF against the transport grasp frame
+by frame to see the finger-vs-cup geometry. Reference that DOES work 10/10:
+`proofs/phase2-grasp-reliability/`.
+
 ## ⚠️ SCORING GROUND-TRUTH + FINISH PLAN (orchestrator, 2026-07-19)
 
 Verified against `scripts/evaluation/task3/grading.py::score_stage1_table_setup`.
