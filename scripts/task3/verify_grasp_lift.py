@@ -741,7 +741,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             ok = rotate_to(FACE_WEST_YAW_RAD, budget_s=15.0)
             log_phase("rotate_west", ok)
         if ok:
-            ok = drive_to(STANCE, max_speed=0.25, budget_s=20.0)
+            ok = drive_to(
+                STANCE,
+                max_speed=0.25,
+                budget_s=50.0 if args.transport_to_dining else 20.0,
+            )
             log_phase("navigate_stance", ok)
         navigation_failure = "navigation"
     if not ok:
