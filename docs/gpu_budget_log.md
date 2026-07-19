@@ -341,6 +341,17 @@ each session, not retroactively.
   rested on the counter. Carry-to-dining was not attempted.
 - Raw JSON: `outputs/task3_stage1_tray_slide_r8_20260719/result.json`.
 
+## Session log - 2026-07-19 06:30-07:25 UTC (Round 9 lift and partial carry)
+
+- One physics-only trial ran on `sim-dev-g4b`, then its JSON was exported and
+  the VM stopped. No VM is left running.
+- Three push strokes reached `+0.098956 m` overhang; edge lift measured
+  `+0.036547 m`. The first three carry waypoints succeeded. The final
+  westward waypoint stalled at base `(-3.661546, 1.102825)` with the tray
+  still in the kitchen, so release was not attempted.
+- Isaac process time was approximately `877 s`. Raw JSON:
+  `outputs/task3_stage1_tray_slide_r9_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

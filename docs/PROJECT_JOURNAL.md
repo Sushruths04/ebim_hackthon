@@ -528,3 +528,22 @@ pinch alignment: more physical overhang is required. The next revision allows
 one additional press-drag stroke and makes actual overhang the prerequisite
 for edge pinch/carry; net translation alone is no longer treated as enough.
 Raw result: `outputs/task3_stage1_tray_slide_r8_20260719/result.json`.
+
+## 2026-07-19 06:30-07:20 UTC — Codex: Round 9 tray lift and partial carry
+
+Goal: validate the fourth-stroke overhang gate and complete the physical
+tray-to-dining-table route.
+
+Round 9 reached `+0.098956 m` north overhang and lifted the tray by
+`+0.036547 m` under PhysX. The tray was genuinely held while the base crossed
+the doorway and reached the first three carry waypoints. The final westward
+waypoint `(-2.85, 1.12)` did not converge; the base stopped at
+`(-3.661546, 1.102825)`, and the tray remained in the kitchen. The run
+therefore did not release or claim table delivery. Raw result:
+`outputs/task3_stage1_tray_slide_r9_20260719/result.json`.
+
+Diagnosis: the carry loop allowed the base to navigate while leaving the arm
+target fixed in world coordinates, so the held tray did not follow the moving
+robot. The next revision reissues the hand target from its measured
+robot-relative offset on every carry tick. This is a control-target update,
+not a kinematic attach or physics change.

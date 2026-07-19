@@ -658,6 +658,17 @@ def _run_edge_pinch(
     if holding and lift_ok:
         hold_anchor_box["value"] = None
         start_base = adapter.pose()
+        hand_position, _ = arms.ee_world_poses()[1]
+        cos_yaw = math.cos(start_base.yaw)
+        sin_yaw = math.sin(start_base.yaw)
+        hand_dx = float(hand_position[0]) - start_base.x
+        hand_dy = float(hand_position[1]) - start_base.y
+        carry_arm_box["value"] = (
+            cos_yaw * hand_dx + sin_yaw * hand_dy,
+            -sin_yaw * hand_dx + cos_yaw * hand_dy,
+            float(hand_position[2]),
+            edge_pinch_quat,
+        )
         for waypoint_index, waypoint in enumerate(
             route_via_door((start_base.x, start_base.y), DINING_TARGET)
         ):
@@ -674,6 +685,7 @@ def _run_edge_pinch(
             )
             if not waypoint_ok:
                 break
+        carry_arm_box["value"] = None
         dining_pose = tray_pose_fn()
         carry_ok = (
             waypoint_ok and classify_table_area(dining_pose[:2]) == "dining"
@@ -989,10 +1001,26 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     # complexity) needs to mutate the SAME anchor sim_tick() reads, not a
     # disconnected local copy -- see _run_push_stroke()'s docstring.
     hold_anchor_box: dict[str, tuple[float, float] | None] = {"value": None}
+    # During a physical carry, keep the hand at its measured robot-relative
+    # offset while the mobile base moves. A fixed world-frame hand target
+    # would leave the held tray behind in the kitchen as the base navigates.
+    carry_arm_box: dict[str, Any] = {"value": None}
 
     def sim_tick() -> None:
         nonlocal tick
         disable_robot_external_wrenches(robot)
+        if carry_arm_box["value"] is not None:
+            offset_x, offset_y, hand_z, carry_quat = carry_arm_box["value"]
+            base = adapter.pose()
+            cos_yaw = math.cos(base.yaw)
+            sin_yaw = math.sin(base.yaw)
+            hand_target = (
+                base.x + cos_yaw * offset_x - sin_yaw * offset_y,
+                base.y + sin_yaw * offset_x + cos_yaw * offset_y,
+                hand_z,
+            )
+            arms.set_arm_target("right", hand_target, carry_quat)
+            arms.command()
         if hold_anchor_box["value"] is not None:
             vx, vy = base_twist_toward(
                 adapter.pose(),
