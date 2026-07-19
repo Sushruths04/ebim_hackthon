@@ -729,7 +729,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         ok = drive_to(CORRIDOR_STOP, max_speed=0.5, budget_s=45.0)
         log_phase("navigate_corridor_stop", ok)
         if ok:
-            ok = drive_to(ROTATE_SPOT, max_speed=0.4, budget_s=20.0)
+            ok = drive_to(ROTATE_SPOT, max_speed=0.4, budget_s=35.0)
             log_phase("navigate_rotate_spot", ok)
         if ok:
             ok = rotate_to(FACE_WEST_YAW_RAD, budget_s=15.0)

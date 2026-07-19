@@ -92,6 +92,7 @@ r25 | transport=cup | score=0/5 | FAIL | recover spine target from 0.43 to 0.39 
 r26 | transport=cup | score=0/5 | FAIL | recover spine target from 0.39 to 0.35 and retry
 r27 | transport=cup | score=0/5 | FAIL | accept measured transport spine settle and continue to grasp
 r28 | transport=cup | score=0/5 | FAIL | rotate-spot navigation failed; retry with proven skip-navigation recovery
+r29 | transport=cup | score=0/5 | FAIL | short stance leg stalled; extend full-route rotate-spot budget to 35 s
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
