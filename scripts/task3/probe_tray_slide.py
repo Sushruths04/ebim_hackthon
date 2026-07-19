@@ -131,7 +131,12 @@ STROKE_STOP_MOVED_Y_M = 0.22
 # pattern). Standoff stays inside the proven ~0.83 m dead-ahead envelope;
 # small margin under 0.86 m.
 NORTH_PINCH_X_OFFSET_M = 0.0
-NORTH_PINCH_STANDOFF_M = 0.8
+# Round 5: the 0.8 m default put the north stance at y=-0.363 for the
+# successful +0.057 m overhang slide, where the base stalled 0.20 m beyond
+# the target against the partition. Round 4's successful physical pinch used
+# a measured ~0.70 m standoff, leaving the same safe lane margin while keeping
+# the lip inside the proven arm envelope.
+NORTH_PINCH_STANDOFF_M = 0.7
 FACE_SOUTH_YAW_RAD = -math.pi / 2.0
 # Keep the stance comfortably inside the open lane, not flush against
 # either the island or the partition.
