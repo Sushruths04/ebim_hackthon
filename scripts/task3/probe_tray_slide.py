@@ -907,6 +907,37 @@ def _run_push_stroke(
     return stroke_gate_met, None
 
 
+def _phase_overlay_lines(
+    tick: int,
+    tray: tuple[float, float, float],
+    detail: dict[str, Any],
+) -> list[str]:
+    """Short overlay lines for a phase's captured video frame.
+
+    The phase name is already used as the frame's overlay label (see
+    ``RunRecorder.capture``), so these lines add just a few extra numbers.
+    Defensive by construction: missing/oddly-typed ``detail`` keys are
+    simply omitted rather than raising, since a recorder frame must never
+    crash a real physics run.
+    """
+    overhang_cm = north_overhang_m(tray[1]) * 100
+    lines = [f"tick {tick}", f"overhang {overhang_cm:.1f} cm"]
+    if "ok" in detail:
+        lines.append(f"ok={detail['ok']}")
+    gripper_rad = detail.get("gripper_rad")
+    if isinstance(gripper_rad, (int, float)):
+        lines.append(f"gripper {gripper_rad:.3f} rad")
+    return lines
+
+
+def _finish_recording(recorder: Any, gif_name: str = "run.gif") -> None:
+    """Encode/print the recorder's gif; module-level so ``_run()``'s own
+    ``try/finally`` cleanup does not add to its cyclomatic complexity."""
+    gif_path = recorder.finish(gif_name)
+    if gif_path is not None:
+        print(f"TRAY_SLIDE_GIF {gif_path}", flush=True)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -926,6 +957,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=REPO_ROOT / "outputs" / "task3_stage1_tray_slide",
     )
+    parser.add_argument("--record-video", action="store_true")
     return parser.parse_args()
 
 
@@ -935,7 +967,7 @@ def main() -> None:
     from isaaclab.app import AppLauncher
 
     simulation_app = AppLauncher(
-        {"headless": True, "enable_cameras": False}
+        {"headless": True, "enable_cameras": args.record_video}
     ).app
     started = time.time()
     result: dict[str, Any]
@@ -979,6 +1011,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
 
     from task3_autonomy.arms import DualArmController
     from task3_autonomy.navigation import base_twist_toward
+    from task3_autonomy.recording import RunRecorder
     from task3_autonomy.skills import (
         TRANSIT_ARM_POSE,
         NavigateTo,
@@ -1028,388 +1061,437 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     if callable(initialize):
         initialize()
 
-    def tray_pose() -> tuple[float, float, float]:
-        positions, _ = tray_view.get_world_poses()
-        return tuple(float(value) for value in positions.tolist()[0])
+    recorder = RunRecorder(
+        args.output_dir, enabled=getattr(args, "record_video", False)
+    )
+    recorder.setup()
 
-    # Local tray stance: put the contact point dead ahead so the reach stays
-    # inside the proven ~0.83 m envelope (CUP_GRASP_XY dead-ahead distance
-    # from STANCE), instead of the ~1.0 m diagonal reach that failed trial 1.
-    initial_tray_pose = tray_pose()
-    tray_stance = (STANCE[0], initial_tray_pose[1])
+    try:
 
-    adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
-    arms = DualArmController(robot, simulation_app)
-    phases: list[dict[str, Any]] = []
-    tick = 0
-    # A one-entry box, not a plain variable: _run_push_stroke() (module-level,
-    # so its own branching doesn't count toward this function's cyclomatic
-    # complexity) needs to mutate the SAME anchor sim_tick() reads, not a
-    # disconnected local copy -- see _run_push_stroke()'s docstring.
-    hold_anchor_box: dict[str, tuple[float, float] | None] = {"value": None}
-    # During a physical carry, keep the hand at its measured robot-relative
-    # offset while the mobile base moves. A fixed world-frame hand target
-    # would leave the held tray behind in the kitchen as the base navigates.
-    carry_arm_box: dict[str, Any] = {"value": None}
+        def tray_pose() -> tuple[float, float, float]:
+            positions, _ = tray_view.get_world_poses()
+            return tuple(float(value) for value in positions.tolist()[0])
 
-    def sim_tick() -> None:
-        nonlocal tick
-        disable_robot_external_wrenches(robot)
-        _apply_carry_arm_target(arms, adapter, carry_arm_box)
-        if hold_anchor_box["value"] is not None:
-            vx, vy = base_twist_toward(
-                adapter.pose(),
-                hold_anchor_box["value"],
-                max_linear_mps=0.12,
-                position_kp=2.0,
-            )
-            adapter.apply_twist(vx, vy, hold_heading=True)
-        scene.write_data_to_sim()
-        sim.step()
-        scene.update(sim.cfg.dt)
-        tick += 1
+        # Local tray stance: put the contact point dead ahead so the reach
+        # stays inside the proven ~0.83 m envelope (CUP_GRASP_XY dead-ahead
+        # distance from STANCE), instead of the ~1.0 m diagonal reach that
+        # failed trial 1.
+        initial_tray_pose = tray_pose()
+        tray_stance = (STANCE[0], initial_tray_pose[1])
 
-    def log(name: str, **detail: Any) -> None:
-        base = adapter.pose()
-        phase = {
-            "phase": name,
-            "tick": tick,
-            "tray": [round(v, 6) for v in tray_pose()],
-            "base": [round(base.x, 6), round(base.y, 6), round(base.yaw, 6)],
-            **detail,
+        adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
+        arms = DualArmController(robot, simulation_app)
+        phases: list[dict[str, Any]] = []
+        tick = 0
+        # A one-entry box, not a plain variable: _run_push_stroke()
+        # (module-level, so its own branching doesn't count toward this
+        # function's cyclomatic complexity) needs to mutate the SAME anchor
+        # sim_tick() reads, not a disconnected local copy -- see
+        # _run_push_stroke()'s docstring.
+        hold_anchor_box: dict[str, tuple[float, float] | None] = {
+            "value": None
         }
-        phases.append(phase)
-        print(
-            "TRAY_SLIDE_DBG " + json.dumps(phase, sort_keys=True), flush=True
-        )
+        # During a physical carry, keep the hand at its measured
+        # robot-relative offset while the mobile base moves. A fixed
+        # world-frame hand target would leave the held tray behind in the
+        # kitchen as the base navigates.
+        carry_arm_box: dict[str, Any] = {"value": None}
 
-    def drive(
-        target: tuple[float, float],
-        speed: float,
-        budget: float,
-        accept_tolerance: float = 0.03,
-    ) -> bool:
-        skill = NavigateTo(target, max_linear_mps=speed)
-        for _ in range(math.ceil(budget / sim.cfg.dt)):
-            vx, vy, done = skill.compute(adapter.pose())
-            if done:
-                adapter.apply_twist(0.0, 0.0)
+        def sim_tick() -> None:
+            nonlocal tick
+            disable_robot_external_wrenches(robot)
+            _apply_carry_arm_target(arms, adapter, carry_arm_box)
+            if hold_anchor_box["value"] is not None:
+                vx, vy = base_twist_toward(
+                    adapter.pose(),
+                    hold_anchor_box["value"],
+                    max_linear_mps=0.12,
+                    position_kp=2.0,
+                )
+                adapter.apply_twist(vx, vy, hold_heading=True)
+            scene.write_data_to_sim()
+            sim.step()
+            scene.update(sim.cfg.dt)
+            tick += 1
+
+        def log(name: str, **detail: Any) -> None:
+            base = adapter.pose()
+            tray = tray_pose()
+            phase = {
+                "phase": name,
+                "tick": tick,
+                "tray": [round(v, 6) for v in tray],
+                "base": [
+                    round(base.x, 6),
+                    round(base.y, 6),
+                    round(base.yaw, 6),
+                ],
+                **detail,
+            }
+            phases.append(phase)
+            print(
+                "TRAY_SLIDE_DBG " + json.dumps(phase, sort_keys=True),
+                flush=True,
+            )
+            overlay_lines = _phase_overlay_lines(tick, tray, detail)
+            recorder.capture(name, lines=overlay_lines)
+
+        def drive(
+            target: tuple[float, float],
+            speed: float,
+            budget: float,
+            accept_tolerance: float = 0.03,
+        ) -> bool:
+            skill = NavigateTo(target, max_linear_mps=speed)
+            for _ in range(math.ceil(budget / sim.cfg.dt)):
+                vx, vy, done = skill.compute(adapter.pose())
+                if done:
+                    adapter.apply_twist(0.0, 0.0)
+                    sim_tick()
+                    return True
+                adapter.apply_twist(vx, vy)
                 sim_tick()
-                return True
-            adapter.apply_twist(vx, vy)
+            adapter.apply_twist(0.0, 0.0)
             sim_tick()
-        adapter.apply_twist(0.0, 0.0)
-        sim_tick()
-        pose = adapter.pose()
-        residual = math.hypot(pose.x - target[0], pose.y - target[1])
-        return residual <= accept_tolerance
+            pose = adapter.pose()
+            residual = math.hypot(pose.x - target[0], pose.y - target[1])
+            return residual <= accept_tolerance
 
-    def rotate(target: float, budget: float) -> bool:
-        skill = RotateTo(target)
-        for _ in range(math.ceil(budget / sim.cfg.dt)):
-            wz, done = skill.compute(adapter.pose())
-            if done:
-                adapter.apply_twist(0.0, 0.0, 0.0)
+        def rotate(target: float, budget: float) -> bool:
+            skill = RotateTo(target)
+            for _ in range(math.ceil(budget / sim.cfg.dt)):
+                wz, done = skill.compute(adapter.pose())
+                if done:
+                    adapter.apply_twist(0.0, 0.0, 0.0)
+                    sim_tick()
+                    return True
+                adapter.apply_twist(0.0, 0.0, wz)
                 sim_tick()
-                return True
-            adapter.apply_twist(0.0, 0.0, wz)
+            adapter.apply_twist(0.0, 0.0, 0.0)
             sim_tick()
-        adapter.apply_twist(0.0, 0.0, 0.0)
-        sim_tick()
-        return False
+            return False
 
-    def reach(
-        side: str,
-        position: tuple[float, float, float],
-        quat: tuple[float, ...],
-        budget: float,
-    ) -> bool:
-        return arms.reach(
-            side,
-            position,
-            quat,
+        def reach(
+            side: str,
+            position: tuple[float, float, float],
+            quat: tuple[float, ...],
+            budget: float,
+        ) -> bool:
+            return arms.reach(
+                side,
+                position,
+                quat,
+                step=sim_tick,
+                dt=sim.cfg.dt,
+                timeout_s=budget,
+                position_tolerance_m=0.025,
+            )
+
+        def log_reach_failure(
+            name: str,
+            side: str,
+            position: tuple[float, float, float],
+            quat: tuple[float, ...],
+            **detail: Any,
+        ) -> None:
+            log(
+                name,
+                ok=False,
+                **_reach_failure_detail(arms, side, position, quat),
+                **detail,
+            )
+
+        def ramp_vertical(
+            side: str,
+            xy: tuple[float, float],
+            quat: tuple[float, ...],
+            start_z: float,
+            end_z: float,
+            seconds: float,
+            *,
+            detect_contact: bool = False,
+        ) -> dict[str, Any]:
+            return _ramp_vertical_ee(
+                arms,
+                sim_tick,
+                tray_pose,
+                side,
+                xy,
+                quat,
+                start_z,
+                end_z,
+                seconds,
+                sim.cfg.dt,
+                detect_contact=detect_contact,
+            )
+
+        def ramp_horizontal(
+            side: str,
+            xz: tuple[float, float],
+            quat: tuple[float, ...],
+            start_y: float,
+            end_y: float,
+            seconds: float,
+            *,
+            detect_contact: bool = False,
+        ) -> dict[str, Any]:
+            return _ramp_horizontal_ee(
+                arms,
+                sim_tick,
+                tray_pose,
+                side,
+                xz,
+                quat,
+                start_y,
+                end_y,
+                seconds,
+                sim.cfg.dt,
+                detect_contact=detect_contact,
+            )
+
+        # Stabilize and tuck exactly as the proven cup pipeline does.
+        spine_ok = arms.move_spine(
+            0.45,
             step=sim_tick,
             dt=sim.cfg.dt,
-            timeout_s=budget,
-            position_tolerance_m=0.025,
+            timeout_s=6.0,
+            tolerance_m=0.03,
         )
-
-    def log_reach_failure(
-        name: str,
-        side: str,
-        position: tuple[float, float, float],
-        quat: tuple[float, ...],
-        **detail: Any,
-    ) -> None:
+        measured_spine = arms.measured_spine_position()
+        if not spine_ok:
+            log(
+                "raise_spine",
+                ok=False,
+                measured_spine=round(measured_spine, 6),
+            )
+            return _result(
+                False, "raise_spine", phases, tray_pose(), tray_pose(), args
+            )
+        log("raise_spine", ok=True, measured_spine=round(measured_spine, 6))
+        ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
+        arms.sync_targets_from_measured()
+        corridor_ok = drive(CORRIDOR_STOP, 0.5, 45.0)
+        log("navigate_corridor_stop", ok=corridor_ok)
+        if not corridor_ok:
+            return _result(
+                False,
+                "navigate_corridor_stop",
+                phases,
+                tray_pose(),
+                tray_pose(),
+                args,
+            )
+        spot_ok = drive(ROTATE_SPOT, 0.4, 35.0, accept_tolerance=0.15)
+        log("navigate_rotate_spot", ok=spot_ok)
+        if not spot_ok:
+            return _result(
+                False, "rotate_spot", phases, tray_pose(), tray_pose(), args
+            )
+        rotate_ok = rotate(FACE_WEST_YAW_RAD, 15.0)
+        log("rotate_west", ok=rotate_ok)
+        if not rotate_ok:
+            return _result(
+                False, "rotate_west", phases, tray_pose(), tray_pose(), args
+            )
+        if not drive(tray_stance, 0.25, 20.0):
+            log("navigate_stance", ok=False, target=list(tray_stance))
+            return _result(
+                False,
+                "navigate_stance",
+                phases,
+                tray_pose(),
+                tray_pose(),
+                args,
+            )
+        pose = adapter.pose()
+        hold_anchor_box["value"] = (pose.x, pose.y)
         log(
-            name,
-            ok=False,
-            **_reach_failure_detail(arms, side, position, quat),
-            **detail,
+            "at_stance",
+            base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
+            tray_stance=list(tray_stance),
         )
 
-    def ramp_vertical(
-        side: str,
-        xy: tuple[float, float],
-        quat: tuple[float, ...],
-        start_z: float,
-        end_z: float,
-        seconds: float,
-        *,
-        detect_contact: bool = False,
-    ) -> dict[str, Any]:
-        return _ramp_vertical_ee(
-            arms,
-            sim_tick,
-            tray_pose,
-            side,
-            xy,
-            quat,
-            start_z,
-            end_z,
-            seconds,
-            sim.cfg.dt,
-            detect_contact=detect_contact,
+        start = tray_pose()
+        top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
+
+        # Multi-stroke press-and-drag from the top of the tray: pregrasp above
+        # the contact point, close the fist (a rigid pusher, never attached to
+        # the tray), ramp down onto the tray top, then drag the contact point
+        # (and the base under it) north together. This mirrors the proven cup
+        # pipeline's pregrasp-above + ramped-descend structure instead of one
+        # direct reach. Round 1 measured only ~28-47% coupling per stroke (the
+        # fist slips rather than fully dragging the tray), so repeat up to
+        # MAX_PUSH_STROKES times, re-reading the live tray pose every time and
+        # stopping as soon as the measured overhang gate is met.
+        strokes_used = 0
+        for stroke_index in range(MAX_PUSH_STROKES):
+            strokes_used = stroke_index + 1
+            gate_met, failure_phase = _run_push_stroke(
+                stroke_index,
+                arms=arms,
+                adapter=adapter,
+                reach=reach,
+                drive=drive,
+                ramp_vertical=ramp_vertical,
+                sim_tick=sim_tick,
+                log=log,
+                log_reach_failure=log_reach_failure,
+                tray_pose_fn=tray_pose,
+                hold_anchor_box=hold_anchor_box,
+                start_y=start[1],
+                top_down=top_down,
+                dt=sim.cfg.dt,
+                args=args,
+            )
+            if failure_phase is not None:
+                return _result(
+                    False, failure_phase, phases, start, tray_pose(), args
+                )
+            if gate_met:
+                break
+
+        after_push = tray_pose()
+        moved_y = after_push[1] - start[1]
+        overhang_north = north_overhang_m(after_push[1])
+        # A net translation is only a diagnostic proxy. The tray must actually
+        # clear the counter before the edge-lift/carry chain is attempted.
+        slide_ok = overhang_north >= SLIDE_OVERHANG_GATE_M
+        log(
+            "push_result",
+            ok=slide_ok,
+            moved_y_m=round(moved_y, 6),
+            north_overhang_m=round(overhang_north, 6),
+            strokes_used=strokes_used,
+        )
+        if not slide_ok:
+            return _result(
+                False, "push_result", phases, start, tray_pose(), args
+            )
+
+        # Move to a TRAY-RELATIVE north-side stance, then try a true thin-edge
+        # pinch. The inherited fixed stance (STANCE[0], -0.75) was unvalidated
+        # legacy code (all earlier trials failed upstream of it): once trial 4
+        # actually reached it, the edge target was ~1.1-1.2 m away -- well past
+        # the proven ~0.83 m envelope, and IK correctly refused to converge.
+        # Mirror TRAY_STANCE's fix: derive the pinch target and stance from the
+        # LIVE post-slide tray pose so the pinch point is dead ahead.
+        tray_now = tray_pose()
+        pinch_target_xy = north_pinch_target(tray_now[0], tray_now[1])
+        north_stance = north_pinch_stance(pinch_target_xy)
+        if not stance_in_safe_lane(north_stance[1]):
+            # Do not force a stance the room geometry forbids -- log the
+            # measured geometry (island north face NORTH_COUNTER_EDGE_Y,
+            # partition south face KITCHEN_PARTITION_SOUTH_FACE_Y, and the
+            # computed stance) and report back per the escalation protocol.
+            log(
+                "north_stance_geometry_blocked",
+                ok=False,
+                pinch_target=list(pinch_target_xy),
+                computed_stance=list(north_stance),
+                lane_min_y=NORTH_COUNTER_EDGE_Y,
+                lane_max_y=KITCHEN_PARTITION_SOUTH_FACE_Y,
+                safe_lane_margin_m=SAFE_LANE_MARGIN_M,
+            )
+            return _result(
+                False,
+                "north_stance_geometry_blocked",
+                phases,
+                start,
+                tray_pose(),
+                args,
+            )
+        # Bug fix (round 1 trials 1-3): hold_anchor was left set from the
+        # manipulation phase, so sim_tick's own anchor-hold twist silently
+        # overrode every NavigateTo command issued by drive() below -- the base
+        # measurably barely moved (~0.01-0.02 m) across a 20 s budget. Clear it
+        # before free navigation, then re-anchor once stopped.
+        hold_anchor_box["value"] = None
+        # Route around the island, never through it: first move north while
+        # still east of it at the proven-safe transit x (STANCE[0] = -3.32,
+        # matching every prior trial's actual post-push base x), THEN move west
+        # along the now-clear lane to the tray-relative stance x.
+        transit_point = (STANCE[0], north_stance[1])
+        if not drive(transit_point, 0.25, 20.0):
+            log(
+                "navigate_north_transit",
+                ok=False,
+                target=list(transit_point),
+            )
+            return _result(
+                False,
+                "navigate_north_transit",
+                phases,
+                start,
+                tray_pose(),
+                args,
+            )
+        if not drive(north_stance, 0.25, 20.0):
+            log("navigate_north_stance", ok=False, target=list(north_stance))
+            return _result(
+                False,
+                "navigate_north_stance",
+                phases,
+                start,
+                tray_pose(),
+                args,
+            )
+        if not rotate(FACE_SOUTH_YAW_RAD, 15.0):
+            log("rotate_south", ok=False)
+            return _result(
+                False, "rotate_south", phases, start, tray_pose(), args
+            )
+        pose = adapter.pose()
+        hold_anchor_box["value"] = (pose.x, pose.y)
+        log(
+            "at_north_stance",
+            base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
+            north_stance=list(north_stance),
+            pinch_target=list(pinch_target_xy),
         )
 
-    def ramp_horizontal(
-        side: str,
-        xz: tuple[float, float],
-        quat: tuple[float, ...],
-        start_y: float,
-        end_y: float,
-        seconds: float,
-        *,
-        detect_contact: bool = False,
-    ) -> dict[str, Any]:
-        return _ramp_horizontal_ee(
-            arms,
-            sim_tick,
-            tray_pose,
-            side,
-            xz,
-            quat,
-            start_y,
-            end_y,
-            seconds,
-            sim.cfg.dt,
-            detect_contact=detect_contact,
-        )
-
-    # Stabilize and tuck exactly as the proven cup pipeline does.
-    spine_ok = arms.move_spine(
-        0.45,
-        step=sim_tick,
-        dt=sim.cfg.dt,
-        timeout_s=6.0,
-        tolerance_m=0.03,
-    )
-    measured_spine = arms.measured_spine_position()
-    if not spine_ok:
-        log("raise_spine", ok=False, measured_spine=round(measured_spine, 6))
-        return _result(
-            False, "raise_spine", phases, tray_pose(), tray_pose(), args
-        )
-    log("raise_spine", ok=True, measured_spine=round(measured_spine, 6))
-    ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
-    arms.sync_targets_from_measured()
-    corridor_ok = drive(CORRIDOR_STOP, 0.5, 45.0)
-    log("navigate_corridor_stop", ok=corridor_ok)
-    if not corridor_ok:
-        return _result(
-            False,
-            "navigate_corridor_stop",
-            phases,
-            tray_pose(),
-            tray_pose(),
-            args,
-        )
-    spot_ok = drive(ROTATE_SPOT, 0.4, 35.0, accept_tolerance=0.15)
-    log("navigate_rotate_spot", ok=spot_ok)
-    if not spot_ok:
-        return _result(
-            False, "rotate_spot", phases, tray_pose(), tray_pose(), args
-        )
-    rotate_ok = rotate(FACE_WEST_YAW_RAD, 15.0)
-    log("rotate_west", ok=rotate_ok)
-    if not rotate_ok:
-        return _result(
-            False, "rotate_west", phases, tray_pose(), tray_pose(), args
-        )
-    if not drive(tray_stance, 0.25, 20.0):
-        log("navigate_stance", ok=False, target=list(tray_stance))
-        return _result(
-            False, "navigate_stance", phases, tray_pose(), tray_pose(), args
-        )
-    pose = adapter.pose()
-    hold_anchor_box["value"] = (pose.x, pose.y)
-    log(
-        "at_stance",
-        base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
-        tray_stance=list(tray_stance),
-    )
-
-    start = tray_pose()
-    top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
-
-    # Multi-stroke press-and-drag from the top of the tray: pregrasp above
-    # the contact point, close the fist (a rigid pusher, never attached to
-    # the tray), ramp down onto the tray top, then drag the contact point
-    # (and the base under it) north together. This mirrors the proven cup
-    # pipeline's pregrasp-above + ramped-descend structure instead of one
-    # direct reach. Round 1 measured only ~28-47% coupling per stroke (the
-    # fist slips rather than fully dragging the tray), so repeat up to
-    # MAX_PUSH_STROKES times, re-reading the live tray pose every time and
-    # stopping as soon as the measured overhang gate is met.
-    strokes_used = 0
-    for stroke_index in range(MAX_PUSH_STROKES):
-        strokes_used = stroke_index + 1
-        gate_met, failure_phase = _run_push_stroke(
-            stroke_index,
+        tray_now = tray_pose()  # tray does not move during navigate/rotate
+        # Round 3: corrected closing-axis orientation (see EDGE_PINCH_ROLL_RAD
+        # above) plus a horizontal pregrasp-out -> reach-in approach instead of
+        # a vertical descend, with the wrist-to-fingertip offset measured live
+        # (never assumed) at the pregrasp-out stance. Module-level so its own
+        # branching does not count toward this function's cyclomatic
+        # complexity.
+        # edge_info is already captured via the edge_close/edge_lift phase
+        # log entries above; nothing further is needed from it here.
+        edge_passed, edge_failed_phase, _edge_info = _run_edge_pinch(
             arms=arms,
+            robot=robot,
             adapter=adapter,
             reach=reach,
-            drive=drive,
             ramp_vertical=ramp_vertical,
+            ramp_horizontal=ramp_horizontal,
+            drive=drive,
             sim_tick=sim_tick,
             log=log,
             log_reach_failure=log_reach_failure,
             tray_pose_fn=tray_pose,
             hold_anchor_box=hold_anchor_box,
-            start_y=start[1],
-            top_down=top_down,
+            carry_arm_box=carry_arm_box,
+            pinch_target_xy=pinch_target_xy,
+            tray_z=tray_now[2],
             dt=sim.cfg.dt,
             args=args,
         )
-        if failure_phase is not None:
+        if edge_failed_phase is not None:
             return _result(
-                False, failure_phase, phases, start, tray_pose(), args
+                False, edge_failed_phase, phases, start, tray_pose(), args
             )
-        if gate_met:
-            break
-
-    after_push = tray_pose()
-    moved_y = after_push[1] - start[1]
-    overhang_north = north_overhang_m(after_push[1])
-    # A net translation is only a diagnostic proxy. The tray must actually
-    # clear the counter before the edge-lift/carry chain is attempted.
-    slide_ok = overhang_north >= SLIDE_OVERHANG_GATE_M
-    log(
-        "push_result",
-        ok=slide_ok,
-        moved_y_m=round(moved_y, 6),
-        north_overhang_m=round(overhang_north, 6),
-        strokes_used=strokes_used,
-    )
-    if not slide_ok:
-        return _result(False, "push_result", phases, start, tray_pose(), args)
-
-    # Move to a TRAY-RELATIVE north-side stance, then try a true thin-edge
-    # pinch. The inherited fixed stance (STANCE[0], -0.75) was unvalidated
-    # legacy code (all earlier trials failed upstream of it): once trial 4
-    # actually reached it, the edge target was ~1.1-1.2 m away -- well past
-    # the proven ~0.83 m envelope, and IK correctly refused to converge.
-    # Mirror TRAY_STANCE's fix: derive the pinch target and stance from the
-    # LIVE post-slide tray pose so the pinch point is dead ahead.
-    tray_now = tray_pose()
-    pinch_target_xy = north_pinch_target(tray_now[0], tray_now[1])
-    north_stance = north_pinch_stance(pinch_target_xy)
-    if not stance_in_safe_lane(north_stance[1]):
-        # Do not force a stance the room geometry forbids -- log the
-        # measured geometry (island north face NORTH_COUNTER_EDGE_Y,
-        # partition south face KITCHEN_PARTITION_SOUTH_FACE_Y, and the
-        # computed stance) and report back per the escalation protocol.
-        log(
-            "north_stance_geometry_blocked",
-            ok=False,
-            pinch_target=list(pinch_target_xy),
-            computed_stance=list(north_stance),
-            lane_min_y=NORTH_COUNTER_EDGE_Y,
-            lane_max_y=KITCHEN_PARTITION_SOUTH_FACE_Y,
-            safe_lane_margin_m=SAFE_LANE_MARGIN_M,
-        )
+        final = tray_pose()
         return _result(
-            False,
-            "north_stance_geometry_blocked",
+            edge_passed,
+            "complete" if edge_passed else "edge_pinch",
             phases,
             start,
-            tray_pose(),
+            final,
             args,
         )
-    # Bug fix (round 1 trials 1-3): hold_anchor was left set from the
-    # manipulation phase, so sim_tick's own anchor-hold twist silently
-    # overrode every NavigateTo command issued by drive() below -- the base
-    # measurably barely moved (~0.01-0.02 m) across a 20 s budget. Clear it
-    # before free navigation, then re-anchor once stopped.
-    hold_anchor_box["value"] = None
-    # Route around the island, never through it: first move north while
-    # still east of it at the proven-safe transit x (STANCE[0] = -3.32,
-    # matching every prior trial's actual post-push base x), THEN move west
-    # along the now-clear lane to the tray-relative stance x.
-    transit_point = (STANCE[0], north_stance[1])
-    if not drive(transit_point, 0.25, 20.0):
-        log("navigate_north_transit", ok=False, target=list(transit_point))
-        return _result(
-            False, "navigate_north_transit", phases, start, tray_pose(), args
-        )
-    if not drive(north_stance, 0.25, 20.0):
-        log("navigate_north_stance", ok=False, target=list(north_stance))
-        return _result(
-            False, "navigate_north_stance", phases, start, tray_pose(), args
-        )
-    if not rotate(FACE_SOUTH_YAW_RAD, 15.0):
-        log("rotate_south", ok=False)
-        return _result(False, "rotate_south", phases, start, tray_pose(), args)
-    pose = adapter.pose()
-    hold_anchor_box["value"] = (pose.x, pose.y)
-    log(
-        "at_north_stance",
-        base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
-        north_stance=list(north_stance),
-        pinch_target=list(pinch_target_xy),
-    )
-
-    tray_now = tray_pose()  # tray does not move during navigate/rotate
-    # Round 3: corrected closing-axis orientation (see EDGE_PINCH_ROLL_RAD
-    # above) plus a horizontal pregrasp-out -> reach-in approach instead of
-    # a vertical descend, with the wrist-to-fingertip offset measured live
-    # (never assumed) at the pregrasp-out stance. Module-level so its own
-    # branching does not count toward this function's cyclomatic
-    # complexity.
-    # edge_info is already captured via the edge_close/edge_lift phase
-    # log entries above; nothing further is needed from it here.
-    edge_passed, edge_failed_phase, _edge_info = _run_edge_pinch(
-        arms=arms,
-        robot=robot,
-        adapter=adapter,
-        reach=reach,
-        ramp_vertical=ramp_vertical,
-        ramp_horizontal=ramp_horizontal,
-        drive=drive,
-        sim_tick=sim_tick,
-        log=log,
-        log_reach_failure=log_reach_failure,
-        tray_pose_fn=tray_pose,
-        hold_anchor_box=hold_anchor_box,
-        carry_arm_box=carry_arm_box,
-        pinch_target_xy=pinch_target_xy,
-        tray_z=tray_now[2],
-        dt=sim.cfg.dt,
-        args=args,
-    )
-    if edge_failed_phase is not None:
-        return _result(
-            False, edge_failed_phase, phases, start, tray_pose(), args
-        )
-    final = tray_pose()
-    return _result(
-        edge_passed,
-        "complete" if edge_passed else "edge_pinch",
-        phases,
-        start,
-        final,
-        args,
-    )
+    finally:
+        _finish_recording(recorder)
 
 
 def _result(
