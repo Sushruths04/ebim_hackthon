@@ -74,6 +74,30 @@ does not drift 0.12 m; (c) re-read live cup pose and re-center right before
 close. Do NOT blind-loop; capture run.gif + result.json and diagnose the phase
 visually before each change. GPU account expiry is imminent -- weigh each run.
 
+**r12/r13 update (Claude, 2026-07-19) -- gripper now pinches, hold still fails:**
+- r12 (`961a0d6`, stiffer base-hold 0.25/kp4): cut cup drag 0.24->0.067 m and
+  passed `lift`, but `close` gripper stalled at 1.02 (wide open) -- the
+  descend shoves the cup and the fingers close on air. hold FAILED.
+- r13 (`5da4498`, re-target grasp onto LIVE cup pose after descend, new
+  `recenter_live_cup` phase): re-center reached the cup (2 cm err) and `close`
+  now grips at **0.3377** (real pinch vs r12's 1.02) -- BIG step. But the
+  close DRAGS the cup 14 cm N + 5 cm W as it grips (fingers catch it off-centre
+  at the rim), so the grip is loose (0.34 vs proven 0.076) and the cup slips
+  during lift. hold FAILED, lift only 0.0303 m.
+- Direct proven-vs-fail comparison (`proofs/phase2-grasp-reliability/run18_result.json`):
+  descends are near-identical (both stall high, strict_reach False); the ONLY
+  difference is close -- Run18 closes to 0.076 and cages the cup (lifts 0.109 m),
+  transport closes loose because the cup is asymmetric to the finger axis at
+  contact. ROOT: the full-nav approach direction/yaw differs from the proven
+  skip-nav, so the cup sits off the finger-closing axis and the close shoves it.
+  The clean fix is to make the transport final approach match the proven
+  skip-nav geometry (square the base to the cup's finger axis at the stance --
+  blocked by no rotation clearance at the stance, so likely a hold-west-heading
+  during the final approach) and/or a symmetric top-down cage close that does
+  not drag. This is genuine multi-run grasp tuning (proven pipeline took Runs
+  9-18). Commits `fec842e`, `d7814f6`, `961a0d6`, `5da4498` are the verified
+  progress; navigate_stance (the handed-off blocker) stays SOLVED.
+
 ## ⚠️ SCORING GROUND-TRUTH + FINISH PLAN (orchestrator, 2026-07-19)
 
 Verified against `scripts/evaluation/task3/grading.py::score_stage1_table_setup`.
