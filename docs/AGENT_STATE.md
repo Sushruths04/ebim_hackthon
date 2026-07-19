@@ -17,6 +17,13 @@ slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
 
+**Active claim — Codex, 2026-07-19 17:20 UTC, `agent/codex-task3-grasp`:**
+continuing the physical cup transport grasp-calibration loop from Claude's
+verified r13 baseline (`5b458b1`). First bounded lever: compare the transport
+and frozen skip-navigation contact geometry, then tune one close/depth
+parameter per recorded GPU run. Keep `sim-dev-g4b` running while this work is
+active; do not alter scene assets or physics.
+
 ## ROOT CAUSE of the transport nav stall + fix (Claude, 2026-07-19)
 
 Codex's r24-r31 loop stalled the cup-transport base against the island on the
