@@ -1,0 +1,11 @@
+{
+  "commit": "2626e1a7e5cd406ed81e1fa79022673e7b93299a",
+  "created_at": "2026-07-19T15:27:59.099553+00:00",
+  "note": "r23 failed push_result; exported diagnostic evidence before fallback; not a passing Stage 1 proof",
+  "repro": "repro.txt",
+  "result": "result.json",
+  "slug": "task3-stage1-tray-r23",
+  "task": "Task 3 Stage 1 tray slide diagnostic",
+  "video": "proof.gif",
+  "video_format": "gif"
+}
