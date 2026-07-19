@@ -572,11 +572,17 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             # The TMR remains a floating body when wheel velocity is zero.
             # Close the position loop against arm reaction forces while the
             # adapter's existing yaw compensator holds the final heading.
+            # Stiffer than the original 0.12 m/s / kp 2.0: after the FULL
+            # navigation route the descend's arm-reaction force pushed the
+            # base ~0.12 m NE off the anchor (r11: pregrasp x=-3.329 ->
+            # descend x=-3.232), landing the gripper 6.7 cm off the cup so it
+            # closed on nothing. A firmer position hold keeps the base on its
+            # anchor through the descend so the grasp lands square.
             hold_vx, hold_vy = base_twist_toward(
                 adapter.pose(),
                 base_hold_anchor,
-                max_linear_mps=0.12,
-                position_kp=2.0,
+                max_linear_mps=0.25,
+                position_kp=4.0,
             )
             adapter.apply_twist(hold_vx, hold_vy, hold_heading=True)
         scene.write_data_to_sim()
