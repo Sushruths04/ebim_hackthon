@@ -4,13 +4,28 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 07:20 UTC (Codex,
+Last update: 2026-07-19 08:25 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED after Round 7. Day 1 remains complete;
+GPU STATUS: `sim-dev-g4b` is STOPPED after Round 8. Day 1 remains complete;
 the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
 slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
+
+## Day 3 Step 1 Round 8 result — 2026-07-19 08:15 UTC
+
+Round 8 used the 12 s recovery reach budget and repeated `--push-distance
+0.26`. All three push strokes completed, the tray moved `+0.214900 m`, and
+the actual north overhang reached `+0.035366 m`. The physical edge approach
+and closure then succeeded (`0.217117 rad`), but the measured lift was
+`-0.000555 m` because the tray still rested on the counter. Carry-to-dining
+was not attempted. Raw evidence:
+`outputs/task3_stage1_tray_slide_r8_20260719/result.json`.
+
+The next committed probe change allows a fourth ordinary press-drag stroke
+and makes the actual `>=0.05 m` overhang—not net translation alone—the
+carry-ready gate. This preserves physics and avoids spending pinch time on a
+tray that cannot yet clear the counter.
 
 ## Day 3 Step 1 Round 7 result — 2026-07-19 07:10 UTC
 
@@ -412,7 +427,7 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **Step 1 (Codex, rounds 1–7, 2026-07-18/19, 13 trials
+- [ ] **Step 1 (Codex, rounds 1–8, 2026-07-18/19, 14 trials
   total):** slide tray to 6-8 cm overhang, edge pinch, dining XY gate
   `>=7/10`; one escalation to a two-arm corner pinch if needed. Round 1
   fixed the reach-envelope and hold_anchor-clobbering navigation bugs.
@@ -439,7 +454,10 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   the tray could not lift. Round 7 repeated the proven push distance but
   stopped at a second-stroke pregrasp reach timeout (`0.056190 m` position
   error, `0.122625 rad` orientation error). The carry-to-table phase remains
-  unverified.
+  unverified. Round 8 reached a physical pinch (`0.217117 rad`) after three
+  strokes but had only `0.035366 m` overhang and `-0.000555 m` lift, so no
+  carry was attempted. The active probe now permits a fourth stroke and
+  requires the actual overhang gate before edge pinch.
   `scripts/task3/probe_tray_slide.py` remains active. No kinematic or scene
   edits were made in any round.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,

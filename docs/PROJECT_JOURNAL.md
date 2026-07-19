@@ -509,3 +509,22 @@ dining-table carry was attempted. Raw result:
 Result: **Step 1 remains open**. The next change is limited to increasing the
 bounded pregrasp reach budget, because this failure occurs before tray edge
 contact and does not justify changing contact geometry or scene physics.
+
+## 2026-07-19 06:15-07:00 UTC — Codex: Round 8 physical pinch confirmation
+
+Goal: run the timeout-adjusted probe with the same physical push distance and
+verify whether the recovered multi-stroke path reaches the tray-to-table
+carry phase.
+
+The 12 s pregrasp budget recovered the second-stroke reach. Three physical
+strokes completed and moved the tray `+0.214900 m`, reaching
+`+0.035366 m` north overhang. The edge approach and vertical-axis pinch then
+worked again, with gripper closure `0.217117 rad`; measured lift was
+`-0.000555 m`, so the tray remained supported by the counter and the carry
+route did not run.
+
+Result: **Step 1 remains open**. Round 8 separates the remaining issue from
+pinch alignment: more physical overhang is required. The next revision allows
+one additional press-drag stroke and makes actual overhang the prerequisite
+for edge pinch/carry; net translation alone is no longer treated as enough.
+Raw result: `outputs/task3_stage1_tray_slide_r8_20260719/result.json`.

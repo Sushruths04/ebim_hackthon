@@ -330,6 +330,17 @@ each session, not retroactively.
   and `0.122625 rad`. No pinch or carry was attempted. Raw JSON:
   `outputs/task3_stage1_tray_slide_r7_20260719/result.json`.
 
+## Session log - 2026-07-19 06:15-07:10 UTC (Round 8 physical pinch)
+
+- The existing VM/container ran one physics-only trial with the 12 s recovery
+  reach budget and `--push-distance 0.26`; it was exported and stopped after
+  completion. No VM is left running.
+- Isaac process time was approximately `645 s`. Three strokes moved the tray
+  `+0.214900 m` and reached `+0.035366 m` overhang. Edge closure succeeded at
+  `0.217117 rad`, but measured lift was `-0.000555 m` because the tray still
+  rested on the counter. Carry-to-dining was not attempted.
+- Raw JSON: `outputs/task3_stage1_tray_slide_r8_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

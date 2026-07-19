@@ -123,7 +123,9 @@ TRAY_HALF_EXTENT_Y_M = 0.436315 / 2.0
 # Round 2: multi-stroke drag. Single-stroke coupling measured only 28-47%
 # (fix2/fix3), so repeat the press-drag cycle, re-reading the live tray
 # pose each time, until the slide gate is met or the stroke budget runs out.
-MAX_PUSH_STROKES = 3
+# Round 8 reached 0.035 m overhang after three successful strokes, so one
+# additional ordinary contact stroke is allowed to reach the physical edge.
+MAX_PUSH_STROKES = 4
 STROKE_REALIGN_DRIFT_M = 0.08
 STROKE_STOP_MOVED_Y_M = 0.22
 # Round 7: after a live re-alignment, one physical pregrasp reach ended with
@@ -1195,7 +1197,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     # direct reach. Round 1 measured only ~28-47% coupling per stroke (the
     # fist slips rather than fully dragging the tray), so repeat up to
     # MAX_PUSH_STROKES times, re-reading the live tray pose every time and
-    # stopping as soon as the slide gate is met.
+    # stopping as soon as the measured overhang gate is met.
     strokes_used = 0
     for stroke_index in range(MAX_PUSH_STROKES):
         strokes_used = stroke_index + 1
@@ -1226,10 +1228,9 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     after_push = tray_pose()
     moved_y = after_push[1] - start[1]
     overhang_north = north_overhang_m(after_push[1])
-    slide_ok = (
-        moved_y >= SLIDE_MOVED_Y_GATE_M
-        or overhang_north >= SLIDE_OVERHANG_GATE_M
-    )
+    # A net translation is only a diagnostic proxy. The tray must actually
+    # clear the counter before the edge-lift/carry chain is attempted.
+    slide_ok = overhang_north >= SLIDE_OVERHANG_GATE_M
     log(
         "push_result",
         ok=slide_ok,
@@ -1237,6 +1238,8 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         north_overhang_m=round(overhang_north, 6),
         strokes_used=strokes_used,
     )
+    if not slide_ok:
+        return _result(False, "push_result", phases, start, tray_pose(), args)
 
     # Move to a TRAY-RELATIVE north-side stance, then try a true thin-edge
     # pinch. The inherited fixed stance (STANCE[0], -0.75) was unvalidated
