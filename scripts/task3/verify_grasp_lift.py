@@ -763,20 +763,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                 ok = True
             log_phase("navigate_rotate_spot", ok)
         if ok:
-            # The proven skip-nav grasp cages the cup at base yaw ~165-169 deg
-            # (proofs/phase2-grasp-reliability/run18: descend 169.6, close
-            # 165.0) and its offsets are tuned for that geometry. Transport
-            # held ~185 deg (near true west) and barely drifts, ~20 deg off
-            # that axis, so close() catches the cup off-centre and drags it.
-            # Face the proven grasp heading directly for the transport
-            # approach; it is also clear of the +/-180 deg wrap boundary so it
-            # converges cleanly. This heading is then held through the grasp.
-            approach_yaw = (
-                math.radians(167.0)
-                if args.transport_to_dining
-                else FACE_WEST_YAW_RAD
-            )
-            ok = rotate_to(approach_yaw, budget_s=15.0)
+            ok = rotate_to(FACE_WEST_YAW_RAD, budget_s=15.0)
             log_phase("rotate_west", ok)
         if ok:
             ok = drive_to(
