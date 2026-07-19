@@ -388,6 +388,25 @@ def _measure_fingertip_midpoint(
     )
 
 
+def _apply_carry_arm_target(
+    arms: Any, adapter: Any, carry_arm_box: dict[str, Any]
+) -> None:
+    """Reissue a robot-relative held-hand target during base motion."""
+    if carry_arm_box["value"] is None:
+        return
+    offset_x, offset_y, hand_z, carry_quat = carry_arm_box["value"]
+    base = adapter.pose()
+    cos_yaw = math.cos(base.yaw)
+    sin_yaw = math.sin(base.yaw)
+    hand_target = (
+        base.x + cos_yaw * offset_x - sin_yaw * offset_y,
+        base.y + sin_yaw * offset_x + cos_yaw * offset_y,
+        hand_z,
+    )
+    arms.set_arm_target("right", hand_target, carry_quat)
+    arms.command()
+
+
 def _ramp_horizontal_ee(
     arms: Any,
     step: Any,
@@ -477,6 +496,7 @@ def _run_edge_pinch(
     log_reach_failure: Any,
     tray_pose_fn: Any,
     hold_anchor_box: dict[str, tuple[float, float] | None],
+    carry_arm_box: dict[str, Any],
     pinch_target_xy: tuple[float, float],
     tray_z: float,
     dt: float,
@@ -1009,18 +1029,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     def sim_tick() -> None:
         nonlocal tick
         disable_robot_external_wrenches(robot)
-        if carry_arm_box["value"] is not None:
-            offset_x, offset_y, hand_z, carry_quat = carry_arm_box["value"]
-            base = adapter.pose()
-            cos_yaw = math.cos(base.yaw)
-            sin_yaw = math.sin(base.yaw)
-            hand_target = (
-                base.x + cos_yaw * offset_x - sin_yaw * offset_y,
-                base.y + sin_yaw * offset_x + cos_yaw * offset_y,
-                hand_z,
-            )
-            arms.set_arm_target("right", hand_target, carry_quat)
-            arms.command()
+        _apply_carry_arm_target(arms, adapter, carry_arm_box)
         if hold_anchor_box["value"] is not None:
             vx, vy = base_twist_toward(
                 adapter.pose(),
@@ -1356,6 +1365,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         log_reach_failure=log_reach_failure,
         tray_pose_fn=tray_pose,
         hold_anchor_box=hold_anchor_box,
+        carry_arm_box=carry_arm_box,
         pinch_target_xy=pinch_target_xy,
         tray_z=tray_now[2],
         dt=sim.cfg.dt,
