@@ -209,6 +209,7 @@ r29 | transport=cup | score=0/5 | FAIL | short stance leg stalled; extend full-r
 r30 | transport=cup | score=0/5 | FAIL | rotate spot near-miss is recoverable; continue closed-loop stance recovery
 r31 | transport=cup | score=0/5 | FAIL | final stance leg timed out; extend transport stance budget to 50 s
 r16 | transport=cup, live Y offset=0.00 m | score=0/5 | FAIL | gripper closed empty (0.0067 rad); bracketed against r13 (+0.06 m, loose 0.3377 rad), next midpoint +0.03 m
+r17 | transport=cup, live Y offset=+0.03 m | score=0/5 | FAIL | gripper again closed empty (0.0079 rad); next narrow contact bracket is +0.05 m
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
