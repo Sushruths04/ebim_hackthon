@@ -378,6 +378,14 @@ each session, not retroactively.
   or carry was attempted. Raw JSON:
   `outputs/task3_stage1_tray_slide_r12_20260719/result.json`.
 
+## Session log - 2026-07-19 13:50-14:55 UTC (Round 13 final tray retry)
+
+- One physics-only trial ran with the retry-enabled probe, was exported, and
+  the GPU VM was stopped. No VM is left running.
+- Four strokes reached `+0.039039 m` overhang; the actual-overhang gate
+  prevented pinch/carry. Raw JSON:
+  `outputs/task3_stage1_tray_slide_r13_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

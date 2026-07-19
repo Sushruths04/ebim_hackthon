@@ -588,3 +588,20 @@ error, before pinch or carry. Raw result:
 Result: **Step 1 remains open**. A single bounded retry from the measured
 post-failure base pose is now added for this transient recovery-reach case;
 the scene and physics remain unchanged.
+
+## 2026-07-19 13:50-14:50 UTC — Codex: Round 13 final tray retry
+
+Goal: validate the pregrasp retry with the proven 0.815 m contact depth and
+0.26 m push distance.
+
+Four physical strokes completed, but the tray reached only `+0.039039 m`
+north overhang. The actual-overhang gate stopped the episode before pinch,
+lift, or carry. Raw result:
+`outputs/task3_stage1_tray_slide_r13_20260719/result.json`.
+
+Final tray-loop status for this handoff: Round 9 proved the strongest partial
+physics chain (`+0.098956 m` overhang, `+0.036547 m` lift, and three successful
+door-route waypoints), while the carry-target update and retry are committed
+and CPU-validated but need one fresh gate-passing GPU episode. This is the
+exact manual-review point; repeating the same contact trials without review
+is not justified by the evidence.
