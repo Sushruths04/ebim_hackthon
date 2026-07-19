@@ -633,7 +633,14 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         return False
 
     def rotate_to(target_yaw: float, *, budget_s: float) -> bool:
-        skill = RotateTo(target_yaw)
+        # RotateTo's 2.0 deg default is tighter than this base's demonstrated
+        # in-place rotational precision: r10 converged to 2.04 deg short of the
+        # west heading and stalled there for the full budget, missing the gate
+        # by 0.04 deg. Use 4.0 deg (still far inside what the world-frame
+        # grasp IK tolerates, since it targets the measured cup pose) to clear
+        # that residual with margin. Matches the 3 deg used by pose_reached /
+        # NavigateTo elsewhere in the stack, with extra headroom for variance.
+        skill = RotateTo(target_yaw, yaw_tolerance_rad=math.radians(4.0))
         for _ in range(int(budget_s / sim.cfg.dt)):
             wz, done = skill.compute(adapter.pose())
             if done:
