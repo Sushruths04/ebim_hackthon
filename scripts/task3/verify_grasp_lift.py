@@ -1246,7 +1246,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         # is reissued in world coordinates while the base follows the tested
         # door route, so the object remains coupled by real gripper contact.
         base_hold_anchor = None
-        from navigation import route_via_door
+        from task3_autonomy.navigation import route_via_door
 
         dining_target = (-2.85, 1.90)
         route = route_via_door(

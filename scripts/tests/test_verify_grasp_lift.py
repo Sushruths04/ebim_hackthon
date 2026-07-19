@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(REPO_ROOT / "scripts" / "task3"))
 
 from verify_grasp_lift import (  # noqa: E402
@@ -29,3 +30,9 @@ def test_cup_grasp_target_uses_live_pose_and_explicit_offsets():
     assert target == pytest.approx(
         (-4.144, -1.677, 0.777 + GRASP_HEIGHT_ABOVE_CUP_ORIGIN)
     )
+
+
+def test_transport_route_is_importable_from_package_namespace():
+    from task3_autonomy.navigation import route_via_door
+
+    assert callable(route_via_door)
