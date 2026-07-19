@@ -52,6 +52,39 @@ Definition of done (Stage 1): one autonomous, standard-physics run where >=4
 of the 5 objects (tray included) end XY-in-dining, with `run.gif` +
 `result.json` + proof bundle committed to `agent/codex-task3-grasp`.
 
+## CODEX AUTONOMOUS LOOP PROTOCOL (do NOT stop between iterations)
+
+CI on this branch is GREEN as of commit `280f481` (pre-commit lint gate
+fixed). Do not revert the lint fixes; keep the branch green.
+
+Run the run->decide->next-run loop end to end WITHOUT pausing for a human:
+
+1. Launch the run with `--record-video`. Wait for it to finish by polling
+   the output dir / log — do NOT hand control back while a run is in flight.
+2. On completion, read `result.json` + `run.gif` yourself and classify:
+   PASS (>=4/5 objects XY-in-dining, standard physics) or FAIL.
+3. Decide and act automatically, no check-in:
+   - PASS  -> immediately run `make_proof_bundle.py`, commit + push the
+     proof, then STOP and report the win.
+   - FAIL  -> apply the next queued tuning change (queue: press force /
+     `--descend-ee-z`, then re-grip-per-stroke, then rim-engage) and launch
+     the next run.
+4. Hard pivot: if 3 consecutive tray-slide runs FAIL, stop tuning the slide
+   and switch to per-object standard-physics transport with the proven
+   10/10 cup pipeline for `cup`, `bowl2`, `spoon2`, `plate2`, AND the tray
+   as its own object (tray is a scored object — never drop it).
+
+ONLY stop and ask the human if: the GCP VM/account dies, you need a code
+change you are <80% sure is safe, or you reach the definition of done.
+
+Non-negotiables: standard physics only (no kinematic attach, no asset
+edits); every run `--record-video`; export + commit proof to git the
+moment anything passes (GCP account expires ~now — never leave a passing
+result unexported).
+
+After every run, append ONE line here:
+`rNN | descend_ee_z=X | score=Y/5 | PASS/FAIL | next action`.
+
 ## Active Codex execution — 2026-07-19
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
