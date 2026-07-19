@@ -70,12 +70,13 @@ def cup_grasp_target(
     *,
     rim_x_offset: float,
     grasp_y_offset: float,
+    grasp_z_offset: float = 0.0,
 ) -> tuple[float, float, float]:
     """Return the physical cup-rim target from its live PhysX position."""
     return (
         cup_position[0] + rim_x_offset,
         cup_position[1] + grasp_y_offset,
-        cup_position[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        cup_position[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN + grasp_z_offset,
     )
 
 
@@ -201,6 +202,15 @@ def parse_args() -> argparse.Namespace:
         help="Live cup Y offset for the final rim target in meters.",
     )
     parser.add_argument(
+        "--cup-grasp-z-offset",
+        type=float,
+        default=0.0,
+        help=(
+            "Vertical offset for the live cup-rim target in meters; "
+            "negative values add a bounded downward engagement press."
+        ),
+    )
+    parser.add_argument(
         "--grasp-ramp-seconds",
         type=float,
         default=1.0,
@@ -320,6 +330,8 @@ def main() -> None:
             "--grasp-ramp-seconds must be non-negative and no greater than "
             "--grasp-settle-seconds"
         )
+    if not -0.05 <= args.cup_grasp_z_offset <= 0.05:
+        raise ValueError("--cup-grasp-z-offset must be within [-0.05, 0.05]")
     out_dir = args.out_dir.resolve()
     frames_dir = out_dir / "frames"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -999,6 +1011,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             cup_before_descend,
             rim_x_offset=args.cup_rim_x_offset,
             grasp_y_offset=args.cup_grasp_y_offset,
+            grasp_z_offset=args.cup_grasp_z_offset,
         )
     else:
         grasp = (
@@ -1066,6 +1079,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             live_cup,
             rim_x_offset=args.cup_rim_x_offset,
             grasp_y_offset=args.cup_grasp_y_offset,
+            grasp_z_offset=args.cup_grasp_z_offset,
         )
         servo_arm("right", grasp, top_down, budget_s=4.0, tol_m=0.02)
         log_phase(
