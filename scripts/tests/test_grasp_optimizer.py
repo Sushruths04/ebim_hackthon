@@ -21,9 +21,7 @@ def test_score_result_rewards_lift_hold_and_blocked_close():
         {
             "cup_lift_m": 0.08,
             "continuous_hold_seconds": 3.0,
-            "phases": [
-                {"phase": "close", "gripper_position_rad": 0.20}
-            ],
+            "phases": [{"phase": "close", "gripper_position_rad": 0.20}],
         }
     )
     assert score > 0.9
@@ -35,9 +33,7 @@ def test_score_result_rejects_empty_close():
         {
             "cup_lift_m": 0.0,
             "continuous_hold_seconds": 0.0,
-            "phases": [
-                {"phase": "close", "gripper_position_rad": 1.0}
-            ],
+            "phases": [{"phase": "close", "gripper_position_rad": 1.0}],
         }
     )
     assert score == 0.0

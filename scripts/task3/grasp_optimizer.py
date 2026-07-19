@@ -110,6 +110,8 @@ def run_trial(
         "--transport-to-dining",
         "--record-video",
         "--fast-exit",
+        "--min-lift-m",
+        f"{SUCCESS_LIFT_M:.6f}",
         "--cup-grasp-y-offset",
         f"{parameters.y_offset:.6f}",
         "--grasp-ramp-seconds",
@@ -208,7 +210,9 @@ def main() -> None:
         random_state=42,
     )
     best = GraspParameters(*result.x)
-    success_rate = sum(bool(trial["success"]) for trial in trials) / len(trials)
+    success_rate = sum(bool(trial["success"]) for trial in trials) / len(
+        trials
+    )
     summary = {
         "best_parameters": asdict(best),
         "best_score": round(-float(result.fun), 6),
