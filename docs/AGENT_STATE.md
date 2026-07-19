@@ -4,6 +4,9 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+Last update: 2026-07-19 (Claude, `agent/codex-task3-grasp`) — see
+"## ROOT CAUSE of the transport nav stall + fix (Claude, 2026-07-19)" below.
+
 Last update: 2026-07-19 17:10 UTC (Codex,
 `agent/codex-task3-grasp`).
 GPU STATUS: `sim-dev-g4b` is RUNNING for r23. Google Cloud project is
@@ -13,6 +16,41 @@ the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
 slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
+
+## ROOT CAUSE of the transport nav stall + fix (Claude, 2026-07-19)
+
+Codex's r24-r31 loop stalled the cup-transport base against the island on the
+final stance leg and tried to fix it by extending the nav budget (20->35->50 s).
+That could never work: the base was **contact-stalled**, not slow. Two LINKED
+bugs, diagnosed from Codex's own evidence:
+
+1. **`raise_spine` timed out** (local proof: `outputs/task3_transport_cup*_gcp`
+   all die at raise_spine, tick 1200). `move_spine(0.45)` uses a 0.01 m
+   tolerance, but the prismatic spine has a ~0.013 m steady-state offset
+   (settles 0.437) so it can NEVER converge. Codex chased the target down
+   0.45->0.43->0.39->0.35, then bypassed `move_spine` entirely in transport
+   mode (`spine_ok = True`).
+2. **That bypass caused the nav stall.** With the spine left low, the tucked
+   arms (~0.80 m forward overhang) rode ~10 cm lower and swept INTO the island
+   counter top (~1.15 m) when the base drove into the west-facing east stance ->
+   contact stall. The proven 10/10 grasp pipeline works precisely because it
+   keeps the spine at 0.45 (right EE ~z 1.38, clears the island).
+
+**Fix (committed, CPU-validated):** in `scripts/task3/verify_grasp_lift.py`
+Phase 0, keep the spine HIGH (`TRAVEL_SPINE_M = 0.45`) for transit in EVERY
+mode and loosen the `move_spine` tolerance to 0.02 m. This re-converges
+transport with the proven pipeline and fixes BOTH bugs at once. py_compile +
+ruff clean; `scripts/tests` 206 pass (3 pre-existing `rmpflow` failures are
+unrelated and present on clean HEAD).
+
+**NEXT (needs ONE GPU run to verify):** launch
+`verify_grasp_lift.py --object-name cup --transport-to-dining --record-video`.
+Predicted success chain: raise_spine PASS -> navigate corridor/rotate/stance
+PASS (arms now clear the island) -> grasp/lift PASS (proven) -> transport
+waypoints -> release in dining. If it passes, run the same for
+`bowl2/spoon2/plate2` and the tray, then package the physical Stage 1 bundle.
+Do NOT re-enter a blind budget-tuning loop; if it still stalls, capture the
+run.gif + result.json and diagnose the NEW failure phase visually first.
 
 ## ⚠️ SCORING GROUND-TRUTH + FINISH PLAN (orchestrator, 2026-07-19)
 

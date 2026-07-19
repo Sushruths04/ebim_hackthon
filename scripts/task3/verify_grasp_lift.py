@@ -688,13 +688,25 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         )
 
     # --- Phase 0: raise spine, tuck arms (travel configuration) --------
-    travel_spine_target = 0.35 if args.transport_to_dining else TRAVEL_SPINE_M
-    spine_ok = (
-        True
-        if args.transport_to_dining
-        else arms.move_spine(
-            travel_spine_target, step=sim_tick, dt=sim.cfg.dt, timeout_s=6.0
-        )
+    # Keep the spine HIGH (TRAVEL_SPINE_M) for transit in EVERY mode. The
+    # tucked arms have a ~0.80 m forward overhang; driving into the east
+    # stance facing west sweeps them over the island counter (top ~1.15 m),
+    # and only a raised spine (right EE ~z 1.38) clears it. The earlier
+    # transport path bypassed this raise and left the arms ~10 cm low, which
+    # is what jammed the base against the island on the final stance leg
+    # (r28-r31: extending the nav budget never helped a contact stall).
+    #
+    # The prismatic spine has a ~0.013 m steady-state offset (measured: it
+    # settles at 0.437 for a 0.45 target), so the default 0.01 m convergence
+    # tolerance can never be met and raise_spine times out. Accept 0.02 m;
+    # 2 cm of spine error is physically irrelevant for island clearance.
+    travel_spine_target = TRAVEL_SPINE_M
+    spine_ok = arms.move_spine(
+        travel_spine_target,
+        step=sim_tick,
+        dt=sim.cfg.dt,
+        timeout_s=6.0,
+        tolerance_m=0.02,
     )
     log_phase("raise_spine", spine_ok, target_spine=travel_spine_target)
     if not spine_ok:
