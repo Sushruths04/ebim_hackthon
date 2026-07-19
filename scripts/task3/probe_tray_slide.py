@@ -172,7 +172,9 @@ EDGE_PINCH_ROLL_RAD = math.pi / 2.0
 EDGE_PINCH_LIP_Y_MARGIN_M = 0.01
 # Pregrasp-out: stage north of the lip with fingers open before reaching
 # in horizontally, rather than descending vertically onto/near the tray.
-EDGE_PINCH_OUT_STANDOFF_M = 0.15
+# r20 showed the arm knocked the tray during the pregrasp-out reach, so the
+# pose is staged further north.
+EDGE_PINCH_OUT_STANDOFF_M = 0.22
 # "Plausible" partial closure band: 0.9 rad <-> ~34 mm aperture, so a
 # 13 mm lip should stall the joint partway, not close to ~0 (empty) or
 # stay near fully open (barely touched).
@@ -536,6 +538,21 @@ def _run_edge_pinch(
         lip_xy[1] + EDGE_PINCH_OUT_STANDOFF_M,
         PREGRASP_EE_Z,
     )
+    # r20: reaching straight to pregrasp_out swept the arm through the tray
+    # and knocked it ~11 cm off the overhang before the pinch. Stage the hand
+    # HIGH and further north first, then descend to pregrasp_out, so the
+    # transit stays clear of the tray. This staging reach is best-effort
+    # (a bounded budget, not a hard gate) -- if it times out, the subsequent
+    # pregrasp_out reach is still attempted and remains the real gate.
+    high_transit = (
+        pregrasp_out[0],
+        pregrasp_out[1] + 0.12,
+        PREGRASP_EE_Z + 0.08,
+    )
+    arms.set_gripper("right", GRIPPER_OPEN_RAD)
+    reach("right", high_transit, edge_pinch_quat, 6.0)
+    log("edge_high_transit", ok=True, target=list(high_transit))
+
     arms.set_gripper("right", GRIPPER_OPEN_RAD)
     if not reach("right", pregrasp_out, edge_pinch_quat, 8.0):
         log_reach_failure(

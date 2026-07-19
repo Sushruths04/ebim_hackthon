@@ -136,8 +136,11 @@ class RunRecorder:
         enabled: bool = True,
         width: int = 960,
         height: int = 540,
-        camera_position: tuple[float, float, float] = (-1.6, -3.4, 2.2),
-        look_at: tuple[float, float, float] = (-3.4, 0.0, 0.8),
+        # r20 calibration: frame the north-counter tray-slide/edge-pinch zone
+        # (tray/lip ~x=-4.2, y=-1.2, z=0.8; robot works from the north at
+        # y~=-0.7) -- a first pass to verify from the recorded GIF.
+        camera_position: tuple[float, float, float] = (-2.3, -3.1, 1.9),
+        look_at: tuple[float, float, float] = (-4.1, -1.15, 0.82),
         max_frames: int = 400,
         gif_duration_ms: int = 400,
     ) -> None:
