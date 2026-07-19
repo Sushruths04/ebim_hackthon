@@ -114,8 +114,8 @@ def test_lift_ramps_vertical_target_before_accepting_convergence():
         (start, quaternion),
         (start, quaternion),
     )
-    controller.set_arm_target = (
-        lambda side, position, quat: targets.append((side, position, quat))
+    controller.set_arm_target = lambda side, position, quat: targets.append(
+        (side, position, quat)
     )
     controller.command = lambda: SimpleNamespace(
         left_succeeded=True, right_succeeded=True

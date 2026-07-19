@@ -1,10 +1,17 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fast tests for the Stage 1 training contract."""
 
 import unittest
 
 import torch
 
-from task3_rl.stage1 import Stage1TaskCfg, build_observation, evaluate_transition
+from task3_rl.stage1 import (
+    Stage1TaskCfg,
+    build_observation,
+    evaluate_transition,
+)
 
 
 class Stage1TaskTests(unittest.TestCase):
@@ -16,7 +23,9 @@ class Stage1TaskTests(unittest.TestCase):
             torch.tensor([[2.0, 2.0]]),
         )
         self.assertEqual(result.shape, (1, 13))
-        self.assertTrue(torch.allclose(result[0, 9:11], torch.tensor([1.0, 0.0])))
+        self.assertTrue(
+            torch.allclose(result[0, 9:11], torch.tensor([1.0, 0.0]))
+        )
 
     def test_progress_is_rewarded(self) -> None:
         reward, failed, success = evaluate_transition(

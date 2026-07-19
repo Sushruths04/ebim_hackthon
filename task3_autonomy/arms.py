@@ -44,11 +44,7 @@ def grasp_lift_gate_passed(
     meet the object-space goal even when the wrist stops short of a more
     ambitious Cartesian target.
     """
-    return (
-        holding
-        and held_ticks >= needed_ticks
-        and lifted_m >= min_lift_m
-    )
+    return holding and held_ticks >= needed_ticks and lifted_m >= min_lift_m
 
 
 def linear_ramp_target(

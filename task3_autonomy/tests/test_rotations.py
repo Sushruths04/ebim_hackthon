@@ -12,8 +12,9 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(_REPO_ROOT / "scripts" / "common"))
 
-from task3_autonomy.rotations import rpy_from_quaternion  # noqa: E402
 from teleop_targets import _quaternion_from_rpy  # noqa: E402
+
+from task3_autonomy.rotations import rpy_from_quaternion  # noqa: E402
 
 pytest_approx = pytest.approx
 
@@ -22,7 +23,15 @@ pytest_approx = pytest.approx
 # (up to float error) for inputs already inside those open ranges. Keep the
 # grid strictly inside -- exact +-pi / +-pi/2 boundaries and the gimbal-lock
 # pole are covered by dedicated tests below instead.
-_ROLL_YAW_GRID = (-3.1, -1.5, -0.5, 0.0, 0.5, 1.5, 3.1)  # near +-pi, both signs
+_ROLL_YAW_GRID = (
+    -3.1,
+    -1.5,
+    -0.5,
+    0.0,
+    0.5,
+    1.5,
+    3.1,
+)  # near +-pi, both signs
 _PITCH_GRID = (-1.4, -0.5, 0.0, 0.5, 1.4)  # strictly inside +-pi/2
 
 
@@ -90,9 +99,7 @@ def test_rpy_round_trip_exact_gimbal_lock_does_not_raise():
     assert math.isfinite(yaw)
     # Gimbal lock only determines roll - yaw (or roll + yaw); the
     # recovered pair must still reproduce the same rotation.
-    _assert_quat_close_up_to_sign(
-        _quaternion_from_rpy(roll, pitch, yaw), quat
-    )
+    _assert_quat_close_up_to_sign(_quaternion_from_rpy(roll, pitch, yaw), quat)
 
 
 @pytest.mark.parametrize(

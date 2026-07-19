@@ -65,6 +65,7 @@ def parse_args() -> argparse.Namespace:
 def _capture_callback(out_dir: Path, index: int):
     import numpy as np
     from PIL import Image
+
     next_index = index
 
     def capture(_step: int) -> None:
@@ -126,8 +127,7 @@ def _run_trial(
         include_beans=True,
     )
     object_paths = {
-        name: resolve_prim_path(stage, name)
-        for name in DEFAULT_STAGE1_OBJECTS
+        name: resolve_prim_path(stage, name) for name in DEFAULT_STAGE1_OBJECTS
     }
     start_positions = {
         name: get_prim_position(stage, path)
@@ -245,6 +245,7 @@ def main() -> None:
         print("STAGE1_RUNNER scene_imported", flush=True)
         capture_factory = None
         if args.record_video:
+
             def capture_factory() -> Any:
                 import omni.replicator.core as rep
 
@@ -253,9 +254,7 @@ def main() -> None:
                     position=(-1.6, -3.4, 2.2),
                     look_at=(-3.4, 0.0, 0.8),
                 )
-                render_product = rep.create.render_product(
-                    camera, (960, 540)
-                )
+                render_product = rep.create.render_product(camera, (960, 540))
                 annotator = rep.AnnotatorRegistry.get_annotator("rgb")
                 annotator.attach([render_product])
                 capture = _capture_callback(frames_dir, frame_index)

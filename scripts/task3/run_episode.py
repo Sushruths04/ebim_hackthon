@@ -111,7 +111,10 @@ def _fix_single_articulation_root(stage, robot_prim_path: str) -> None:
     if len(root_prims) <= 1:
         return
     keep = None
-    for preferred in (f"{robot_prim_path}/base", f"{robot_prim_path}/base_link"):
+    for preferred in (
+        f"{robot_prim_path}/base",
+        f"{robot_prim_path}/base_link",
+    ):
         candidate = stage.GetPrimAtPath(preferred)
         if candidate in root_prims:
             keep = candidate
@@ -155,9 +158,7 @@ def make_headless_robot_usd(robot_usd: Path) -> Path:
     for key in ("metersPerUnit", "upAxis", "kilogramsPerUnit"):
         if src.pseudoRoot.HasInfo(key):
             wrapper.pseudoRoot.SetInfo(key, src.pseudoRoot.GetInfo(key))
-    graph_over = Sdf.CreatePrimInLayer(
-        wrapper, f"/{default_prim}/Graph"
-    )
+    graph_over = Sdf.CreatePrimInLayer(wrapper, f"/{default_prim}/Graph")
     graph_over.active = False
 
     wrapper_path = robot_usd.with_name(robot_usd.stem + "_headless.usda")
@@ -198,9 +199,8 @@ def prepare_rigid_body_view_path(stage: Any, root_path: str) -> str:
     rigid_prims = []
     for prim in Usd.PrimRange(root):
         enabled_attr = prim.GetAttribute("physics:rigidBodyEnabled")
-        if (
-            prim.HasAPI(UsdPhysics.RigidBodyAPI)
-            or (enabled_attr and enabled_attr.IsValid())
+        if prim.HasAPI(UsdPhysics.RigidBodyAPI) or (
+            enabled_attr and enabled_attr.IsValid()
         ):
             rigid_prims.append(prim)
     if not rigid_prims:
@@ -371,8 +371,10 @@ def _run_episode(
             "headless wrapper -- it would crash after sim.reset(). Check "
             "make_headless_robot_usd()."
         )
-    print("Legacy robot controller OmniGraph deactivated pre-composition",
-          flush=True)
+    print(
+        "Legacy robot controller OmniGraph deactivated pre-composition",
+        flush=True,
+    )
 
     # --- Grading-object pose reading ---------------------------------
     # integration_test.get_prim_position() reads a UsdGeom.XformCache
@@ -488,7 +490,9 @@ def _run_episode(
 
     stage1_score = score_stage1_table_setup(final_positions)
     stage1_result = stage_result(
-        "stage1", stage1_score.score, stage1_score.max_score,
+        "stage1",
+        stage1_score.score,
+        stage1_score.max_score,
         stage1_score.score == stage1_score.max_score,
     )
     stage1_result["objects_passed"] = stage1_score.passed
@@ -525,7 +529,9 @@ def _run_episode(
     }
     stage4_score = score_stage4_cleanup(stage4_bounds, stage4_z)
     stage4_result = stage_result(
-        "stage4", stage4_score.score, stage4_score.max_score,
+        "stage4",
+        stage4_score.score,
+        stage4_score.max_score,
         stage4_score.score == stage4_score.max_score,
     )
     stage4_result["objects_passed"] = stage4_score.passed

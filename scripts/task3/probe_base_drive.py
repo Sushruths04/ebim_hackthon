@@ -116,11 +116,10 @@ def _probe(simulation_app, args) -> None:
         damping = torch.full(
             (1, len(adapter.drive_ids)), args.drive_damping, device="cuda:0"
         )
-        robot.write_joint_damping_to_sim(
-            damping, joint_ids=adapter.drive_ids
+        robot.write_joint_damping_to_sim(damping, joint_ids=adapter.drive_ids)
+        print(
+            f"PROBE drive damping override: {args.drive_damping}", flush=True
         )
-        print(f"PROBE drive damping override: {args.drive_damping}",
-              flush=True)
 
     def fmt(tensor, ids) -> list[float]:
         return [round(float(tensor[0, i]), 3) for i in ids]

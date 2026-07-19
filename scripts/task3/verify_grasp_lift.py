@@ -95,17 +95,19 @@ def add_tray_grasp_rim(stage: Any, root_path: str) -> str:
     if existing and existing.IsValid():
         return handle_path
 
-    root_bbox = UsdGeom.BBoxCache(
-        Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
-    ).ComputeWorldBound(root).ComputeAlignedBox()
+    root_bbox = (
+        UsdGeom.BBoxCache(Usd.TimeCode.Default(), [UsdGeom.Tokens.default_])
+        .ComputeWorldBound(root)
+        .ComputeAlignedBox()
+    )
     world_center = Gf.Vec3d(
         float(root_bbox.GetMax()[0]) + 0.018,
         (float(root_bbox.GetMin()[1]) + float(root_bbox.GetMax()[1])) / 2.0,
         float(root_bbox.GetMax()[2]) + 0.10,
     )
-    primary_to_world = UsdGeom.Xformable(
-        primary
-    ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+    primary_to_world = UsdGeom.Xformable(primary).ComputeLocalToWorldTransform(
+        Usd.TimeCode.Default()
+    )
     local_center = primary_to_world.GetInverse().Transform(world_center)
     rim = UsdGeom.Cube.Define(stage, handle_path)
     rim.CreateSizeAttr(1.0)
@@ -465,9 +467,13 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             primary
         ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
         primary_origin = primary_matrix.Transform(Gf.Vec3d(0.0, 0.0, 0.0))
-        bbox = UsdGeom.BBoxCache(
-            Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
-        ).ComputeWorldBound(root).ComputeAlignedBox()
+        bbox = (
+            UsdGeom.BBoxCache(
+                Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
+            )
+            .ComputeWorldBound(root)
+            .ComputeAlignedBox()
+        )
         collision_prims = []
         rigid_prims = []
         collision_bounds = {}
@@ -478,9 +484,13 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         for prim in Usd.PrimRange(root):
             if prim.HasAPI(UsdPhysics.CollisionAPI):
                 collision_prims.append(str(prim.GetPath()))
-                prim_box = UsdGeom.BBoxCache(
-                    Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
-                ).ComputeWorldBound(prim).ComputeAlignedBox()
+                prim_box = (
+                    UsdGeom.BBoxCache(
+                        Usd.TimeCode.Default(), [UsdGeom.Tokens.default_]
+                    )
+                    .ComputeWorldBound(prim)
+                    .ComputeAlignedBox()
+                )
                 collision_bounds[str(prim.GetPath())] = [
                     list(prim_box.GetMin()),
                     list(prim_box.GetMax()),
@@ -835,10 +845,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             target_rad=GRIPPER_OPEN_RAD,
         )
         if not (
-            free_close_ok
-            and free_open_ok
-            and left_close_ok
-            and left_open_ok
+            free_close_ok and free_open_ok and left_close_ok and left_open_ok
         ):
             return _result(
                 False,
@@ -944,21 +951,22 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         ramp_ticks = math.ceil(1.0 / sim.cfg.dt)
         for close_tick in range(close_ticks):
             arms.set_gripper(
-                "right", linear_ramp_target(
+                "right",
+                linear_ramp_target(
                     right_start, GRIPPER_CLOSED_RAD, close_tick + 1, ramp_ticks
-                )
+                ),
             )
             arms.set_gripper(
-                "left", linear_ramp_target(
+                "left",
+                linear_ramp_target(
                     left_start, GRIPPER_CLOSED_RAD, close_tick + 1, ramp_ticks
-                )
+                ),
             )
             arms.command()
             sim_tick()
-        holding = (
-            gripper_holds_object(arms.gripper_position("right"))
-            and gripper_holds_object(arms.gripper_position("left"))
-        )
+        holding = gripper_holds_object(
+            arms.gripper_position("right")
+        ) and gripper_holds_object(arms.gripper_position("left"))
     else:
         holding = arms.grasp(
             "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5

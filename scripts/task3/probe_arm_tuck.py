@@ -44,9 +44,7 @@ DEFAULT_ARM = [0.0, -1.5, 0.0, -2.2, 0.0, 1.5, 0.785]
 def _mirror(left: list[float]) -> list[float]:
     """Right-arm mirror of a left-arm pose (negate j1/j3/j5; mounts are
     mirrored, verified by swing_in_a narrowing both sides symmetrically)."""
-    return [
-        -left[0], left[1], -left[2], left[3], -left[4], left[5], left[6]
-    ]
+    return [-left[0], left[1], -left[2], left[3], -left[4], left[5], left[6]]
 
 
 def _pair(left: list[float]) -> list[float]:
@@ -99,6 +97,7 @@ def _probe(simulation_app) -> None:
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
 
+    import torch
     from scene_robot_room_keyboard import (  # noqa: E402
         configure_keyboard_control_stage,
         configure_robot_room_stage,
@@ -107,8 +106,6 @@ def _probe(simulation_app) -> None:
         reset_robot_to_default_state,
         yaw_to_quat,
     )
-
-    import torch
 
     import isaaclab.sim as sim_utils
     from isaaclab.scene import InteractiveScene
@@ -214,8 +211,10 @@ def _probe(simulation_app) -> None:
                     "wide_links_by_z": wide_links,
                     "long_links_by_z": long_links,
                     "arm_err": round(arm_err, 3),
-                    "root_xy": [round(float(root[0]), 3),
-                                round(float(root[1]), 3)],
+                    "root_xy": [
+                        round(float(root[0]), 3),
+                        round(float(root[1]), 3),
+                    ],
                 },
                 sort_keys=True,
             ),

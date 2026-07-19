@@ -334,7 +334,7 @@ CPU gate 494/494, Ruff/py_compile clean throughout.
 | trial | descend_ee_z | failed_phase | moved_y_m | IK failures | change made after |
 |---|---|---|---|---|---|
 | fix1 | 0.80 | navigate_north_side | -0.045 (wrong direction) | 3x "no solution" | raise descend_ee_z: 0.80 m assumed the OPEN-gripper cup fingertip offset, but the probe closes the fist before descending; measured closed-fist contact stalls at ee_z~=0.852-0.854 m, so 0.80 demanded an infeasible ~5 cm press-through |
-| fix2 | 0.83 | navigate_north_side | +0.072 (right direction, weak coupling) | 0 | bisect deeper (0.815) for more press force while stayin IK-safe |
+| fix2 | 0.83 | navigate_north_side | +0.072 (right direction, weak coupling) | 0 | bisect deeper (0.815) for more press force while staying IK-safe |
 | fix3 | 0.815 | navigate_north_side | +0.123 | 0 | diagnosed separate bug: `hold_anchor` was never cleared after manipulation, so `sim_tick()`'s anchor-hold twist silently overrode every `NavigateTo` command in the north-side drive() -- base moved ~0.01-0.02 m in a 20 s budget in all 3 trials. Fixed by clearing `hold_anchor` before free navigation and re-anchoring after arrival. |
 | fix4 | 0.815 (unchanged) | edge_precontact | +0.099 | 0 | navigation bug fix confirmed working (base actually reached the north-side stance this time); edge-pinch reach failed with 0.81 m position error, ik_succeeded=false -- diagnosis below |
 

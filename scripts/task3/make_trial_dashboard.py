@@ -1,3 +1,6 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 # ruff: noqa: E501
 """Build a self-contained HTML dashboard from physical tray trial JSON files."""
 

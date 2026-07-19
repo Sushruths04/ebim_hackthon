@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Capture one static Task 3 room image without running the task simulation."""
 
 from __future__ import annotations
@@ -6,7 +9,6 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 TASK3_EVALUATION_DIR = REPO_ROOT / "scripts" / "evaluation" / "task3"
@@ -23,8 +25,12 @@ def parse_args() -> argparse.Namespace:
         default=REPO_ROOT / "outputs" / "task3_static_view",
         help="Directory where Isaac Sim writes the PNG.",
     )
-    parser.add_argument("--width", type=int, default=1280, help="Image width in pixels.")
-    parser.add_argument("--height", type=int, default=720, help="Image height in pixels.")
+    parser.add_argument(
+        "--width", type=int, default=1280, help="Image width in pixels."
+    )
+    parser.add_argument(
+        "--height", type=int, default=720, help="Image height in pixels."
+    )
     return parser.parse_args()
 
 
@@ -35,15 +41,18 @@ def main() -> None:
     # SimulationApp must start before importing Omniverse/Isaac modules.
     from isaacsim import SimulationApp
 
-    app = SimulationApp({"headless": True, "width": args.width, "height": args.height})
+    app = SimulationApp(
+        {"headless": True, "width": args.width, "height": args.height}
+    )
     try:
         for module_dir in (TASK3_EVALUATION_DIR, SCENES_DIR):
             if str(module_dir) not in sys.path:
                 sys.path.insert(0, str(module_dir))
 
-        import omni.replicator.core as rep
         import scene_robot_room_keyboard as scene
         from integration_test import create_task3_stage
+
+        import omni.replicator.core as rep
 
         # This is the benchmark's Stage 4 setup with its 300 dynamic beans removed.
         create_task3_stage(app, scene, frames=1, include_beans=False)
@@ -55,7 +64,9 @@ def main() -> None:
             position=position,
             look_at=(-4.46, -0.21, 1.35),
         )
-        render_product = rep.create.render_product(camera, (args.width, args.height))
+        render_product = rep.create.render_product(
+            camera, (args.width, args.height)
+        )
         writer = rep.writers.get("BasicWriter")
         writer.initialize(output_dir=str(args.output_dir), rgb=True)
         writer.attach([render_product])
@@ -69,7 +80,9 @@ def main() -> None:
         render_product.destroy()
         images = sorted(args.output_dir.glob("rgb_*.png"))
         if not images:
-            raise RuntimeError(f"Isaac Sim did not write an RGB image to {args.output_dir}")
+            raise RuntimeError(
+                f"Isaac Sim did not write an RGB image to {args.output_dir}"
+            )
         print(f"STATIC_VIEW_IMAGE {images[-1]}", flush=True)
     finally:
         app.close()

@@ -1,3 +1,6 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage 1 tray-transport task logic shared by the future Isaac Lab adapter.
 
 The benchmark has no released Task 3 RL environment.  Keeping the reward and
@@ -38,12 +41,17 @@ def build_observation(
     """
 
     if base_pose.shape[-1] != 3 or tray_pose.shape[-1] != 3:
-        raise ValueError("base_pose and tray_pose must contain x, y, yaw/z values")
+        raise ValueError(
+            "base_pose and tray_pose must contain x, y, yaw/z values"
+        )
     if tray_velocity.shape[-1] != 3 or goal_xy.shape[-1] != 2:
         raise ValueError("tray_velocity must be xyz and goal_xy must be xy")
     relative_goal = goal_xy - tray_pose[..., :2]
     relative_tray = tray_pose[..., :2] - base_pose[..., :2]
-    return torch.cat((base_pose, tray_pose, tray_velocity, relative_goal, relative_tray), dim=-1)
+    return torch.cat(
+        (base_pose, tray_pose, tray_velocity, relative_goal, relative_tray),
+        dim=-1,
+    )
 
 
 def evaluate_transition(
@@ -55,8 +63,12 @@ def evaluate_transition(
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute reward, failure termination, and success termination per env."""
 
-    previous_distance = torch.linalg.vector_norm(previous_tray_xy - goal_xy, dim=-1)
-    current_distance = torch.linalg.vector_norm(tray_pose[..., :2] - goal_xy, dim=-1)
+    previous_distance = torch.linalg.vector_norm(
+        previous_tray_xy - goal_xy, dim=-1
+    )
+    current_distance = torch.linalg.vector_norm(
+        tray_pose[..., :2] - goal_xy, dim=-1
+    )
     success = current_distance <= cfg.success_radius
     dropped = tray_pose[..., 2] < cfg.drop_height
     failure = collision.to(dtype=torch.bool) | dropped

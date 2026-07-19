@@ -48,6 +48,10 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # Allow unused imports in __init__.py files
+# Task 3 probe/helper scripts carry long debug f-strings and explanatory
+# comments that intentionally exceed the 79-char limit; suppress E501 there.
+"scripts/task3/*.py" = ["E501"]
+"task3_autonomy/rotations.py" = ["E501"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 30

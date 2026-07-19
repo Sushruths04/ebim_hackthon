@@ -1,3 +1,6 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 from __future__ import annotations
 
 import pytest
@@ -50,8 +53,7 @@ def test_timeout_retries_once_then_aborts() -> None:
     fsm = Stage1FSM(Stage1FsmConfig(state_timeout_s=1.0, max_retries=1))
 
     assert (
-        fsm.step(Stage1Observation(), 1.1)
-        is Stage1Action.NAVIGATE_TO_PICKUP
+        fsm.step(Stage1Observation(), 1.1) is Stage1Action.NAVIGATE_TO_PICKUP
     )
     assert fsm.retries == 1
     assert fsm.step(Stage1Observation(), 1.1) is Stage1Action.ABORT
@@ -62,8 +64,7 @@ def test_collision_aborts_without_spending_retry() -> None:
     fsm = Stage1FSM(Stage1FsmConfig(max_retries=3))
 
     assert (
-        fsm.step(Stage1Observation(collision=True), 0.0)
-        is Stage1Action.ABORT
+        fsm.step(Stage1Observation(collision=True), 0.0) is Stage1Action.ABORT
     )
     assert fsm.state is Stage1State.FAILED
     assert fsm.retries == 0

@@ -139,8 +139,10 @@ class Stage1FSM:
             else:
                 self.state = Stage1State.FAILED
                 self.history.append(self.state)
-        return self.action() if not self.done else (
-            Stage1Action.HOLD if self.succeeded else Stage1Action.ABORT
+        return (
+            self.action()
+            if not self.done
+            else (Stage1Action.HOLD if self.succeeded else Stage1Action.ABORT)
         )
 
     def _milestone_reached(self, observation: Stage1Observation) -> bool:
