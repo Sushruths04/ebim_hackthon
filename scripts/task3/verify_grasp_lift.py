@@ -646,7 +646,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         # grasp IK tolerates, since it targets the measured cup pose) to clear
         # that residual with margin. Matches the 3 deg used by pose_reached /
         # NavigateTo elsewhere in the stack, with extra headroom for variance.
-        skill = RotateTo(target_yaw, yaw_tolerance_rad=math.radians(4.0))
+        # Widened to 6 deg after r14: rotating to the 167 deg grasp heading
+        # (across the +/-180 boundary) stalled 4.26 deg short, just outside a
+        # 4 deg gate. 6 deg clears the base's rotational floor and still lands
+        # inside the proven grasp band (165-173 deg).
+        skill = RotateTo(target_yaw, yaw_tolerance_rad=math.radians(6.0))
         for _ in range(int(budget_s / sim.cfg.dt)):
             wz, done = skill.compute(adapter.pose())
             if done:
