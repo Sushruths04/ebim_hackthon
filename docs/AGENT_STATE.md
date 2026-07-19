@@ -9,7 +9,7 @@ Last update: 2026-07-19 (Claude, `agent/codex-task3-grasp`) — see
 
 Last update: 2026-07-19 17:10 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is RUNNING for r23. Google Cloud project is
+GPU STATUS: `sim-dev-g4b` is STOPPED after r23. Google Cloud project is
 `ebim26ham-236`, zone `us-central1-b`, container
 `isaac-lab-2-3-2-workshop`. Day 1 remains complete;
 the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
@@ -215,6 +215,7 @@ r19 | transport=cup, live Y offset=+0.055 m | score=0/5 | FAIL | strongest offse
 r20 | transport=cup, Y=+0.055 m, 1.5 s close ramp + 0.5 s settle | score=0/5 | FAIL | slow closure swept cup +0.292 m north and left gripper at 0.8003 rad; restore proven close timing and test shallower rim depth (X=+0.020 m)
 r21 | transport=cup, X=+0.020 m, Y=+0.055 m | score=0/5 | FAIL | best pinch (0.1213 rad) but deeper target pushed the base out of re-center IK workspace (0.1745 m residual) and cup lifted only 0.0296 m; narrow depth to reachable midpoint X=+0.030 m
 r22 | transport=cup, X=+0.030 m, Y=+0.055 m | score=0/5 | FAIL | re-center recovered (0.0200 m) but grip loosened to 0.3674 rad and cup lifted only 0.0295 m; depth bracket exhausted, next lever is a bounded -0.020 m vertical rim press
+r23 | transport=cup, X=+0.040 m, Y=+0.055 m, Z=-0.020 m | score=0/5 | FAIL | contact floor held wrist at z=0.854 m despite lower target; close was empty (1.0077 rad), cup lifted 0.0305 m; scalar geometry/dynamics sweep exhausted, design a bounded re-grip/contact-policy change before another GPU run
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.

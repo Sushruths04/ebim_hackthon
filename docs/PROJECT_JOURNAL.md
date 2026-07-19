@@ -641,3 +641,21 @@ is not justified by the evidence.
 - Conclusion: physical Step 1 is still open. Round 9 remains the strongest
   partial chain; the new telemetry narrows the next controller sweep to a
   smaller lower bias plus an IK-stability guard.
+
+## 2026-07-19 20:10–21:15 UTC — Codex: cup transport grasp calibration r20–r23
+
+- Ran four recorded standard-physics cup-transport trials on the existing
+  `sim-dev-g4b` VM. No asset, mass, collision, scene, or kinematic-attachment
+  changes were made.
+- r20 showed that a 1.5 s close ramp sweeps the cup from the fingers. r21/r22
+  bracketed rim depth (+0.020/+0.030 m): the former gave the tightest pinch
+  but exceeded the re-center IK workspace; the latter re-centered but still
+  dragged the cup on the counter. r23's bounded -0.020 m vertical press was
+  blocked at the same physical contact height and closed empty.
+- Evidence: `outputs/task3_transport_cup_r20_slowclose/` and
+  `outputs/task3_transport_cup_r23_zm020/` retain the exported GIF/JSON;
+  r21/r22 contact-frame JSON is also retained locally. Focused compile, Ruff,
+  and diff checks passed for commit `dd7180e`.
+- Lesson: the remaining failure is not a scalar cup pose or close-timing
+  calibration. A future run needs a deliberately designed re-grip/contact
+  policy, with a fresh GPU session, rather than blind offset tuning.

@@ -416,6 +416,14 @@ each session, not retroactively.
 - Five physics-contact-only tray probes ran without scene or physics edits.
   Raw exported results are in `outputs/task3_stage1_tray_slide_r14_20260719/`
   through `r18_20260719/`.
+
+## 2026-07-19 20:10-21:15 UTC — Codex cup-transport calibration
+
+- Reused `sim-dev-g4b` for four recorded full-route physical cup trials
+  (r20-r23, about 10 minutes each). Results and r20/r23 GIF+JSON evidence
+  were exported before shutdown. No scene or physics edits were made.
+- The VM was STOPPED after r23; no Isaac process remains. The next trial needs
+  a contact-policy design, not another scalar offset sweep.
 - The GUI launcher was tested in public WebRTC mode 1. The server announces
   startup, but the containerized headless session does not retain an exposed
   public socket; the local evidence dashboard is the reliable GUI fallback.
