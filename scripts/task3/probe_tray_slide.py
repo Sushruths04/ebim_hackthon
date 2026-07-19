@@ -910,10 +910,13 @@ def _run_push_stroke(
     after_stroke = tray_pose_fn()
     moved_y = after_stroke[1] - start_y
     overhang_north = north_overhang_m(after_stroke[1])
-    stroke_gate_met = (
-        moved_y >= STROKE_STOP_MOVED_Y_M
-        or overhang_north >= SLIDE_OVERHANG_GATE_M
-    )
+    # r21: stopping on moved_y (0.22 m cumulative tray travel) fired before the
+    # overhang gate was met -- the tray reached only 4.67 cm overhang vs the
+    # 5 cm gate, then push_result failed. Overhang is the real success
+    # criterion, so stroke-stop on it directly, with a small margin so
+    # push_result's own >= SLIDE_OVERHANG_GATE_M check clears rather than
+    # landing exactly on the boundary. Still capped by MAX_PUSH_STROKES.
+    stroke_gate_met = overhang_north >= SLIDE_OVERHANG_GATE_M + 0.01
     log(
         f"{stroke_prefix}_result",
         ok=stroke_gate_met,
