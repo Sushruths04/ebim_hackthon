@@ -291,6 +291,21 @@ each session, not retroactively.
 - Combined Step 1 total across both rounds: 8 GPU trials, approximately
   `1.65 h` VM uptime.
 
+## Session log - 2026-07-19 04:45-05:10 UTC (Round 3 pinch orientation)
+
+- `sim-dev-g4b` was the only GPU VM. The first launch failed before Isaac
+  initialization because the container's main mount lacked the probe's
+  `verify_grasp_lift.py`; no physics ran in that launch. The exact committed
+  probe was then copied into the existing dependency-complete worktree.
+- One physics-only Round 3 trial ran for approximately `631 s` of Isaac
+  process time; total VM uptime including boot, container startup, transfer,
+  and shutdown was approximately `0.9 h`.
+- The tray slide passed again (`+0.238593 m` moved, `+0.059059 m` overhang),
+  but edge pinch failed: fingertips were `5.94 cm` above the lip and the
+  gripper closed empty at `0.000569 rad`. Raw JSON was exported to
+  `outputs/task3_stage1_tray_slide_r3_20260719/result.json` before shutdown.
+- `sim-dev-g4b` is STOPPED at session close.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

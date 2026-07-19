@@ -1,0 +1,669 @@
+{
+  "descend_ee_z_commanded_m": 0.815,
+  "failed_phase": "edge_pinch",
+  "final_pose": [
+    -4.217147,
+    -1.374771,
+    0.767286
+  ],
+  "head_placement": "a",
+  "mode": "physics_contact_only",
+  "net_translation_m": [
+    0.062158,
+    0.24292,
+    0.007625
+  ],
+  "north_edge_world_y": -1.22,
+  "object_name": "simple_tray",
+  "passed": false,
+  "phases": [
+    {
+      "base": [
+        -4.600578,
+        2.692008,
+        -1.573123
+      ],
+      "measured_spine": 0.420162,
+      "ok": true,
+      "phase": "raise_spine",
+      "tick": 870,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.17521,
+        -1.572482,
+        -1.557946
+      ],
+      "ok": true,
+      "phase": "navigate_corridor_stop",
+      "tick": 4372,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.103477,
+        -3.00912,
+        -1.506632
+      ],
+      "ok": true,
+      "phase": "navigate_rotate_spot",
+      "tick": 11373,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.040056,
+        -2.827342,
+        -3.107982
+      ],
+      "ok": true,
+      "phase": "rotate_west",
+      "tick": 13219,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.2935,
+        -1.6305,
+        -3.0825
+      ],
+      "phase": "at_stance",
+      "tick": 14645,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ],
+      "tray_stance": [
+        -3.32,
+        -1.617691993713379
+      ]
+    },
+    {
+      "base": [
+        -3.327739,
+        -1.609806,
+        -3.129352
+      ],
+      "ok": true,
+      "phase": "stroke1_pregrasp_above",
+      "target": [
+        -4.17930498123169,
+        -1.6176910400390625,
+        1.05
+      ],
+      "tick": 14765,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.345523,
+        -1.599018,
+        -3.084615
+      ],
+      "gripper_rad": 0.000309,
+      "ok": true,
+      "phase": "stroke1_close",
+      "tick": 14965,
+      "tray": [
+        -4.279305,
+        -1.617691,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.317725,
+        -1.629298,
+        -3.042977
+      ],
+      "contact_detected": true,
+      "contact_measured_ee_z": 0.852971,
+      "contact_tick": 392,
+      "contact_tray_pose": [
+        -4.277957,
+        -1.619476,
+        0.759661
+      ],
+      "final_commanded_ee_z": 0.815,
+      "final_measured_ee_z": 0.851936,
+      "ok": true,
+      "phase": "stroke1_descend",
+      "tick": 15365,
+      "tray": [
+        -4.277971,
+        -1.619506,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.305324,
+        -1.437561,
+        -3.105029
+      ],
+      "ok": true,
+      "phase": "stroke1_drag",
+      "target_anchor": [
+        -3.293529,
+        -1.370542
+      ],
+      "target_arm_y": -1.357691,
+      "tick": 16365,
+      "tray": [
+        -4.27082,
+        -1.596595,
+        0.75966
+      ]
+    },
+    {
+      "base": [
+        -3.289996,
+        -1.348886,
+        3.131325
+      ],
+      "contact_detected": false,
+      "contact_measured_ee_z": null,
+      "contact_tick": null,
+      "contact_tray_pose": null,
+      "final_commanded_ee_z": 1.05,
+      "final_measured_ee_z": 0.971172,
+      "ok": true,
+      "phase": "stroke1_raise",
+      "tick": 16766,
+      "tray": [
+        -4.241527,
+        -1.523197,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.289996,
+        -1.348886,
+        3.131325
+      ],
+      "moved_y_m": 0.094494,
+      "north_overhang_m": -0.085039,
+      "ok": false,
+      "phase": "stroke1_result",
+      "stroke_moved_y_m": 0.094494,
+      "tick": 16766,
+      "tray": [
+        -4.241527,
+        -1.523197,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.315579,
+        -1.493978,
+        -3.120977
+      ],
+      "drift_m": 0.17431,
+      "ok": true,
+      "phase": "stroke2_realign",
+      "target": [
+        -3.32,
+        -1.5231969356536865
+      ],
+      "tick": 17147,
+      "tray": [
+        -4.241527,
+        -1.523197,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.340828,
+        -1.525783,
+        3.06064
+      ],
+      "ok": true,
+      "phase": "stroke2_pregrasp_above",
+      "target": [
+        -4.141527080535889,
+        -1.5231969356536865,
+        1.05
+      ],
+      "tick": 18101,
+      "tray": [
+        -4.241527,
+        -1.523197,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.329705,
+        -1.515725,
+        -3.138773
+      ],
+      "gripper_rad": -1.8e-05,
+      "ok": true,
+      "phase": "stroke2_close",
+      "tick": 18301,
+      "tray": [
+        -4.241527,
+        -1.523197,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.300433,
+        -1.506127,
+        2.827341
+      ],
+      "contact_detected": true,
+      "contact_measured_ee_z": 0.867281,
+      "contact_tick": 378,
+      "contact_tray_pose": [
+        -4.245036,
+        -1.527973,
+        0.759658
+      ],
+      "final_commanded_ee_z": 0.815,
+      "final_measured_ee_z": 0.855163,
+      "ok": true,
+      "phase": "stroke2_descend",
+      "tick": 18701,
+      "tray": [
+        -4.245002,
+        -1.528387,
+        0.759671
+      ]
+    },
+    {
+      "base": [
+        -3.372302,
+        -1.438717,
+        3.112393
+      ],
+      "ok": true,
+      "phase": "stroke2_drag",
+      "target_anchor": [
+        -3.315579,
+        -1.233978
+      ],
+      "target_arm_y": -1.263197,
+      "tick": 19701,
+      "tray": [
+        -4.249,
+        -1.510698,
+        0.75967
+      ]
+    },
+    {
+      "base": [
+        -3.336485,
+        -1.260791,
+        3.07826
+      ],
+      "contact_detected": false,
+      "contact_measured_ee_z": null,
+      "contact_tick": null,
+      "contact_tray_pose": null,
+      "final_commanded_ee_z": 1.05,
+      "final_measured_ee_z": 1.023406,
+      "ok": true,
+      "phase": "stroke2_raise",
+      "tick": 20102,
+      "tray": [
+        -4.218645,
+        -1.446873,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.336485,
+        -1.260791,
+        3.07826
+      ],
+      "moved_y_m": 0.170818,
+      "north_overhang_m": -0.008715,
+      "ok": false,
+      "phase": "stroke2_result",
+      "stroke_moved_y_m": 0.076324,
+      "tick": 20102,
+      "tray": [
+        -4.218645,
+        -1.446873,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.324714,
+        -1.41763,
+        3.120331
+      ],
+      "drift_m": 0.186082,
+      "ok": true,
+      "phase": "stroke3_realign",
+      "target": [
+        -3.32,
+        -1.4468729496002197
+      ],
+      "tick": 20719,
+      "tray": [
+        -4.218645,
+        -1.446873,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.323724,
+        -1.422218,
+        3.129911
+      ],
+      "ok": true,
+      "phase": "stroke3_pregrasp_above",
+      "target": [
+        -4.118645095825196,
+        -1.4468729496002197,
+        1.05
+      ],
+      "tick": 20734,
+      "tray": [
+        -4.218645,
+        -1.446873,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.338339,
+        -1.444987,
+        3.09591
+      ],
+      "gripper_rad": 0.000202,
+      "ok": true,
+      "phase": "stroke3_close",
+      "tick": 20934,
+      "tray": [
+        -4.218645,
+        -1.446873,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.31362,
+        -1.430987,
+        2.88022
+      ],
+      "contact_detected": true,
+      "contact_measured_ee_z": 0.859467,
+      "contact_tick": 380,
+      "contact_tray_pose": [
+        -4.221054,
+        -1.446906,
+        0.759664
+      ],
+      "final_commanded_ee_z": 0.815,
+      "final_measured_ee_z": 0.852982,
+      "ok": true,
+      "phase": "stroke3_descend",
+      "tick": 21334,
+      "tray": [
+        -4.221255,
+        -1.447001,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.378262,
+        -1.414024,
+        3.066144
+      ],
+      "ok": true,
+      "phase": "stroke3_drag",
+      "target_anchor": [
+        -3.324714,
+        -1.15763
+      ],
+      "target_arm_y": -1.186873,
+      "tick": 22334,
+      "tray": [
+        -4.223633,
+        -1.428577,
+        0.75967
+      ]
+    },
+    {
+      "base": [
+        -3.371521,
+        -1.328207,
+        3.065439
+      ],
+      "contact_detected": false,
+      "contact_measured_ee_z": null,
+      "contact_tick": null,
+      "contact_tray_pose": null,
+      "final_commanded_ee_z": 1.05,
+      "final_measured_ee_z": 1.024404,
+      "ok": true,
+      "phase": "stroke3_raise",
+      "tick": 22735,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.371521,
+        -1.328207,
+        3.065439
+      ],
+      "moved_y_m": 0.238593,
+      "north_overhang_m": 0.059059,
+      "ok": true,
+      "phase": "stroke3_result",
+      "stroke_moved_y_m": 0.067775,
+      "tick": 22735,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -3.371521,
+        -1.328207,
+        3.065439
+      ],
+      "moved_y_m": 0.238593,
+      "north_overhang_m": 0.059059,
+      "ok": true,
+      "phase": "push_result",
+      "strokes_used": 3,
+      "tick": 22735,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -4.1389,
+        -0.4154,
+        -1.6031
+      ],
+      "north_stance": [
+        -4.201976776123047,
+        -0.3609409153747558
+      ],
+      "phase": "at_north_stance",
+      "pinch_target": [
+        -4.201976776123047,
+        -1.1609409153747559
+      ],
+      "tick": 27378,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -4.0908,
+        -0.4212,
+        -1.4759
+      ],
+      "fingertip_midpoint": [
+        -4.189098,
+        -1.037998,
+        1.062069
+      ],
+      "ok": true,
+      "phase": "edge_pregrasp_out",
+      "target": [
+        -4.201976776123047,
+        -1.020940915374756,
+        1.05
+      ],
+      "tick": 27619,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ]
+    },
+    {
+      "base": [
+        -4.090832,
+        -0.421164,
+        -1.475864
+      ],
+      "lip_target": [
+        -4.201977,
+        -1.170941,
+        0.759661
+      ],
+      "ok": true,
+      "phase": "edge_calibration",
+      "tick": 27619,
+      "tray": [
+        -4.201977,
+        -1.379098,
+        0.759661
+      ],
+      "wrist_target": [
+        -4.214855,
+        -1.153883,
+        0.747592
+      ],
+      "wrist_to_fingertip_offset": [
+        0.012878,
+        -0.017058,
+        0.012069
+      ]
+    },
+    {
+      "base": [
+        -3.9582,
+        -0.4307,
+        -1.0896
+      ],
+      "contact_detected": true,
+      "contact_measured_ee_y": -1.066709,
+      "contact_tick": 336,
+      "contact_tray_pose": [
+        -4.217199,
+        -1.373152,
+        0.759661
+      ],
+      "final_commanded_ee_y": -1.153883,
+      "final_measured_ee_y": -1.14741,
+      "ok": true,
+      "phase": "edge_reach_in",
+      "tick": 28019,
+      "tray": [
+        -4.217073,
+        -1.372829,
+        0.766777
+      ]
+    },
+    {
+      "base": [
+        -3.958174,
+        -0.430678,
+        -1.089628
+      ],
+      "fingertip_midpoint": [
+        -4.185508,
+        -1.1657,
+        0.819059
+      ],
+      "lip_target": [
+        -4.201977,
+        -1.170941,
+        0.759661
+      ],
+      "ok": true,
+      "phase": "edge_preclose_fingertips",
+      "tick": 28019,
+      "tray": [
+        -4.217073,
+        -1.372829,
+        0.766777
+      ]
+    },
+    {
+      "base": [
+        -3.830206,
+        -0.444679,
+        -1.200236
+      ],
+      "gripper_rad": 0.000569,
+      "ok": false,
+      "phase": "edge_close",
+      "pinch_plausible": false,
+      "tick": 28319,
+      "tray": [
+        -4.217147,
+        -1.374771,
+        0.767286
+      ]
+    }
+  ],
+  "push_distance_commanded_m": 0.26,
+  "start_pose": [
+    -4.279305,
+    -1.617691,
+    0.759661
+  ],
+  "wall_time_seconds": 631.195
+}

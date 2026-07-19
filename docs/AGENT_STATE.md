@@ -4,15 +4,13 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 04:45 UTC (Codex,
+Last update: 2026-07-19 05:10 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED before the resumed Round 3 trial. Day 1
-remains complete; the Day 2 FSM proof is adapter-only. Day 3 Step 0 is
-complete. Step 1's slide-to-overhang SUB-gate passes reliably, but the full
-single-edge pinch+lift gate remains open. Codex is claiming one clean,
-physics-only GPU trial of the committed Round 3 closing-axis correction
-(`24fd89d`, followed by base re-anchor fix `04e02af`). No Step 2 work starts
-until this trial is recorded.
+GPU STATUS: `sim-dev-g4b` is STOPPED after Round 3. Day 1 remains complete;
+the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
+slide-to-overhang SUB-gate passes reliably, but the full single-edge
+pinch+lift gate remains open. The tray remains a required owner deliverable;
+no Step 2 work has started.
 
 ## Day 3 Step 1 Round 3 resume claim — 2026-07-19 04:45 UTC
 
@@ -28,6 +26,37 @@ using verified quaternion kinematics, approaches the lip horizontally from
 the north, measures the live fingertip midpoint, and re-anchors the base
 after each reach. No kinematic attachment, object transform write, asset edit,
 mass edit, or scene repair is allowed.
+
+## Day 3 Step 1 Round 3 result — 2026-07-19 04:49–05:00 UTC
+
+The clean trial ran in the dependency-complete remote worktree after the
+container's main mount was found to lack `verify_grasp_lift.py`. No benchmark
+asset was changed. Raw result:
+`outputs/task3_stage1_tray_slide_r3_20260719/result.json`.
+
+- Physical slide passed: tray moved `+0.238593 m` north and reached
+  `+0.059059 m` measured north overhang after three strokes.
+- Corrected horizontal edge approach reached contact, but the live fingertip
+  midpoint before close was `z=0.819059 m` versus the tray lip target
+  `z=0.759661 m` — about `5.94 cm` too high.
+- The gripper closed empty at `0.000569 rad`; result `passed=false`,
+  `failed_phase=edge_pinch`. No carry to the dining table occurred.
+- Diagnosis: the closing-axis orientation is corrected, but the wrist/hand
+  still cannot place the fingertips vertically around the lip at this
+  approach. The next physical action is a targeted hand/wrist approach
+  correction or the authorized two-arm corner pinch; do not retune the old
+  z-offset path.
+
+## Organizer update check — 2026-07-19
+
+Fetched organizer `upstream/main` at `cb51845`, a participant-runtime
+refactor authored July 17. It relocates Task 3 into `task3_isaacsim/` and
+removes older development-only paths; it was not merged because that would
+delete this branch's proofs and active physical probe. The current competition
+page still lists simulation end as Aug 3, 2026, notes that the submission
+schedule will be revised, and requires a public repository with Dockerfile
+and README. Owner instruction remains the sprint priority: finish and preserve
+the tray-to-dining-table physics result.
 
 ## Day 3 Step 1 round 2 — 2026-07-18/19 (owner-approved 3-fix plan)
 
@@ -353,7 +382,7 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   runtime tray mass, and pose/bounds/edge distances for
   `simple_tray`, `bowl2`, `spoon2`, `plate2`, and `cup`; record raw output
   in `outputs/task3_stage0_probe_20260718/result.json`; commit and push.
-- [ ] **Step 1 (Codex, round 1 + round 2, 2026-07-18/19, 8 trials
+- [ ] **Step 1 (Codex, rounds 1–3, 2026-07-18/19, 9 trials
   total):** slide tray to 6-8 cm overhang, edge pinch, dining XY gate
   `>=7/10`; one escalation to a two-arm corner pinch if needed. Round 1
   fixed the reach-envelope and hold_anchor-clobbering navigation bugs.
@@ -369,8 +398,12 @@ adapter. Raw result: `outputs/task3_stage1_tray_slide_north_20260718/result.json
   misalignment, not a targeting-formula problem. See the 2026-07-18/19
   round 2 evidence table and diagnosis above. Both 4-trial ceilings used
   (8 GPU trials total); stopped for owner review each time.
-  `scripts/task3/probe_tray_slide.py` remains the active probe. No
-  kinematic or scene edits were made in either round.
+  Round 3 fixed the closing-axis orientation and re-anchored the base after
+  each pinch reach. It passed slide/overhang again (`+0.238593 m` moved,
+  `+0.059059 m` overhang) but failed the physical edge pinch because the live
+  fingertips remained `5.94 cm` above the lip and closed empty at `0.000569
+  rad`. `scripts/task3/probe_tray_slide.py` remains active. No kinematic or
+  scene edits were made in any round.
 - [ ] Step 2: physical per-object chain `cup → bowl2 → spoon2 → plate2`,
   Stage 1 gate `>=4/5` on `>=7/10` seeded runs.
 - [ ] Step 3: 10-run head-placement matrix, physical proof bundle, tag

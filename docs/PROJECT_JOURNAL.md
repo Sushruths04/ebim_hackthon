@@ -443,3 +443,26 @@ and no amount of further numeric tuning of that one parameter will fix
 it. That is exactly the kind of result worth stopping on and reporting
 rather than spending remaining trial budget re-testing the same
 hypothesis with smaller steps.
+
+## 2026-07-19 04:49-05:00 UTC — Codex: Round 3 pinch-orientation trial
+
+Goal: validate the committed vertical closing-axis correction and complete
+the physics-only tray edge pinch.
+
+Three physical press-drag strokes moved the tray `+0.238593 m` north and
+produced `+0.059059 m` measured overhang, so the slide sub-gate passed again.
+The corrected horizontal edge approach detected contact, but the measured
+fingertip midpoint immediately before closure was `z=0.819059 m`, while the
+tray lip target was `z=0.759661 m`. The gripper closed empty at `0.000569
+rad`; no lift or dining-table carry occurred. Raw evidence is in
+`outputs/task3_stage1_tray_slide_r3_20260719/result.json`.
+
+Result: **full Step 1 still not passed**. The closing axis is now vertical,
+but the wrist/hand remains too high to straddle the lip. The remaining
+authorized options are a targeted wrist/hand approach correction or the one
+two-arm corner-pinch escalation. No scene edits, object teleports, mass edits,
+or kinematic attachments are allowed.
+
+Organizer check: fetched `upstream/main` at `cb51845`, a participant-runtime
+refactor authored July 17. It is not merged into this evidence branch because
+it removes the older development paths used by the proven probes and proofs.
