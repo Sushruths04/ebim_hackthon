@@ -4,13 +4,38 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 15:00 UTC (Codex,
+Last update: 2026-07-19 16:30 UTC (Codex,
 `agent/codex-task3-grasp`).
 GPU STATUS: `sim-dev-g4b` is STOPPED after Round 13. Day 1 remains complete;
 the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
 slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
+
+## Codex CPU packaging update — 2026-07-19 16:30 UTC
+
+Added and CPU-validated:
+
+- `task3_autonomy/chained_fsm.py`: fail-closed stage 1→2→3→4 sequencing;
+  stale future-stage flags cannot skip a stage.
+- `scripts/task3/make_proof_bundle.py`: conservative evidence copier and
+  ledger writer; refuses overwrite unless explicitly forced.
+- `scripts/task3/run_matrix.py`: sequential 3 placements × 5 seeds launcher
+  with a CPU-only `--dry-run` mode.
+- root `Dockerfile`, `docker/task3_entrypoint.sh`,
+  `docs/simdev_setup.md`, and the Task 3 submission section in `README.md`.
+
+Regression: 358 CPU tests passed; compilation passed; Ruff passed on all new
+files; matrix dry-run passed. No GPU was started by this CPU packaging track.
+The entrypoint exposes `TASK3_POLICY=scripted`, but `run_episode.py` still
+fails closed because a physical scripted adapter has not been proven. Do not
+claim the Docker image as a completed benchmark submission until a fresh
+physical tray carry/release proof and the remaining stage proofs exist.
+
+NEXT GPU ACTION: start one GPU session, reproduce the overhang gate, then test
+the committed robot-relative hand carry target through the final dining
+waypoint. Keep the VM alive across manually reviewed retries during that
+session; export each `result.json`/video before stopping at session end.
 
 ## Day 3 Step 1 Round 13 result — 2026-07-19 14:50 UTC
 

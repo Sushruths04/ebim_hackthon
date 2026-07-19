@@ -16,6 +16,33 @@ This repository provides a workshop-focused environment for an international com
 
 For the full developer workflow, see [`docs/developer_setup.md`](docs/developer_setup.md).
 
+## Task 3 autonomous submission path
+
+Task 3's intended submission is a closed-loop scripted controller, not a
+language-model agent and not an RL checkpoint. The controller reads the
+simulator's permitted runtime state, advances a bounded FSM, sends navigation,
+IK, gripper, and base commands, and checks measured postconditions after every
+skill. Collision, watchdog, or dropped-object predicates fail closed. The
+stage chain is 1 → 2 → 3 → 4; a later stage cannot start on a stale completion
+flag. See [`docs/task3_master_plan.md`](docs/task3_master_plan.md) and
+[`task3_autonomy/chained_fsm.py`](task3_autonomy/chained_fsm.py).
+
+Build and run the container on an RTX-capable Linux host:
+
+```bash
+docker login nvcr.io
+docker build -t ebim-task3:local .
+docker run --rm --gpus all \
+  -e TASK3_SEED=42 -e TASK3_HEAD_PLACEMENT=a \
+  -v "$PWD/outputs:/workspace/EBiM_Challenge/outputs" \
+  ebim-task3:local
+```
+
+The exact runtime recipe, matrix launcher, and export checklist are in
+[`docs/simdev_setup.md`](docs/simdev_setup.md). A result is not claimed as a
+physical benchmark proof until `proofs/<slug>/` contains its JSON, reproduction
+command, and video, with a ledger entry in [`docs/eval_results.md`](docs/eval_results.md).
+
 ## Task 1 — Mobile FR3 Duo Teleoperation (Isaac Lab + Newton)
 
 [`task1_isaacsim/`](task1_isaacsim/README.md) contains the Isaac Sim / Isaac Lab

@@ -399,3 +399,11 @@ each session, not retroactively.
    session log above), not usable as a Lightning/GCP substitute for any
    Isaac Sim/Isaac Lab work. Still fine for Phase 7 (pure PyTorch
    training), unchanged from the original plan.
+## 2026-07-19 16:30 UTC — Codex CPU-only packaging session
+
+- Platform: local Windows CPU; no GPU VM or cloud process started.
+- Work: chained FSM, proof exporter, matrix dry-run, Dockerfile, setup/README.
+- GPU hours/cost: 0 / 0 EUR.
+- Outcome: 358 CPU tests passed; physical tray carry remains open. The next
+  GPU session should keep one already-started VM alive across bounded manual
+  retries, then export evidence and stop it at the session boundary.

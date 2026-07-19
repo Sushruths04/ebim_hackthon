@@ -605,3 +605,18 @@ door-route waypoints), while the carry-target update and retry are committed
 and CPU-validated but need one fresh gate-passing GPU episode. This is the
 exact manual-review point; repeating the same contact trials without review
 is not justified by the evidence.
+## 2026-07-19 16:30 UTC — Codex CPU packaging and autonomy contract
+
+- Goal: make the remaining Task 3 work reproducible while the physical tray
+  gate awaits a GPU review.
+- What: added a fail-closed chained stage FSM, proof-bundle exporter, reduced
+  matrix launcher, submission Dockerfile/entrypoint, setup documentation, and
+  an explicit autonomy architecture note.
+- Why: the benchmark needs an autonomous controller and durable evidence; an
+  LLM/MCP orchestration layer must not be confused with the real-time robot
+  policy, and an RL checkpoint is not required for full autonomy.
+- Evidence: 358 CPU tests passed, compilation passed, new-file Ruff clean, and
+  `run_matrix.py --dry-run` emitted the expected command manifest.
+- Lesson: the repository can be packaged safely now, but physical tray carry,
+  release, and the remaining live stages still require actual Isaac physics
+  evidence; CPU adapters cannot close that gate honestly.
