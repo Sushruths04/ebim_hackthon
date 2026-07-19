@@ -547,3 +547,17 @@ target fixed in world coordinates, so the held tray did not follow the moving
 robot. The next revision reissues the hand target from its measured
 robot-relative offset on every carry tick. This is a control-target update,
 not a kinematic attach or physics change.
+
+## 2026-07-19 09:45-10:35 UTC — Codex: Round 10 weak-slide regression
+
+Goal: verify the carry-target update in a fresh run with the four-stroke
+overhang gate.
+
+Round 10 completed four ordinary physical press-drag strokes but moved the
+tray only `+0.203907 m`, reaching `+0.024374 m` overhang. The actual-overhang
+gate correctly stopped the run before edge pinch and carry, so this episode
+does not test the new carry target. Raw result:
+`outputs/task3_stage1_tray_slide_r10_20260719/result.json`.
+
+Next: increase only the bounded contact drag duration to improve the measured
+tray/hand coupling, then re-test the already-implemented carry path.

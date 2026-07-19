@@ -352,6 +352,15 @@ each session, not retroactively.
 - Isaac process time was approximately `877 s`. Raw JSON:
   `outputs/task3_stage1_tray_slide_r9_20260719/result.json`.
 
+## Session log - 2026-07-19 09:45-10:40 UTC (Round 10 weak slide)
+
+- One physics-only trial ran, was exported, and the GPU VM was stopped. No VM
+  is left running.
+- Four physical strokes moved the tray `+0.203907 m` and reached only
+  `+0.024374 m` overhang. The actual-overhang gate prevented pinch/carry.
+- Isaac process time was approximately `613 s`. Raw JSON:
+  `outputs/task3_stage1_tray_slide_r10_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
