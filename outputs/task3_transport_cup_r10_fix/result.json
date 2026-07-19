@@ -1,0 +1,186 @@
+{
+  "cup_end": [
+    -4.1851,
+    -1.7526,
+    0.747
+  ],
+  "cup_lift_m": 0.0,
+  "cup_start": [
+    -4.1849,
+    -1.7527,
+    0.747
+  ],
+  "final_phase": "navigation",
+  "hold_seconds": 3.0,
+  "min_lift_m": 0.08,
+  "object_name": "cup",
+  "passed": false,
+  "phases": [
+    {
+      "base": [
+        -4.601,
+        2.692,
+        -1.573
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -4.067,
+        1.997,
+        1.378
+      ],
+      "ok": true,
+      "phase": "raise_spine",
+      "right_ee": [
+        -5.138,
+        1.999,
+        1.378
+      ],
+      "rim": null,
+      "spine": 0.43,
+      "target_spine": 0.45,
+      "tick": 894
+    },
+    {
+      "base": [
+        -4.601,
+        2.682,
+        -1.573
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -4.325,
+        2.122,
+        0.996
+      ],
+      "ok": true,
+      "phase": "tuck_spine_up",
+      "right_ee": [
+        -4.88,
+        2.123,
+        0.996
+      ],
+      "rim": null,
+      "spine": 0.437,
+      "tick": 1394
+    },
+    {
+      "base": [
+        -3.178,
+        -1.572,
+        -1.557
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -2.894,
+        -2.127,
+        1.0
+      ],
+      "ok": true,
+      "phase": "navigate_corridor_stop",
+      "right_ee": [
+        -3.449,
+        -2.135,
+        1.001
+      ],
+      "rim": null,
+      "spine": 0.442,
+      "tick": 4429
+    },
+    {
+      "base": [
+        -3.108,
+        -3.061,
+        -1.313
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -2.699,
+        -3.522,
+        1.012
+      ],
+      "ok": true,
+      "phase": "rotate_spot_recovery",
+      "right_ee": [
+        -3.239,
+        -3.671,
+        1.009
+      ],
+      "rim": null,
+      "spine": 0.445,
+      "tick": 11430
+    },
+    {
+      "base": [
+        -3.108,
+        -3.061,
+        -1.313
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -2.699,
+        -3.522,
+        1.012
+      ],
+      "ok": true,
+      "phase": "navigate_rotate_spot",
+      "right_ee": [
+        -3.239,
+        -3.671,
+        1.009
+      ],
+      "rim": null,
+      "spine": 0.445,
+      "tick": 11430
+    },
+    {
+      "base": [
+        -3.123,
+        -2.803,
+        -3.106
+      ],
+      "cup": [
+        -4.185,
+        -1.753,
+        0.747
+      ],
+      "left_ee": [
+        -3.671,
+        -3.1,
+        1.002
+      ],
+      "ok": false,
+      "phase": "rotate_west",
+      "right_ee": [
+        -3.692,
+        -2.543,
+        1.004
+      ],
+      "rim": null,
+      "spine": 0.443,
+      "tick": 14431
+    }
+  ],
+  "sim_dt": 0.005,
+  "tray_grasp_rim_fixture": false,
+  "wall_time_seconds": 421.489
+}

@@ -43,14 +43,36 @@ transport with the proven pipeline and fixes BOTH bugs at once. py_compile +
 ruff clean; `scripts/tests` 206 pass (3 pre-existing `rmpflow` failures are
 unrelated and present on clean HEAD).
 
-**NEXT (needs ONE GPU run to verify):** launch
-`verify_grasp_lift.py --object-name cup --transport-to-dining --record-video`.
-Predicted success chain: raise_spine PASS -> navigate corridor/rotate/stance
-PASS (arms now clear the island) -> grasp/lift PASS (proven) -> transport
-waypoints -> release in dining. If it passes, run the same for
-`bowl2/spoon2/plate2` and the tray, then package the physical Stage 1 bundle.
-Do NOT re-enter a blind budget-tuning loop; if it still stalls, capture the
-run.gif + result.json and diagnose the NEW failure phase visually first.
+**VERIFIED ON GPU (r10, r11):** the spine fix works. Two runs, each peeled to
+the next real phase (healthy onion-peel of a pipeline never run end-to-end):
+
+- r10 (`outputs/task3_transport_cup_r10_fix`): raise_spine PASS (was the old
+  timeout), nav corridor+rotate_spot PASS, FAILED `rotate_west` -- base
+  converged 2.04 deg short of west and RotateTo's 2.0 deg tolerance rejected
+  it by 0.04 deg. Fix: commit `d7814f6` loosens rotate_west tolerance to
+  4 deg.
+- r11 (`outputs/task3_transport_cup_r11_fix`): **`navigate_stance` PASS -- THE
+  ORIGINAL ISLAND-STALL BLOCKER IS SOLVED.** Full chain PASS through
+  raise_spine -> corridor -> rotate_spot -> rotate_west -> navigate_stance ->
+  pregrasp -> descend -> close. FAILED at `lift` (cup lifted only 0.0295 m vs
+  0.08 m gate; cup dragged +0.24 m north instead of pinched).
+
+**OPEN NEXT PROBLEM (grasp precision after full navigation) -- handoff:**
+After the full nav route the base sits ~3 deg off west (within the new
+rotate tolerance) and drifts ~0.12 m during descend, so the descend lands
+6.7 cm off (strict_reach=false), the cup is nudged north during contact, and
+`close` reads gripper 1.013 rad (never pinched) -- the lift then drags the cup
+instead of raising it. The proven 10/10 grasp pipeline never hit this because
+it used `--skip-navigation` (spawned square to the cup). This is the SAME
+grasp-slip class the proven pipeline beat over Runs 9-18; reproducing that
+success from the full-nav base pose is a multi-run tuning loop, NOT a
+one-liner. Candidate directions (do GIF-first diagnosis each run): (a) after
+`navigate_stance`, add a precise cup-relative re-alignment (tight rotate to
+west + small XY nudge to a cup-relative stance) so the grasp starts from the
+proven square pose; (b) tighten/extend the base hold during descend so it
+does not drift 0.12 m; (c) re-read live cup pose and re-center right before
+close. Do NOT blind-loop; capture run.gif + result.json and diagnose the phase
+visually before each change. GPU account expiry is imminent -- weigh each run.
 
 ## ⚠️ SCORING GROUND-TRUTH + FINISH PLAN (orchestrator, 2026-07-19)
 
