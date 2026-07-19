@@ -1008,6 +1008,26 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             render_product,
             sim,
         )
+    if args.transport_to_dining and args.object_name == "cup":
+        # The full-nav approach shoves the cup a few cm during descend
+        # contact (r12: +7.6 cm north) while the north grasp-reach undershoots
+        # ~5 cm, leaving the fingers ~7 cm SOUTH of the cup so close() catches
+        # nothing (gripper stalls at 1.02, wide open) vs the proven skip-nav
+        # grasp closing to 0.076. Re-read the cup's LIVE pose and re-target the
+        # grasp onto where it actually ended up before closing.
+        live_cup = cup_position()
+        grasp = (
+            live_cup[0] + CUP_RIM_X_OFFSET,
+            live_cup[1] + CUP_GRASP_Y_OFFSET,
+            live_cup[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        )
+        servo_arm("right", grasp, top_down, budget_s=4.0, tol_m=0.02)
+        log_phase(
+            "recenter_live_cup",
+            arms.position_error("right", grasp) <= 0.10,
+            position_error_m=round(arms.position_error("right", grasp), 4),
+            cup=[round(v, 3) for v in live_cup],
+        )
     if tray_bimanual:
         right_start = arms.gripper_position("right")
         left_start = arms.gripper_position("left")
