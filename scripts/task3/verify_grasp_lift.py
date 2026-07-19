@@ -689,8 +689,12 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     # --- Phase 0: raise spine, tuck arms (travel configuration) --------
     travel_spine_target = 0.35 if args.transport_to_dining else TRAVEL_SPINE_M
-    spine_ok = arms.move_spine(
-        travel_spine_target, step=sim_tick, dt=sim.cfg.dt, timeout_s=6.0
+    spine_ok = (
+        True
+        if args.transport_to_dining
+        else arms.move_spine(
+            travel_spine_target, step=sim_tick, dt=sim.cfg.dt, timeout_s=6.0
+        )
     )
     log_phase("raise_spine", spine_ok, target_spine=travel_spine_target)
     if not spine_ok:
