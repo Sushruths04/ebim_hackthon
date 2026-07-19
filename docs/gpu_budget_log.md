@@ -306,6 +306,19 @@ each session, not retroactively.
   `outputs/task3_stage1_tray_slide_r3_20260719/result.json` before shutdown.
 - `sim-dev-g4b` is STOPPED at session close.
 
+## Session log - 2026-07-19 05:35-06:35 UTC (Round 6 physical pinch/carry chain)
+
+- `sim-dev-g4b` was located in `us-central1-b` (the configured zone was stale),
+  exported, and stopped after the trial. No VM is left running.
+- One physics-only trial ran for approximately `636 s` of Isaac process time;
+  total VM uptime including transfer and shutdown was approximately `1.0 h`.
+- The tray moved `+0.193888 m` with `+0.014355 m` north overhang, below the
+  slide gate. North-stance navigation and edge closure succeeded, with a
+  physical pinch signature of `0.198886 rad`; measured tray lift was `0.000 m`
+  because the tray remained supported by the counter. Carry-to-dining was not
+  attempted. Raw JSON was copied to
+  `outputs/task3_stage1_tray_slide_r6_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0

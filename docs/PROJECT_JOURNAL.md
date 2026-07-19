@@ -466,3 +466,29 @@ or kinematic attachments are allowed.
 Organizer check: fetched `upstream/main` at `cb51845`, a participant-runtime
 refactor authored July 17. It is not merged into this evidence branch because
 it removes the older development paths used by the proven probes and proofs.
+
+## 2026-07-19 05:55-06:25 UTC — Codex: Round 6 physical pinch/carry-chain trial
+
+Goal: validate the committed measured north stance and the physics-only
+carry-and-release continuation, with no scene or object-state shortcuts.
+
+Round 6 reached the computed north stance successfully and completed the
+horizontal edge approach, calibrated lip alignment, contact descend, and
+physical closure. The gripper closed to `0.198886 rad`, confirming the
+orientation/settling correction can produce a real pinch. This run's three
+drag strokes were weaker than the prior successful slide: the tray moved
+`+0.193888 m` and reached only `+0.014355 m` north overhang. Because the tray
+was still supported by the counter, the measured lift was `0.000 m`; the
+carry-to-dining route correctly did not execute.
+
+Result: **Step 1 remains open**, but the remaining link is narrower: obtain a
+gate-passing overhang in the same configuration, then verify the existing
+physics-held route releases the tray in the dining table region. The next
+trial reuses the previously gate-passing `--push-distance 0.26` value rather
+than changing pinch geometry. Raw result:
+`outputs/task3_stage1_tray_slide_r6_20260719/result.json`.
+
+Lesson: a successful pinch without sufficient overhang cannot lift a flat
+13 mm mesh from the counter. The slide gate must be treated as a prerequisite
+for the carry test; the Round 6 pinch result should not be reported as a
+completed tray transport.
