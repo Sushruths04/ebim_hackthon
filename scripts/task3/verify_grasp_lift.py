@@ -201,6 +201,18 @@ def parse_args() -> argparse.Namespace:
         help="Live cup Y offset for the final rim target in meters.",
     )
     parser.add_argument(
+        "--grasp-ramp-seconds",
+        type=float,
+        default=1.0,
+        help="Duration of the linear physical gripper-close ramp.",
+    )
+    parser.add_argument(
+        "--grasp-settle-seconds",
+        type=float,
+        default=1.5,
+        help="Total close-and-force-settle duration; must cover the ramp.",
+    )
+    parser.add_argument(
         "--tray-x-offset",
         type=float,
         default=0.16,
@@ -299,6 +311,14 @@ def main() -> None:
         raise ValueError(
             "--hold-seconds must be positive and "
             "--hold-recovery-seconds non-negative"
+        )
+    if (
+        args.grasp_ramp_seconds < 0.0
+        or args.grasp_settle_seconds < args.grasp_ramp_seconds
+    ):
+        raise ValueError(
+            "--grasp-ramp-seconds must be non-negative and no greater than "
+            "--grasp-settle-seconds"
         )
     out_dir = args.out_dir.resolve()
     frames_dir = out_dir / "frames"
@@ -1079,7 +1099,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         ) and gripper_holds_object(arms.gripper_position("left"))
     else:
         holding = arms.grasp(
-            "right", step=sim_tick, dt=sim.cfg.dt, settle_seconds=1.5
+            "right",
+            step=sim_tick,
+            dt=sim.cfg.dt,
+            settle_seconds=args.grasp_settle_seconds,
+            ramp_seconds=args.grasp_ramp_seconds,
         )
     gripper_position = arms.gripper_position("right")
     log_phase(
