@@ -407,3 +407,15 @@ each session, not retroactively.
 - Outcome: 358 CPU tests passed; physical tray carry remains open. The next
   GPU session should keep one already-started VM alive across bounded manual
   retries, then export evidence and stop it at the session boundary.
+
+## 2026-07-19 08:20-09:40 UTC — Codex continuous GPU review (Rounds 14-18)
+
+- Reused and kept `sim-dev-g4b` running in `us-central1-b`; RTX PRO 6000
+  Blackwell was confirmed active. The user explicitly authorized continuous
+  operation during the remaining sprint.
+- Five physics-contact-only tray probes ran without scene or physics edits.
+  Raw exported results are in `outputs/task3_stage1_tray_slide_r14_20260719/`
+  through `r18_20260719/`.
+- The GUI launcher was tested in public WebRTC mode 1. The server announces
+  startup, but the containerized headless session does not retain an exposed
+  public socket; the local evidence dashboard is the reliable GUI fallback.

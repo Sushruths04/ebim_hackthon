@@ -620,3 +620,24 @@ is not justified by the evidence.
 - Lesson: the repository can be packaged safely now, but physical tray carry,
   release, and the remaining live stages still require actual Isaac physics
   evidence; CPU adapters cannot close that gate honestly.
+
+## 2026-07-19 17:00 UTC — Codex: continuous physical tray review and GUI
+
+- Kept the existing `sim-dev-g4b` GPU VM and Isaac container running across
+  bounded trials, as requested; no scene, mass, asset, teleport, or kinematic
+  attachment changes were made.
+- Round 14: four contact strokes, `0.012176 m` overhang; failed the slide gate.
+- Round 15: four contact strokes, `0.033895 m` overhang; failed the slide gate.
+- Round 16: `0.111867 m` overhang and complete physical route to the dining
+  stance, but edge pinch closed to `0.046163 rad`; no retained lift.
+- Round 17: `0.080948 m` overhang; a `0.030 m` controller-only lower bias drove
+  the fingers fully closed (`0.0007 rad`), so the bias was too large.
+- Round 18: `0.053243 m` overhang; edge approach encountered an IK settle
+  excursion and failed before grasp (`fingertip z ≈1.37 m`).
+- The evidence dashboard is `outputs/task3_trial_dashboard.html`; it is a
+  read-only visual review of Rounds 9 and 14–18. The WebRTC launcher was also
+  corrected to Isaac Sim 5.1 public mode 1, but the headless container session
+  exits before maintaining an externally reachable signaling socket.
+- Conclusion: physical Step 1 is still open. Round 9 remains the strongest
+  partial chain; the new telemetry narrows the next controller sweep to a
+  smaller lower bias plus an IK-stability guard.

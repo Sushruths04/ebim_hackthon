@@ -675,3 +675,17 @@ stages, total_steps); only timestamps/paths differ.
 - Personal-project L4 quota (fallback after expiry) still pending — check
   daily: `gcloud compute regions describe us-central1
   --account=mitvho09@gmail.com --project=gen-lang-client-0186028838`.
+
+## Latest continuation status — 2026-07-19
+
+- CPU packaging is complete and pushed in `ece768e`; the full local suite was
+  previously green at 358 tests, with compilation and Ruff clean.
+- Physical tray rounds 14–18 are exported locally. Round 16 is the strongest
+  current chain (`0.111867 m` overhang and full route to the dining stance),
+  but edge pinch failed; therefore physical Stage 1 is not yet complete.
+- Added a bounded `--edge-lower-bias-m` controller parameter to the tray probe
+  and `scripts/task3/make_trial_dashboard.py`. The dashboard output is
+  `outputs/task3_trial_dashboard.html`.
+- The public WebRTC path now requests Isaac Sim 5.1 mode 1. The current VM
+  reports stream startup, but its headless container session exits before an
+  externally reachable socket remains; use the local dashboard for review.

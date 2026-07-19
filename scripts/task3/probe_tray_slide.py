@@ -609,7 +609,15 @@ def _run_edge_pinch(
     if fingertip_mid_preclose is None:
         return False, "edge_fingertip_measurement", {}
     fingertip_z_error = fingertip_mid_preclose[2] - lip_target[2]
-    lower_m = min(max(fingertip_z_error, 0.0), args.edge_lower_max_m)
+    # Round 16 aligned the fingertip midpoint with the lip but still closed
+    # almost fully (0.046 rad).  Round 9's physically retained partial pinch
+    # was ~29 mm below the lip, so expose a bounded controller-only bias for
+    # the next contact-coupling trial.  The default remains zero to preserve
+    # the original calibrated behavior.
+    lower_m = min(
+        max(fingertip_z_error + args.edge_lower_bias_m, 0.0),
+        args.edge_lower_max_m,
+    )
     lower_info = ramp_vertical(
         "right",
         (float(ee_pose_preclose[0]), float(ee_pose_preclose[1])),
@@ -912,6 +920,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reach-in-seconds", type=float, default=2.0)
     parser.add_argument("--edge-lower-seconds", type=float, default=1.5)
     parser.add_argument("--edge-lower-max-m", type=float, default=0.08)
+    parser.add_argument("--edge-lower-bias-m", type=float, default=0.0)
     parser.add_argument(
         "--output-dir",
         type=Path,
