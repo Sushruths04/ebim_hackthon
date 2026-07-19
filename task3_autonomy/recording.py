@@ -201,10 +201,10 @@ class RunRecorder:
 
             # Pull-based read of the LATEST rendered RGB frame -- do NOT call
             # rep.orchestrator.step() here. The proven working capture on this
-            # VM (run_episode.py's _save_rgb_frame, which produced the 160-frame
-            # episode.gif) reads the annotator directly: with enable_cameras and
-            # an attached render_product, the runner's own per-step sim.step()
-            # renders each frame, so get_data() already holds fresh pixels.
+            # VM (run_episode.py's _save_rgb_frame, which made the 160-frame
+            # episode.gif) reads the annotator directly: with enable_cameras
+            # and an attached render_product, the runner's own per-step
+            # sim.step() renders each frame, so get_data() holds fresh pixels.
             # Calling orchestrator.step() here instead returned an EMPTY array
             # in the isaac-lab-2.3.2 container, so every frame was silently
             # skipped by the size guard below (0 frames after 50 min).
