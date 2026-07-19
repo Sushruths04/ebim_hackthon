@@ -91,6 +91,7 @@ r24 | descend_ee_z=0.805 | score=0/5 | FAIL | hard pivot to per-object standard-
 r25 | transport=cup | score=0/5 | FAIL | recover spine target from 0.43 to 0.39 and retry
 r26 | transport=cup | score=0/5 | FAIL | recover spine target from 0.39 to 0.35 and retry
 r27 | transport=cup | score=0/5 | FAIL | accept measured transport spine settle and continue to grasp
+r28 | transport=cup | score=0/5 | FAIL | rotate-spot navigation failed; retry with proven skip-navigation recovery
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
