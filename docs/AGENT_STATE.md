@@ -212,6 +212,7 @@ r16 | transport=cup, live Y offset=0.00 m | score=0/5 | FAIL | gripper closed em
 r17 | transport=cup, live Y offset=+0.03 m | score=0/5 | FAIL | gripper again closed empty (0.0079 rad); next narrow contact bracket is +0.05 m
 r18 | transport=cup, live Y offset=+0.05 m | score=0/5 | FAIL | physical pinch 0.0570 rad but cup ejected on lift; tighten final contact bracket to +0.055 m
 r19 | transport=cup, live Y offset=+0.055 m | score=0/5 | FAIL | strongest offset-only pinch (0.2860 rad) but no vertical object motion; next lever is a slower close with longer force settle
+r20 | transport=cup, Y=+0.055 m, 1.5 s close ramp + 0.5 s settle | score=0/5 | FAIL | slow closure swept cup +0.292 m north and left gripper at 0.8003 rad; restore proven close timing and test shallower rim depth (X=+0.020 m)
 
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
