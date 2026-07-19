@@ -156,7 +156,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--object-name",
-        choices=("cup", "simple_tray"),
+        choices=("cup", "bowl2", "spoon2", "plate2", "simple_tray"),
         default="cup",
         help="Rigid object to use for the physical grasp gate.",
     )
@@ -250,6 +250,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Spawn at the clear rotation spot, tuck, then drive only the "
         "final stance leg (fast arm iteration; long nav is proven).",
+    )
+    parser.add_argument(
+        "--transport-to-dining",
+        action="store_true",
+        help=(
+            "After a physical grasp/lift, carry the object through the "
+            "door and release it at the dining target."
+        ),
     )
     parser.add_argument(
         "--out-dir",
@@ -604,6 +612,8 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         phases.append(entry)
         print("GRASPDBG " + json.dumps(entry, sort_keys=True), flush=True)
 
+    held_pose_box: list[Any] = [None]
+
     def drive_to(target_xy, *, max_speed: float, budget_s: float) -> bool:
         skill = NavigateTo(target_xy, max_linear_mps=max_speed)
         for _ in range(int(budget_s / sim.cfg.dt)):
@@ -613,6 +623,9 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                 adapter.apply_twist(0.0, 0.0)
                 sim_tick()
                 return True
+            if args.transport_to_dining and held_pose_box[0] is not None:
+                held_pose = held_pose_box[0]
+                arms.set_arm_target("right", held_pose[0], held_pose[1])
             adapter.apply_twist(vx, vy)
             sim_tick()
         adapter.apply_twist(0.0, 0.0)
@@ -763,8 +776,13 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                 approach_start[1] + args.tray_y_offset,
             )
         )
-    else:
+    elif args.object_name == "cup":
         pregrasp_xy = CUP_GRASP_XY
+    else:
+        # Other Stage 1 objects are dynamic rigid bodies on the same counter.
+        # Use their live center for a top-down contact rather than the cup's
+        # fixed rim target; the physics engine remains the sole pose owner.
+        pregrasp_xy = (approach_start[0], approach_start[1])
     pregrasp = (pregrasp_xy[0], pregrasp_xy[1], PREGRASP_Z)
     tray_bimanual = args.object_name == "simple_tray" and args.bimanual_tray
     if tray_bimanual:
@@ -890,11 +908,17 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             cup_before_descend[1] + args.tray_y_offset,
             cup_before_descend[2] + args.tray_z_offset,
         )
-    else:
+    elif args.object_name == "cup":
         grasp = (
             cup_before_descend[0] + CUP_RIM_X_OFFSET,
             cup_before_descend[1] + CUP_GRASP_Y_OFFSET,
             cup_before_descend[2] + GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
+        )
+    else:
+        grasp = (
+            cup_before_descend[0],
+            cup_before_descend[1],
+            cup_before_descend[2] + 0.075,
         )
     if tray_bimanual:
         strict_reach = servo_bimanual(
@@ -1044,6 +1068,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         )
     log_phase("lift", lift_ok)
     hold_pose = arms.ee_world_poses()[1]
+    held_pose_box[0] = hold_pose
     held_ticks = 0
     needed_ticks = int(args.hold_seconds / sim.cfg.dt)
     recovery_ticks = math.ceil(args.hold_recovery_seconds / sim.cfg.dt)
@@ -1074,6 +1099,38 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         lifted_m=round(lifted, 4),
         held_s=round(held_ticks * sim.cfg.dt, 2),
     )
+
+    if passed and args.transport_to_dining:
+        # Release the local arm-position hold before driving.  The held pose
+        # is reissued in world coordinates while the base follows the tested
+        # door route, so the object remains coupled by real gripper contact.
+        base_hold_anchor = None
+        from navigation import route_via_door
+
+        dining_target = (-2.85, 1.90)
+        route = route_via_door(
+            (adapter.pose().x, adapter.pose().y), dining_target
+        )
+        transport_ok = True
+        for waypoint in route[1:]:
+            if not drive_to(waypoint, max_speed=0.35, budget_s=55.0):
+                transport_ok = False
+                break
+            log_phase("transport_waypoint", True, target=list(waypoint))
+        if transport_ok:
+            release_ok = arms.release(
+                "right", step=sim_tick, dt=sim.cfg.dt, timeout_s=2.0
+            )
+            log_phase("release_dining", release_ok, target=list(dining_target))
+            for _ in range(round(1.0 / sim.cfg.dt)):
+                sim_tick()
+            final_xy = cup_position()
+            transport_ok = release_ok and (
+                abs(final_xy[0] - dining_target[0]) <= 0.55
+                and final_xy[1] > 0.40
+            )
+        passed = passed and transport_ok
+        log_phase("transport_result", transport_ok, dining_pose=list(cup_position()))
 
     final_phase = "complete" if passed else "hold"
     return _result(

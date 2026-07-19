@@ -87,6 +87,8 @@ After every run, append ONE line here:
 
 ## Active Codex execution — 2026-07-19
 
+r24 | descend_ee_z=0.805 | score=0/5 | FAIL | hard pivot to per-object standard-physics transport
+
 - Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
 - Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
 - Trial `r23` is running in the Isaac container with `--record-video`; output directory is `outputs/task3_stage1_tray_slide_r23`.
