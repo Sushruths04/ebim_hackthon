@@ -4,16 +4,30 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 00:35 UTC (Codex,
+Last update: 2026-07-19 04:45 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED (verified TERMINATED) after round 2's
-4 bounded trials (8 total across both rounds). Day 1 remains complete; the
-Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
-slide-to-overhang SUB-gate now passes reliably (round 2 fixed all three
-diagnosed round-1 blockers), but the full single-edge pinch+lift gate still
-does NOT pass: the edge closure never catches the tray in any of the 4
-round-2 trials. Do not proceed to Step 2 yet. Owner review requested before
-any further trial or the two-arm escalation.
+GPU STATUS: `sim-dev-g4b` is STOPPED before the resumed Round 3 trial. Day 1
+remains complete; the Day 2 FSM proof is adapter-only. Day 3 Step 0 is
+complete. Step 1's slide-to-overhang SUB-gate passes reliably, but the full
+single-edge pinch+lift gate remains open. Codex is claiming one clean,
+physics-only GPU trial of the committed Round 3 closing-axis correction
+(`24fd89d`, followed by base re-anchor fix `04e02af`). No Step 2 work starts
+until this trial is recorded.
+
+## Day 3 Step 1 Round 3 resume claim — 2026-07-19 04:45 UTC
+
+CPU validation completed before GPU use: `pytest scripts/tests` passed
+`198/198`; the focused tray tests passed `25/25`; Ruff and compilation are
+clean. The full repository-wide pytest command is not a valid gate on this
+Windows checkout because unrelated ROS test collection imports missing
+`rclpy`.
+
+The authorized trial will use the unmodified organizer scene and the
+physics-contact probe only. Round 3 changes the pinch closing axis to vertical
+using verified quaternion kinematics, approaches the lip horizontally from
+the north, measures the live fingertip midpoint, and re-anchors the base
+after each reach. No kinematic attachment, object transform write, asset edit,
+mass edit, or scene repair is allowed.
 
 ## Day 3 Step 1 round 2 — 2026-07-18/19 (owner-approved 3-fix plan)
 
