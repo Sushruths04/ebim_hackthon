@@ -574,3 +574,17 @@ drag did not improve this run. Raw result:
 
 Next: one bounded trial with the original 5 s drag and a measured 5 mm deeper
 press (`0.810 m`), still within the known physical IK-safe range.
+
+## 2026-07-19 12:10-12:55 UTC — Codex: Round 12 deeper-press trial
+
+Goal: test a 5 mm deeper physical press while keeping the original drag
+duration and the corrected carry controller.
+
+The first stroke moved the tray `+0.100359 m`. The second-stroke pregrasp then
+timed out with `0.055776 m` position error and `0.104734 rad` orientation
+error, before pinch or carry. Raw result:
+`outputs/task3_stage1_tray_slide_r12_20260719/result.json`.
+
+Result: **Step 1 remains open**. A single bounded retry from the measured
+post-failure base pose is now added for this transient recovery-reach case;
+the scene and physics remain unchanged.

@@ -794,7 +794,24 @@ def _run_push_stroke(
 
     pregrasp_above = (stroke_contact_x, stroke_contact_y, PREGRASP_EE_Z)
     arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    if not reach("right", pregrasp_above, top_down, PUSH_PREGRASP_TIMEOUT_S):
+    pregrasp_ok = reach(
+        "right", pregrasp_above, top_down, PUSH_PREGRASP_TIMEOUT_S
+    )
+    if not pregrasp_ok:
+        # A failed recovery reach can leave a small base reaction drift. One
+        # bounded retry from the measured current base is physics-legal and
+        # avoids aborting a good tray slide on a transient convergence miss.
+        retry_pose = adapter.pose()
+        hold_anchor_box["value"] = (retry_pose.x, retry_pose.y)
+        pregrasp_ok = reach(
+            "right", pregrasp_above, top_down, PUSH_PREGRASP_TIMEOUT_S
+        )
+        log(
+            f"{stroke_prefix}_pregrasp_retry",
+            ok=pregrasp_ok,
+            target=list(pregrasp_above),
+        )
+    if not pregrasp_ok:
         log_reach_failure(
             f"{stroke_prefix}_pregrasp_above",
             "right",

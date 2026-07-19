@@ -369,6 +369,15 @@ each session, not retroactively.
   the run before pinch/carry. Isaac process time was approximately `662 s`.
 - Raw JSON: `outputs/task3_stage1_tray_slide_r11_20260719/result.json`.
 
+## Session log - 2026-07-19 12:10-12:55 UTC (Round 12 deeper press)
+
+- One physics-only trial ran with `--descend-ee-z 0.810`, was exported, and
+  the GPU VM was stopped. No VM is left running.
+- The first stroke moved `+0.100359 m`; the second pregrasp timed out at
+  `0.055776 m` position error and `0.104734 rad` orientation error. No pinch
+  or carry was attempted. Raw JSON:
+  `outputs/task3_stage1_tray_slide_r12_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
