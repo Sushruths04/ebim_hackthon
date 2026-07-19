@@ -4,13 +4,60 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-Last update: 2026-07-19 16:30 UTC (Codex,
+Last update: 2026-07-19 17:10 UTC (Codex,
 `agent/codex-task3-grasp`).
-GPU STATUS: `sim-dev-g4b` is STOPPED after Round 13. Day 1 remains complete;
+GPU STATUS: `sim-dev-g4b` is RUNNING for r23. Google Cloud project is
+`ebim26ham-236`, zone `us-central1-b`, container
+`isaac-lab-2-3-2-workshop`. Day 1 remains complete;
 the Day 2 FSM proof is adapter-only. Day 3 Step 0 is complete. Step 1's
 slide-to-overhang SUB-gate passes reliably, but the full single-edge
 pinch+lift gate remains open. The tray remains a required owner deliverable;
 no Step 2 work has started.
+
+## ⚠️ SCORING GROUND-TRUTH + FINISH PLAN (orchestrator, 2026-07-19)
+
+Verified against `scripts/evaluation/task3/grading.py::score_stage1_table_setup`.
+Do NOT optimize any of this away.
+
+1. Stage 1 scores 5 objects INDEPENDENTLY, by XY-in-dining only:
+   `simple_tray`, `bowl2`, `spoon2`, `plate2`, `cup`. `classify_table_area()`
+   uses x,y only — **z is discarded, so NOTHING needs lifting.** An object
+   scores when its footprint is inside `TASK3_DINING_AREA` (center -2.85/1.9).
+2. **The tray (`simple_tray`) IS a scored object — it MUST end in the dining
+   area.** Do not drop it. Leaving it in the kitchen forfeits its point.
+3. Objects are NOT required to travel together — no "carried on the tray"
+   check. The loaded-tray drag is ONE strategy (5 pts/1 maneuver), not a
+   requirement.
+4. Caveat: official rules say 4 pts/stage but grading.py lists 5 objects, and
+   this grading.py is our PROXY, not the confirmed official scorer. Keep the
+   tray in scope.
+
+Decision rule — optimize for RELIABILITY, not elegance:
+- Sprint pass bar is score >= 4/5. Don't chase a perfect loaded-tray 5/5 if
+  it keeps slipping.
+- If the loaded-tray drag isn't reliably landing the tray XY-in-dining within
+  the next 2-3 recorded runs, PIVOT to per-object transport with the proven
+  10/10 cup pipeline for `cup`, `bowl2`, `spoon2`, `plate2`, AND the tray as
+  its own object.
+- Every run stays `--record-video`; diagnose from `run.gif` + `result.json`
+  before tuning.
+
+URGENT — compute clock: GCP project `ebim26ham-236` expires ~Jul 19-20 (NOW).
+Priority order: (1) get SOME autonomous Stage 1 run scoring >=4/5 with a proof
+bundle on disk, (2) export proofs off the VM to git immediately
+(`make_proof_bundle.py`), (3) only then keep tuning toward 5/5. Do not let a
+slide-tuning loop eat the expiry window with nothing exported.
+
+Definition of done (Stage 1): one autonomous, standard-physics run where >=4
+of the 5 objects (tray included) end XY-in-dining, with `run.gif` +
+`result.json` + proof bundle committed to `agent/codex-task3-grasp`.
+
+## Active Codex execution — 2026-07-19
+
+- Google Cloud access is via `gcloud compute ssh sim-dev-g4b --zone=us-central1-b --project=ebim26ham-236`; the local Lightning alias is not the execution environment.
+- Commit `f24596b` is pushed and synced to `/home/sushr/EBiM-benchmark/_worktrees/task3-tray-fix`.
+- Trial `r23` is running in the Isaac container with `--record-video`; output directory is `outputs/task3_stage1_tray_slide_r23`.
+- After completion, inspect `result.json` and `run.gif`, then either validate edge pinch/lift or pivot to per-object transport.
 
 ## Codex CPU packaging update — 2026-07-19 16:30 UTC
 
