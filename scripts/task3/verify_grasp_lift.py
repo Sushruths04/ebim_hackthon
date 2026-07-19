@@ -702,7 +702,17 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                 return True
             if args.transport_to_dining and held_pose_box[0] is not None:
                 held_pose = held_pose_box[0]
-                arms.set_arm_target("right", held_pose[0], held_pose[1])
+                try:
+                    arms.set_arm_target("right", held_pose[0], held_pose[1])
+                except ValueError as error:
+                    adapter.apply_twist(0.0, 0.0)
+                    sim_tick()
+                    log_phase(
+                        "transport_workspace_limit",
+                        False,
+                        message=str(error),
+                    )
+                    return False
             adapter.apply_twist(vx, vy)
             sim_tick()
         adapter.apply_twist(0.0, 0.0)
