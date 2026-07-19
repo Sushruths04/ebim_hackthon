@@ -1,0 +1,2 @@
+# Bayesian optimization for expensive Task 3 physical-grasp trials.
+scikit-optimize==0.10.2

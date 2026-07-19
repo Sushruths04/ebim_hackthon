@@ -217,6 +217,10 @@ class DualArmController:
             omni.kit.app.get_app().get_extension_manager()
         )
         self.joint_groups = discover_joint_groups(robot.joint_names)
+        self._default_gripper_effort_limits = {
+            side: self._gripper_effort_limit(side)
+            for side in ("left", "right")
+        }
         self._position_targets = measured_position_targets(robot)
         self._ik = create_raw_dual_arm_lula(
             robot.joint_names,
@@ -366,6 +370,43 @@ class DualArmController:
         ids = getattr(self.joint_groups, f"{side}_gripper")
         return float(self.robot.data.joint_pos[0, ids[0]].item())
 
+    def _gripper_effort_limit(self, side: str) -> float:
+        """Return the authored effort limit for a primary gripper joint."""
+        if side not in ("left", "right"):
+            raise ValueError("side must be 'left' or 'right'")
+        limits = getattr(self.robot.data, "joint_effort_limits", None)
+        if limits is None:
+            raise RuntimeError("robot does not expose joint effort limits")
+        joint_id = getattr(self.joint_groups, f"{side}_gripper")[0]
+        limit = float(limits[0, joint_id].item())
+        if not math.isfinite(limit) or limit <= 0.0:
+            raise RuntimeError(
+                "gripper authored effort limit must be positive"
+            )
+        return limit
+
+    def set_gripper_effort_scale(self, side: str, scale: float) -> None:
+        """Scale the gripper's authored maximum effort for physical closure."""
+        if side not in ("left", "right"):
+            raise ValueError("side must be 'left' or 'right'")
+        if not math.isfinite(scale) or not 0.0 < scale <= 1.0:
+            raise ValueError("effort scale must be finite and in (0, 1]")
+        joint_ids = getattr(self.joint_groups, f"{side}_gripper")
+        self.robot.write_joint_effort_limit_to_sim(
+            self._default_gripper_effort_limits[side] * scale,
+            joint_ids=joint_ids,
+        )
+
+    def restore_gripper_effort_limit(self, side: str) -> None:
+        """Restore the gripper's authored maximum effort limit."""
+        if side not in ("left", "right"):
+            raise ValueError("side must be 'left' or 'right'")
+        joint_ids = getattr(self.joint_groups, f"{side}_gripper")
+        self.robot.write_joint_effort_limit_to_sim(
+            self._default_gripper_effort_limits[side],
+            joint_ids=joint_ids,
+        )
+
     def command(self):
         """Solve the current tracker targets and write articulation targets."""
         targets = self._tracker.targets
@@ -478,6 +519,7 @@ class DualArmController:
         dt: float,
         settle_seconds: float = 1.5,
         ramp_seconds: float = 1.0,
+        close_effort_scale: float | None = None,
     ) -> bool:
         """Soft-close, settle, then confirm an object blocks full closure."""
         if (
@@ -490,6 +532,8 @@ class DualArmController:
                 "dt must be positive and 0 <= ramp_seconds <= settle_seconds"
             )
         start_position = self.gripper_position(side)
+        if close_effort_scale is not None:
+            self.set_gripper_effort_scale(side, close_effort_scale)
         ramp_ticks = max(1, math.ceil(ramp_seconds / dt))
         for tick in range(math.ceil(settle_seconds / dt)):
             target = linear_ramp_target(
@@ -515,6 +559,7 @@ class DualArmController:
         """Open the gripper and return False if it misses the timeout."""
         if dt <= 0.0 or timeout_s < 0.0:
             raise ValueError("dt must be positive and timeout_s non-negative")
+        self.restore_gripper_effort_limit(side)
         self.set_gripper(side, GRIPPER_OPEN_RAD)
         for _ in range(math.ceil(timeout_s / dt)):
             self.command()

@@ -24,6 +24,11 @@ and frozen skip-navigation contact geometry, then tune one close/depth
 parameter per recorded GPU run. Keep `sim-dev-g4b` running while this work is
 active; do not alter scene assets or physics.
 
+**Active claim — Codex, 2026-07-19: Bayesian grasp optimization:** add an
+opt-in gripper effort-limit scale, measured continuous-hold evidence, and a
+fresh-Isaac-process optimizer. Validate the actuator API on GPU before any
+15-trial search; standard physics only.
+
 ## ROOT CAUSE of the transport nav stall + fix (Claude, 2026-07-19)
 
 Codex's r24-r31 loop stalled the cup-transport base against the island on the

@@ -223,6 +223,15 @@ def parse_args() -> argparse.Namespace:
         help="Total close-and-force-settle duration; must cover the ramp.",
     )
     parser.add_argument(
+        "--close-effort-scale",
+        type=float,
+        default=None,
+        help=(
+            "Optional fraction of the gripper's authored PhysX effort limit "
+            "used while closing; velocity targets are unchanged."
+        ),
+    )
+    parser.add_argument(
         "--tray-x-offset",
         type=float,
         default=0.16,
@@ -332,6 +341,10 @@ def main() -> None:
         )
     if not -0.05 <= args.cup_grasp_z_offset <= 0.05:
         raise ValueError("--cup-grasp-z-offset must be within [-0.05, 0.05]")
+    if args.close_effort_scale is not None and not (
+        0.0 < args.close_effort_scale <= 1.0
+    ):
+        raise ValueError("--close-effort-scale must be in (0, 1]")
     out_dir = args.out_dir.resolve()
     frames_dir = out_dir / "frames"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1118,6 +1131,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             dt=sim.cfg.dt,
             settle_seconds=args.grasp_settle_seconds,
             ramp_seconds=args.grasp_ramp_seconds,
+            close_effort_scale=args.close_effort_scale,
         )
     gripper_position = arms.gripper_position("right")
     log_phase(
@@ -1194,6 +1208,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     hold_pose = arms.ee_world_poses()[1]
     held_pose_box[0] = hold_pose
     held_ticks = 0
+    max_held_ticks = 0
     needed_ticks = int(args.hold_seconds / sim.cfg.dt)
     recovery_ticks = math.ceil(args.hold_recovery_seconds / sim.cfg.dt)
     for _ in range(needed_ticks + recovery_ticks):
@@ -1204,6 +1219,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         sim_tick()
         if cup_position()[2] - cup_start[2] >= args.min_lift_m:
             held_ticks += 1
+            max_held_ticks = max(max_held_ticks, held_ticks)
             if held_ticks >= needed_ticks:
                 break
         else:
@@ -1222,6 +1238,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         passed,
         lifted_m=round(lifted, 4),
         held_s=round(held_ticks * sim.cfg.dt, 2),
+        max_held_s=round(max_held_ticks * sim.cfg.dt, 2),
     )
 
     if passed and args.transport_to_dining:
@@ -1254,7 +1271,9 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                 and final_xy[1] > 0.40
             )
         passed = passed and transport_ok
-        log_phase("transport_result", transport_ok, dining_pose=list(cup_position()))
+        log_phase(
+            "transport_result", transport_ok, dining_pose=list(cup_position())
+        )
 
     final_phase = "complete" if passed else "hold"
     return _result(
@@ -1269,6 +1288,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         rgb_annotator,
         render_product,
         sim,
+        continuous_hold_seconds=max_held_ticks * sim.cfg.dt,
     )
 
 
@@ -1284,6 +1304,7 @@ def _result(
     rgb_annotator,
     render_product,
     sim,
+    continuous_hold_seconds: float = 0.0,
 ) -> dict[str, Any]:
     if args.record_video and rgb_annotator is not None:
         rgb_annotator.detach()
@@ -1305,6 +1326,9 @@ def _result(
         "cup_lift_m": round(cup_end[2] - cup_start[2], 4),
         "min_lift_m": args.min_lift_m,
         "hold_seconds": args.hold_seconds,
+        "continuous_hold_seconds": round(continuous_hold_seconds, 4),
+        "grasp_ramp_seconds": args.grasp_ramp_seconds,
+        "close_effort_scale": args.close_effort_scale,
         "phases": phases,
         "sim_dt": sim.cfg.dt,
     }

@@ -43,6 +43,36 @@ def test_changingtek_gripper_uses_zero_closed_convention():
     assert GRIPPER_OPEN_RAD == 0.9
 
 
+def test_gripper_effort_scale_writes_scaled_then_authored_limit():
+    calls = []
+    controller = object.__new__(DualArmController)
+    controller.robot = SimpleNamespace(
+        write_joint_effort_limit_to_sim=lambda limit, joint_ids: calls.append(
+            (limit, joint_ids)
+        )
+    )
+    controller.joint_groups = SimpleNamespace(right_gripper=(7,))
+    controller._default_gripper_effort_limits = {"right": 8.0}
+
+    controller.set_gripper_effort_scale("right", 0.25)
+    controller.restore_gripper_effort_limit("right")
+
+    assert calls == [(2.0, (7,)), (8.0, (7,))]
+
+
+@pytest.mark.parametrize("scale", (0.0, -0.1, 1.1, math.nan))
+def test_gripper_effort_scale_rejects_invalid_values(scale):
+    controller = object.__new__(DualArmController)
+    controller.robot = SimpleNamespace(
+        write_joint_effort_limit_to_sim=lambda *args, **kwargs: None
+    )
+    controller.joint_groups = SimpleNamespace(right_gripper=(7,))
+    controller._default_gripper_effort_limits = {"right": 8.0}
+
+    with pytest.raises(ValueError, match="effort scale"):
+        controller.set_gripper_effort_scale("right", scale)
+
+
 @pytest.mark.parametrize(
     "overrides,expected",
     [
