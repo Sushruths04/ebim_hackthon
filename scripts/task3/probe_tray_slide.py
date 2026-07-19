@@ -125,7 +125,12 @@ TRAY_HALF_EXTENT_Y_M = 0.436315 / 2.0
 # pose each time, until the slide gate is met or the stroke budget runs out.
 # Round 8 reached 0.035 m overhang after three successful strokes, so one
 # additional ordinary contact stroke is allowed to reach the physical edge.
-MAX_PUSH_STROKES = 4
+# The r22 trace shows that a long stroke loses contact as the fist slips. Use
+# short, independently re-anchored strokes instead: the total commanded
+# travel remains comparable, but each contact is released before the slip
+# compounds. This is still ordinary collision/friction contact; no object
+# pose is written by the probe.
+MAX_PUSH_STROKES = 6
 STROKE_REALIGN_DRIFT_M = 0.08
 STROKE_STOP_MOVED_Y_M = 0.22
 # Round 7: after a live re-alignment, one physical pregrasp reach ended with
@@ -963,7 +968,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--head-placement", choices=("a", "b", "c"), default="a"
     )
-    parser.add_argument("--push-distance", type=float, default=0.26)
+    parser.add_argument(
+        "--push-distance",
+        type=float,
+        default=0.16,
+        help="North travel per press-drag stroke; short strokes reduce fist slip.",
+    )
     parser.add_argument("--descend-seconds", type=float, default=2.0)
     parser.add_argument("--drag-seconds", type=float, default=5.0)
     parser.add_argument("--raise-seconds", type=float, default=2.0)
