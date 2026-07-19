@@ -456,6 +456,7 @@ def _run_edge_pinch(
     robot: Any,
     adapter: Any,
     reach: Any,
+    ramp_vertical: Any,
     ramp_horizontal: Any,
     sim_tick: Any,
     log: Any,
@@ -553,6 +554,7 @@ def _run_edge_pinch(
     )
 
     fingertip_mid_preclose = _measure_fingertip_midpoint(robot, "right")
+    ee_pose_preclose = arms.ee_world_poses()[1][0]
     log(
         "edge_preclose_fingertips",
         ok=True,
@@ -561,7 +563,40 @@ def _run_edge_pinch(
             if fingertip_mid_preclose
             else None
         ),
+        measured_ee_position=[round(float(v), 6) for v in ee_pose_preclose],
         lip_target=[round(v, 6) for v in lip_target],
+    )
+
+    # Round 4: Round 3 reached the correct XY but the hand stopped with the
+    # fingertip midpoint 5.94 cm above the lip. Use that measured error as a
+    # bounded, physics-driven vertical settling stroke before closing. The
+    # target is based on the actual current EE pose, not a guessed world Z;
+    # contact/stall logging remains mandatory.
+    if fingertip_mid_preclose is None:
+        return False, "edge_fingertip_measurement", {}
+    fingertip_z_error = fingertip_mid_preclose[2] - lip_target[2]
+    lower_m = min(max(fingertip_z_error, 0.0), args.edge_lower_max_m)
+    lower_info = ramp_vertical(
+        "right",
+        (float(ee_pose_preclose[0]), float(ee_pose_preclose[1])),
+        edge_pinch_quat,
+        float(ee_pose_preclose[2]),
+        float(ee_pose_preclose[2]) - lower_m,
+        args.edge_lower_seconds,
+        detect_contact=True,
+    )
+    fingertip_mid_after_lower = _measure_fingertip_midpoint(robot, "right")
+    log(
+        "edge_lower_settle",
+        ok=True,
+        requested_lower_m=round(lower_m, 6),
+        fingertip_z_error=round(fingertip_z_error, 6),
+        fingertip_midpoint=(
+            [round(v, 6) for v in fingertip_mid_after_lower]
+            if fingertip_mid_after_lower
+            else None
+        ),
+        **lower_info,
     )
 
     holding = arms.grasp("right", step=sim_tick, dt=dt, settle_seconds=1.5)
@@ -759,10 +794,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--descend-seconds", type=float, default=2.0)
     parser.add_argument("--drag-seconds", type=float, default=5.0)
     parser.add_argument("--raise-seconds", type=float, default=2.0)
-    parser.add_argument(
-        "--descend-ee-z", type=float, default=DESCEND_EE_Z
-    )
+    parser.add_argument("--descend-ee-z", type=float, default=DESCEND_EE_Z)
     parser.add_argument("--reach-in-seconds", type=float, default=2.0)
+    parser.add_argument("--edge-lower-seconds", type=float, default=1.5)
+    parser.add_argument("--edge-lower-max-m", type=float, default=0.08)
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -1195,9 +1230,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         )
     if not rotate(FACE_SOUTH_YAW_RAD, 15.0):
         log("rotate_south", ok=False)
-        return _result(
-            False, "rotate_south", phases, start, tray_pose(), args
-        )
+        return _result(False, "rotate_south", phases, start, tray_pose(), args)
     pose = adapter.pose()
     hold_anchor_box["value"] = (pose.x, pose.y)
     log(
@@ -1221,6 +1254,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         robot=robot,
         adapter=adapter,
         reach=reach,
+        ramp_vertical=ramp_vertical,
         ramp_horizontal=ramp_horizontal,
         sim_tick=sim_tick,
         log=log,
