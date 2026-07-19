@@ -492,3 +492,20 @@ Lesson: a successful pinch without sufficient overhang cannot lift a flat
 13 mm mesh from the counter. The slide gate must be treated as a prerequisite
 for the carry test; the Round 6 pinch result should not be reported as a
 completed tray transport.
+
+## 2026-07-19 06:03-06:50 UTC — Codex: Round 7 recovery-reach trial
+
+Goal: repeat the previously successful `--push-distance 0.26` tray slide
+setting after Round 6's weak coupling, with the physical pinch/carry code
+unchanged.
+
+The first stroke made physical contact and moved the tray `+0.098265 m`.
+After the required live re-alignment, the second-stroke pregrasp-above reach
+did not converge within its 8 s budget. The recorded final position error was
+`0.056190 m` and orientation error `0.122625 rad`; no edge pinch, lift, or
+dining-table carry was attempted. Raw result:
+`outputs/task3_stage1_tray_slide_r7_20260719/result.json`.
+
+Result: **Step 1 remains open**. The next change is limited to increasing the
+bounded pregrasp reach budget, because this failure occurs before tray edge
+contact and does not justify changing contact geometry or scene physics.

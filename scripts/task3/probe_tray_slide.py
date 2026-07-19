@@ -126,6 +126,10 @@ TRAY_HALF_EXTENT_Y_M = 0.436315 / 2.0
 MAX_PUSH_STROKES = 3
 STROKE_REALIGN_DRIFT_M = 0.08
 STROKE_STOP_MOVED_Y_M = 0.22
+# Round 7: after a live re-alignment, one physical pregrasp reach ended with
+# 5.6 cm position error at the old 8 s budget. Keep the same target and
+# contact geometry; allow this recovery reach a bounded extra 4 s to settle.
+PUSH_PREGRASP_TIMEOUT_S = 12.0
 
 # Round 2: tray-relative north-side pinch stance (mirrors TRAY_STANCE's fix
 # pattern). Standoff stays inside the proven ~0.83 m dead-ahead envelope;
@@ -756,7 +760,7 @@ def _run_push_stroke(
 
     pregrasp_above = (stroke_contact_x, stroke_contact_y, PREGRASP_EE_Z)
     arms.set_gripper("right", GRIPPER_OPEN_RAD)
-    if not reach("right", pregrasp_above, top_down, 8.0):
+    if not reach("right", pregrasp_above, top_down, PUSH_PREGRASP_TIMEOUT_S):
         log_reach_failure(
             f"{stroke_prefix}_pregrasp_above",
             "right",

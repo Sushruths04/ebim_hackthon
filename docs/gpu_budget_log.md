@@ -319,6 +319,17 @@ each session, not retroactively.
   attempted. Raw JSON was copied to
   `outputs/task3_stage1_tray_slide_r6_20260719/result.json`.
 
+## Session log - 2026-07-19 05:55-07:05 UTC (Round 7 recovery reach)
+
+- The existing `sim-dev-g4b` was started in `us-central1-b`, the container
+  restarted, and the probe was run once with `--push-distance 0.26`.
+- Isaac process time was approximately `402 s`; VM was exported and stopped
+  after the result. No VM is left running.
+- The run stopped at `stroke2_pregrasp_above` after a first-stroke movement of
+  `+0.098265 m`; final measured position/orientation errors were `0.056190 m`
+  and `0.122625 rad`. No pinch or carry was attempted. Raw JSON:
+  `outputs/task3_stage1_tray_slide_r7_20260719/result.json`.
+
 ## Outstanding blockers (as of 2026-07-16)
 
 1. **GCP GPU quota not requested** — `NVIDIA_L4_GPUS` / `NVIDIA_A100_GPUS` = 0
