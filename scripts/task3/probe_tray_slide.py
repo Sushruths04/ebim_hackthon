@@ -454,12 +454,14 @@ def _run_edge_pinch(
     *,
     arms: Any,
     robot: Any,
+    adapter: Any,
     reach: Any,
     ramp_horizontal: Any,
     sim_tick: Any,
     log: Any,
     log_reach_failure: Any,
     tray_pose_fn: Any,
+    hold_anchor_box: dict[str, tuple[float, float] | None],
     pinch_target_xy: tuple[float, float],
     tray_z: float,
     dt: float,
@@ -477,6 +479,17 @@ def _run_edge_pinch(
     midpoint again immediately before closing (so a miss is diagnosable)
     -> ``grasp()`` -> ``lift()`` if holding. Returns
     ``(passed, failed_phase, info)``.
+
+    r3t2 measured the base drifting substantially (yaw off south-facing by
+    ~0.46 rad, x by 0.25 m) during the pregrasp_out reach -- the stale
+    ``hold_anchor`` inherited from "at_north_stance" was not strong enough
+    to hold against that reach's reaction torque, and the subsequent
+    reach-in then had to fight that drift AND its own reaction torque
+    against the SAME stale anchor, leaving the preclose fingertip midpoint
+    8-13 cm off the lip target on every axis. Re-anchoring to wherever the
+    base actually is after each of the two big reaches (mirroring the
+    push phase's per-stroke re-anchor pattern) gives each subsequent step
+    a stable, un-contested reference instead of a stale one.
     """
     edge_pinch_quat = _quaternion_from_rpy(EDGE_PINCH_ROLL_RAD, 0.0, 0.0)
     lip_xy = (
@@ -494,6 +507,8 @@ def _run_edge_pinch(
             "edge_pregrasp_out", "right", pregrasp_out, edge_pinch_quat
         )
         return False, "edge_pregrasp_out", {}
+    pose = adapter.pose()
+    hold_anchor_box["value"] = (pose.x, pose.y)
 
     fingertip_mid = _measure_fingertip_midpoint(robot, "right")
     log(
@@ -503,6 +518,7 @@ def _run_edge_pinch(
         fingertip_midpoint=(
             [round(v, 6) for v in fingertip_mid] if fingertip_mid else None
         ),
+        base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
     )
     if fingertip_mid is None:
         return False, "edge_fingertip_measurement", {}
@@ -527,7 +543,14 @@ def _run_edge_pinch(
         args.reach_in_seconds,
         detect_contact=True,
     )
-    log("edge_reach_in", ok=True, **reach_in_info)
+    pose = adapter.pose()
+    hold_anchor_box["value"] = (pose.x, pose.y)
+    log(
+        "edge_reach_in",
+        ok=True,
+        **reach_in_info,
+        base=[round(pose.x, 4), round(pose.y, 4), round(pose.yaw, 4)],
+    )
 
     fingertip_mid_preclose = _measure_fingertip_midpoint(robot, "right")
     log(
@@ -1196,12 +1219,14 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
     edge_passed, edge_failed_phase, _edge_info = _run_edge_pinch(
         arms=arms,
         robot=robot,
+        adapter=adapter,
         reach=reach,
         ramp_horizontal=ramp_horizontal,
         sim_tick=sim_tick,
         log=log,
         log_reach_failure=log_reach_failure,
         tray_pose_fn=tray_pose,
+        hold_anchor_box=hold_anchor_box,
         pinch_target_xy=pinch_target_xy,
         tray_z=tray_now[2],
         dt=sim.cfg.dt,
