@@ -199,11 +199,20 @@ class RunRecorder:
             import numpy as np
             from PIL import Image
 
-            import omni.replicator.core as rep
-
-            rep.orchestrator.step()
+            # Pull-based read of the LATEST rendered RGB frame -- do NOT call
+            # rep.orchestrator.step() here. The proven working capture on this
+            # VM (run_episode.py's _save_rgb_frame, which produced the 160-frame
+            # episode.gif) reads the annotator directly: with enable_cameras and
+            # an attached render_product, the runner's own per-step sim.step()
+            # renders each frame, so get_data() already holds fresh pixels.
+            # Calling orchestrator.step() here instead returned an EMPTY array
+            # in the isaac-lab-2.3.2 container, so every frame was silently
+            # skipped by the size guard below (0 frames after 50 min).
             data = np.asarray(self._annotator.get_data())
-            if data.size == 0:
+            # First render or two after attach can be empty/incomplete -- skip
+            # (retried at the next capture) rather than crash. Same validity
+            # check as the proven run_episode.py path.
+            if data.ndim != 3 or data.shape[-1] < 3 or data.size == 0:
                 return
             if data.shape[-1] == 4:
                 data = data[..., :3]
