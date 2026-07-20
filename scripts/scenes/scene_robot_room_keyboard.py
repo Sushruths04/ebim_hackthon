@@ -289,9 +289,11 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
         },
         "spine": {
             "joint_names_expr": ["franka_spine_vertical_joint"],
-            "stiffness": 5000.0,
-            "damping": 500.0,
-            "effort_limit_sim": 200.0,
+            # The spine lifts both FR3 arms; 200 N saturated before moving.
+            # Preserve the drive strength authored in the robot USD.
+            "stiffness": 50000.0,
+            "damping": 5000.0,
+            "effort_limit_sim": 500000.0,
         },
         "arms": {
             "joint_names_expr": [".*fr3v2_joint[1-7]"],
@@ -301,18 +303,26 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
         },
         "grippers": {
             # mobile_fr3_duo_v0_2.usd gripper joints: <side>_gripper_joint
-            # drives the linkage (<side>_left_2 / _right_1 / _right_2 /
-            # _support joints). No joint is named *finger* in this USD.
+            # drives each closed-loop linkage. The remaining linkage joints
+            # must stay passive; position-driving every joint fights the
+            # mechanism constraints.
             "joint_names_expr": [
-                ".*gripper_joint",
+                "left_gripper_joint",
+                "right_gripper_joint",
+            ],
+            "stiffness": 200.0,
+            "damping": 20.0,
+            "effort_limit_sim": 50.0,
+        },
+        "passive_gripper_linkage": {
+            "joint_names_expr": [
                 ".*_left_2_joint",
                 ".*_right_1_joint",
                 ".*_right_2_joint",
                 ".*_support_joint",
             ],
-            "stiffness": 200.0,
-            "damping": 20.0,
-            "effort_limit_sim": 50.0,
+            "stiffness": 0.0,
+            "damping": 0.0,
         },
     }
 
@@ -1720,7 +1730,7 @@ def _run_keyboard_control_app(
             position_min=(-1.5, -1.5, -0.5),
             position_max=(1.5, 1.5, 2.5),
             gripper_min=0.0,
-            gripper_max=0.04,
+            gripper_max=1.0,
             spine_min=0.0,
             spine_max=0.85,
         ),

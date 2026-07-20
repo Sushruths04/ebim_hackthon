@@ -19,6 +19,7 @@ from task3_autonomy.navigation import (
     base_twist_toward,
     pose_reached,
     route_via_door,
+    wrap_to_pi,
 )
 
 # Intermediate waypoints only shape the route around the wall partition, so
@@ -124,9 +125,7 @@ class NavigateTo:
         if self._done:
             return 0.0, 0.0, True
         if self._waypoints is None:
-            self._waypoints = route_via_door(
-                (pose.x, pose.y), self.target_xy
-            )
+            self._waypoints = route_via_door((pose.x, pose.y), self.target_xy)
             self._waypoint_index = 1 if len(self._waypoints) > 1 else 0
 
         while self._waypoint_index < len(self._waypoints) - 1:
@@ -165,6 +164,42 @@ class NavigateTo:
         return vx, vy, False
 
 
+class RotateTo:
+    """Rotate the base in place to an absolute world yaw.
+
+    compute(pose) -> (wz_cmd, done). Caller must pass wz_cmd through
+    TmrBaseAdapter.apply_twist(0, 0, wz_cmd). Rotation sweeps the robot's
+    full footprint (tucked nose 0.78 m / ready arms 0.95 m), so only
+    rotate at spots with that much radial clearance.
+    """
+
+    def __init__(
+        self,
+        target_yaw: float,
+        *,
+        max_yaw_rate: float = 0.5,
+        yaw_kp: float = 1.5,
+        yaw_tolerance_rad: float = math.radians(2.0),
+    ) -> None:
+        self.target_yaw = target_yaw
+        self.max_yaw_rate = max_yaw_rate
+        self.yaw_kp = yaw_kp
+        self.yaw_tolerance_rad = yaw_tolerance_rad
+        self._done = False
+
+    def compute(self, pose: Pose2D) -> tuple[float, bool]:
+        if self._done:
+            return 0.0, True
+        error = wrap_to_pi(self.target_yaw - pose.yaw)
+        if abs(error) <= self.yaw_tolerance_rad:
+            self._done = True
+            return 0.0, True
+        wz = max(
+            -self.max_yaw_rate, min(self.max_yaw_rate, self.yaw_kp * error)
+        )
+        return wz, False
+
+
 class TmrBaseAdapter:
     """Isaac-side shim: body twist -> TMR steering/wheel joint targets.
 
@@ -183,9 +218,8 @@ class TmrBaseAdapter:
     DRIVE_DAMPING = 500.0
 
     def __init__(self, robot, *, num_envs: int, device: str) -> None:
-        import torch
-
         import tmr_base_control as base
+        import torch
 
         self._base = base
         self.robot = robot
@@ -198,9 +232,12 @@ class TmrBaseAdapter:
 
         sim_damping = getattr(robot.data, "joint_damping", None)
         if sim_damping is not None:
+            damping_values = [
+                round(float(sim_damping[0, i]), 3) for i in self.drive_ids
+            ]
             print(
                 "TmrBaseAdapter: sim wheel damping before override: "
-                f"{[round(float(sim_damping[0, i]), 3) for i in self.drive_ids]}",
+                f"{damping_values}",
                 flush=True,
             )
         robot.write_joint_damping_to_sim(
@@ -224,9 +261,16 @@ class TmrBaseAdapter:
             self._base.get_root_yaw(self.robot),
         )
 
-    def apply_twist(self, vx: float, vy: float) -> None:
+    def apply_twist(self, vx: float, vy: float, wz_cmd: float = 0.0) -> None:
+        """Body twist -> wheel targets. Nonzero wz_cmd rotates in place
+        (heading hold re-anchors to wherever the rotation ends)."""
         wz, self._hold_yaw = self._base.compensate_yaw_rate(
-            self.robot, vx, vy, 0.0, self._hold_yaw, manual_rotation=False
+            self.robot,
+            vx,
+            vy,
+            wz_cmd,
+            self._hold_yaw,
+            manual_rotation=abs(wz_cmd) > 1.0e-4,
         )
         steering_targets, drive_targets = self._base.compute_drive_targets(
             self.robot,

@@ -92,13 +92,19 @@ def test_robot_actuator_patterns_match_tmr_base_control():
     assert actuators["spine"]["joint_names_expr"] == [
         "franka_spine_vertical_joint",
     ]
+    assert actuators["spine"]["stiffness"] == 50000.0
+    assert actuators["spine"]["effort_limit_sim"] == 500000.0
     assert actuators["grippers"]["joint_names_expr"] == [
-        ".*gripper_joint",
+        "left_gripper_joint",
+        "right_gripper_joint",
+    ]
+    assert actuators["passive_gripper_linkage"]["joint_names_expr"] == [
         ".*_left_2_joint",
         ".*_right_1_joint",
         ".*_right_2_joint",
         ".*_support_joint",
     ]
+    assert actuators["passive_gripper_linkage"]["stiffness"] == 0.0
     assert "effort_limit" not in actuators["steering_joints"]
     assert "effort_limit" not in actuators["arms"]
     assert "effort_limit" not in actuators["grippers"]

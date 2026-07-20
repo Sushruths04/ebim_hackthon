@@ -149,3 +149,40 @@ Lesson: in cluttered scenes, navigation failures are usually geometry
 budget failures — measure the robot's true swept extents per pose and
 the room's true corridor widths, then plan with explicit margins, instead
 of tuning controllers against symptoms.
+
+## 2026-07-17 (night) — Codex takeover: reach boundary, real gripper, and live grasp calibration
+
+Goal: resume the interrupted Phase 2 work without losing provenance, obtain
+one real grasp/lift, then run the >=8/10 reliability gate.
+
+Work completed so far: moved Claude's uncommitted changes onto
+`agent/codex-task3-grasp`; replaced the draft direct-Lula world-pose path with
+the required one-step `TeleopCommand`/`CartesianTargetTracker` boundary; added
+measured pose errors, explicit timeouts, absolute-world target reissue, and CPU
+tests. Inspection of the robot USD proved that the actuated ChangingTek joints
+are `left_gripper_joint`/`right_gripper_joint` (0..1 rad), while the FR3 finger
+joints are passive linkage/mimic joints. The spine is a 0..0.85 m prismatic
+joint whose authored drive is 50k stiffness / 5k damping / 500k max force; the
+prior 200 N actuator override could not lift both arms. Runtime mappings and
+actuator configuration were corrected. Current focused regression gate is
+436/436 passing with Ruff and compile clean.
+
+Live evidence: Run 7 reached the stance but failed pregrasp because the wheel
+target remained nonzero and the arm goal was stored base-relative. Run 8 fixed
+pregrasp by stopping navigation targets and reissuing the world goal each tick,
+then stopped at first cup contact. Run 9 allowed a bounded physical-contact
+residual and reached gripper closure, but the motor measured 0.9667 rad (fully
+closed, no cup trapped); the cup moved +0.07 m in Y and rose only 0.0318 m.
+Its compact 50-frame GIF is 8.9 MB under
+`outputs/task3_verify_grasp_skip9_live/`. Run 10 changes only the final Y
+offset by +0.06 m and is active at time of this entry.
+
+WebRTC diagnosis was kept separate from manipulation: Isaac reported the
+server started and bound TCP 49100, but the old VPN `/32` prevented ingress.
+After the owner disconnected VPN, the exact allowlist was replaced with
+`92.209.223.203/32`; a client-network TCP probe to `34.61.210.0:49100` then
+passed. No wider CIDR was opened.
+
+Lesson: do not tune against names or assumed conventions. Read the USD's real
+joint schemas and drive limits, and require measured state at every gate. Keep
+calibration runs single-variable so their outcome remains attributable.
