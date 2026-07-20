@@ -974,6 +974,15 @@ def parse_args() -> argparse.Namespace:
         default=0.16,
         help="North travel per press-drag stroke; short strokes reduce fist slip.",
     )
+    parser.add_argument(
+        "--max-push-strokes",
+        type=int,
+        default=MAX_PUSH_STROKES,
+        help=(
+            "Maximum independently regripped physical push strokes; "
+            f"must be in [1, {MAX_PUSH_STROKES}]."
+        ),
+    )
     parser.add_argument("--descend-seconds", type=float, default=2.0)
     parser.add_argument("--drag-seconds", type=float, default=5.0)
     parser.add_argument("--raise-seconds", type=float, default=2.0)
@@ -993,6 +1002,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    if not 1 <= args.max_push_strokes <= MAX_PUSH_STROKES:
+        raise ValueError(
+            f"--max-push-strokes must be in [1, {MAX_PUSH_STROKES}]"
+        )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     from isaaclab.app import AppLauncher
 
@@ -1354,7 +1367,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         # MAX_PUSH_STROKES times, re-reading the live tray pose every time and
         # stopping as soon as the measured overhang gate is met.
         strokes_used = 0
-        for stroke_index in range(MAX_PUSH_STROKES):
+        for stroke_index in range(args.max_push_strokes):
             strokes_used = stroke_index + 1
             gate_met, failure_phase = _run_push_stroke(
                 stroke_index,
