@@ -293,6 +293,16 @@ def parse_args() -> argparse.Namespace:
         help="Half-separation between coordinated cup grippers in Y.",
     )
     parser.add_argument(
+        "--cup-right-y-offset",
+        type=float,
+        help="Optional live-cup Y offset for the right bimanual target.",
+    )
+    parser.add_argument(
+        "--cup-left-y-offset",
+        type=float,
+        help="Optional live-cup Y offset for the left bimanual target.",
+    )
+    parser.add_argument(
         "--tray-orientation",
         choices=("top_down", "edge_y", "edge_x"),
         default="top_down",
@@ -980,17 +990,32 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         x_offset = (
             args.tray_x_offset if tray_bimanual else args.cup_rim_x_offset
         )
-        y_separation = (
-            args.tray_y_separation if tray_bimanual else args.cup_y_separation
+        right_y_offset = (
+            args.tray_y_separation
+            if tray_bimanual
+            else (
+                args.cup_right_y_offset
+                if args.cup_right_y_offset is not None
+                else args.cup_y_separation
+            )
+        )
+        left_y_offset = (
+            -args.tray_y_separation
+            if tray_bimanual
+            else (
+                args.cup_left_y_offset
+                if args.cup_left_y_offset is not None
+                else -args.cup_y_separation
+            )
         )
         right_pregrasp = (
             approach_start[0] + x_offset,
-            approach_start[1] + y_separation,
+            approach_start[1] + right_y_offset,
             PREGRASP_Z,
         )
         left_pregrasp = (
             approach_start[0] + x_offset,
-            approach_start[1] - y_separation,
+            approach_start[1] + left_y_offset,
             PREGRASP_Z,
         )
         arms.set_gripper("left", GRIPPER_OPEN_RAD)
@@ -1080,8 +1105,23 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         x_offset = (
             args.tray_x_offset if tray_bimanual else args.cup_rim_x_offset
         )
-        y_separation = (
-            args.tray_y_separation if tray_bimanual else args.cup_y_separation
+        right_y_offset = (
+            args.tray_y_separation
+            if tray_bimanual
+            else (
+                args.cup_right_y_offset
+                if args.cup_right_y_offset is not None
+                else args.cup_y_separation
+            )
+        )
+        left_y_offset = (
+            -args.tray_y_separation
+            if tray_bimanual
+            else (
+                args.cup_left_y_offset
+                if args.cup_left_y_offset is not None
+                else -args.cup_y_separation
+            )
         )
         z_offset = (
             args.tray_z_offset
@@ -1090,12 +1130,12 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         )
         right_grasp = (
             cup_before_descend[0] + x_offset,
-            cup_before_descend[1] + y_separation,
+            cup_before_descend[1] + right_y_offset,
             cup_before_descend[2] + z_offset,
         )
         left_grasp = (
             cup_before_descend[0] + x_offset,
-            cup_before_descend[1] - y_separation,
+            cup_before_descend[1] + left_y_offset,
             cup_before_descend[2] + z_offset,
         )
         grasp = right_grasp
