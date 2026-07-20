@@ -18,6 +18,7 @@ from verify_grasp_lift import (  # noqa: E402
     GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
     cup_grasp_target,
     object_follows_end_effector,
+    object_grasp_target,
 )
 
 
@@ -31,6 +32,17 @@ def test_cup_grasp_target_uses_live_pose_and_explicit_offsets():
     assert target == pytest.approx(
         (-4.144, -1.677, 0.777 + GRASP_HEIGHT_ABOVE_CUP_ORIGIN)
     )
+
+
+def test_object_grasp_target_uses_live_pose_and_explicit_offsets():
+    target = object_grasp_target(
+        (-4.298, -1.500, 0.746),
+        x_offset=0.04,
+        y_offset=0.055,
+        z_offset=0.04,
+    )
+
+    assert target == pytest.approx((-4.258, -1.445, 0.786))
 
 
 def test_transport_route_is_importable_from_package_namespace():

@@ -80,6 +80,21 @@ def cup_grasp_target(
     )
 
 
+def object_grasp_target(
+    object_position: tuple[float, float, float],
+    *,
+    x_offset: float,
+    y_offset: float,
+    z_offset: float,
+) -> tuple[float, float, float]:
+    """Return a live non-cup grasp target without changing scene state."""
+    return (
+        object_position[0] + x_offset,
+        object_position[1] + y_offset,
+        object_position[2] + z_offset,
+    )
+
+
 def object_follows_end_effector(
     object_position: tuple[float, float, float],
     end_effector_position: tuple[float, float, float],
@@ -230,6 +245,24 @@ def parse_args() -> argparse.Namespace:
             "Yaw applied to the top-down cup grasp. A quarter-turn changes "
             "the parallel-jaw closing axis without altering the scene."
         ),
+    )
+    parser.add_argument(
+        "--object-grasp-x-offset",
+        type=float,
+        default=0.0,
+        help="Final non-cup grasp X offset from the live object center in m.",
+    )
+    parser.add_argument(
+        "--object-grasp-y-offset",
+        type=float,
+        default=0.0,
+        help="Final non-cup grasp Y offset from the live object center in m.",
+    )
+    parser.add_argument(
+        "--object-grasp-z-offset",
+        type=float,
+        default=0.075,
+        help="Final non-cup grasp Z offset from the live object center in m.",
     )
     parser.add_argument(
         "--grasp-ramp-seconds",
@@ -397,6 +430,18 @@ def main() -> None:
         )
     if not -0.05 <= args.cup_grasp_z_offset <= 0.05:
         raise ValueError("--cup-grasp-z-offset must be within [-0.05, 0.05]")
+    if not -0.15 <= args.object_grasp_x_offset <= 0.15:
+        raise ValueError(
+            "--object-grasp-x-offset must be within [-0.15, 0.15]"
+        )
+    if not -0.15 <= args.object_grasp_y_offset <= 0.15:
+        raise ValueError(
+            "--object-grasp-y-offset must be within [-0.15, 0.15]"
+        )
+    if not -0.05 <= args.object_grasp_z_offset <= 0.10:
+        raise ValueError(
+            "--object-grasp-z-offset must be within [-0.05, 0.10]"
+        )
     if args.close_effort_scale is not None and not (
         0.0 < args.close_effort_scale <= 1.0
     ):
@@ -1161,10 +1206,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             grasp_z_offset=args.cup_grasp_z_offset,
         )
     else:
-        grasp = (
-            cup_before_descend[0],
-            cup_before_descend[1],
-            cup_before_descend[2] + 0.075,
+        grasp = object_grasp_target(
+            cup_before_descend,
+            x_offset=args.object_grasp_x_offset,
+            y_offset=args.object_grasp_y_offset,
+            z_offset=args.object_grasp_z_offset,
         )
     if bimanual_grasp:
         strict_reach = servo_bimanual(
