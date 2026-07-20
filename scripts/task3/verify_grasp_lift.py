@@ -276,10 +276,21 @@ def parse_args() -> argparse.Namespace:
         help="Use coordinated left/right side-rim targets for the tray.",
     )
     parser.add_argument(
+        "--bimanual-cup",
+        action="store_true",
+        help="Use both unmodified grippers to cage the cup under PhysX.",
+    )
+    parser.add_argument(
         "--tray-y-separation",
         type=float,
         default=0.10,
         help="Half-separation between coordinated tray grippers in Y.",
+    )
+    parser.add_argument(
+        "--cup-y-separation",
+        type=float,
+        default=0.055,
+        help="Half-separation between coordinated cup grippers in Y.",
     )
     parser.add_argument(
         "--tray-orientation",
@@ -725,6 +736,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         print("GRASPDBG " + json.dumps(entry, sort_keys=True), flush=True)
 
     held_pose_box: list[Any] = [None]
+    held_left_pose_box: list[Any] = [None]
 
     def drive_to(target_xy, *, max_speed: float, budget_s: float) -> bool:
         skill = NavigateTo(target_xy, max_linear_mps=max_speed)
@@ -743,6 +755,13 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
                         held_pose.position,
                         held_pose.orientation_wxyz,
                     )
+                    if held_left_pose_box[0] is not None:
+                        held_left_pose = held_left_pose_box[0]
+                        arms.set_arm_target_relative(
+                            "left",
+                            held_left_pose.position,
+                            held_left_pose.orientation_wxyz,
+                        )
                 except ValueError as error:
                     adapter.apply_twist(0.0, 0.0)
                     sim_tick()
@@ -952,18 +971,26 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         pregrasp_xy = (approach_start[0], approach_start[1])
     pregrasp = (pregrasp_xy[0], pregrasp_xy[1], PREGRASP_Z)
     tray_bimanual = args.object_name == "simple_tray" and args.bimanual_tray
-    if tray_bimanual:
+    cup_bimanual = args.object_name == "cup" and args.bimanual_cup
+    bimanual_grasp = tray_bimanual or cup_bimanual
+    if bimanual_grasp:
         # The two grippers approach the tray's north/south side rims from the
         # proven east-facing stance. Both targets are derived from the live
         # PhysX tray center, never from a stale USD xform.
+        x_offset = (
+            args.tray_x_offset if tray_bimanual else args.cup_rim_x_offset
+        )
+        y_separation = (
+            args.tray_y_separation if tray_bimanual else args.cup_y_separation
+        )
         right_pregrasp = (
-            approach_start[0] + args.tray_x_offset,
-            approach_start[1] + args.tray_y_separation,
+            approach_start[0] + x_offset,
+            approach_start[1] + y_separation,
             PREGRASP_Z,
         )
         left_pregrasp = (
-            approach_start[0] + args.tray_x_offset,
-            approach_start[1] - args.tray_y_separation,
+            approach_start[0] + x_offset,
+            approach_start[1] - y_separation,
             PREGRASP_Z,
         )
         arms.set_gripper("left", GRIPPER_OPEN_RAD)
@@ -996,7 +1023,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     if args.probe_gripper:
         arms.set_gripper("right", GRIPPER_CLOSED_RAD)
-        if tray_bimanual:
+        if bimanual_grasp:
             arms.set_gripper("left", GRIPPER_CLOSED_RAD)
         for _ in range(round(1.5 / sim.cfg.dt)):
             arms.command()
@@ -1012,7 +1039,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         free_open_ok = arms.release(
             "right", step=sim_tick, dt=sim.cfg.dt, timeout_s=1.5
         )
-        if tray_bimanual:
+        if bimanual_grasp:
             left_close_position = arms.gripper_position("left")
             left_close_ok = (
                 abs(left_close_position - GRIPPER_CLOSED_RAD) <= 0.05
@@ -1049,16 +1076,27 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     # --- Phase 3: descend to the rim and close ------------------------
     cup_before_descend = cup_position()
     rim_before_descend = rim_position() if args.add_tray_grasp_rim else None
-    if tray_bimanual:
+    if bimanual_grasp:
+        x_offset = (
+            args.tray_x_offset if tray_bimanual else args.cup_rim_x_offset
+        )
+        y_separation = (
+            args.tray_y_separation if tray_bimanual else args.cup_y_separation
+        )
+        z_offset = (
+            args.tray_z_offset
+            if tray_bimanual
+            else GRASP_HEIGHT_ABOVE_CUP_ORIGIN + args.cup_grasp_z_offset
+        )
         right_grasp = (
-            cup_before_descend[0] + args.tray_x_offset,
-            cup_before_descend[1] + args.tray_y_separation,
-            cup_before_descend[2] + args.tray_z_offset,
+            cup_before_descend[0] + x_offset,
+            cup_before_descend[1] + y_separation,
+            cup_before_descend[2] + z_offset,
         )
         left_grasp = (
-            cup_before_descend[0] + args.tray_x_offset,
-            cup_before_descend[1] - args.tray_y_separation,
-            cup_before_descend[2] + args.tray_z_offset,
+            cup_before_descend[0] + x_offset,
+            cup_before_descend[1] - y_separation,
+            cup_before_descend[2] + z_offset,
         )
         grasp = right_grasp
     elif args.object_name == "simple_tray" and rim_before_descend is not None:
@@ -1088,7 +1126,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             cup_before_descend[1],
             cup_before_descend[2] + 0.075,
         )
-    if tray_bimanual:
+    if bimanual_grasp:
         strict_reach = servo_bimanual(
             right_grasp,
             left_grasp,
@@ -1136,7 +1174,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             render_product,
             sim,
         )
-    if args.transport_to_dining and args.object_name == "cup":
+    if (
+        args.transport_to_dining
+        and args.object_name == "cup"
+        and not cup_bimanual
+    ):
         # The full-nav approach shoves the cup a few cm during descend
         # contact (r12: +7.6 cm north) while the north grasp-reach undershoots
         # ~5 cm, leaving the fingers ~7 cm SOUTH of the cup so close() catches
@@ -1157,11 +1199,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             position_error_m=round(arms.position_error("right", grasp), 4),
             cup=[round(v, 3) for v in live_cup],
         )
-    if tray_bimanual:
+    if bimanual_grasp:
         right_start = arms.gripper_position("right")
         left_start = arms.gripper_position("left")
-        close_ticks = math.ceil(1.5 / sim.cfg.dt)
-        ramp_ticks = math.ceil(1.0 / sim.cfg.dt)
+        close_ticks = math.ceil(args.grasp_settle_seconds / sim.cfg.dt)
+        ramp_ticks = math.ceil(args.grasp_ramp_seconds / sim.cfg.dt)
         for close_tick in range(close_ticks):
             arms.set_gripper(
                 "right",
@@ -1212,7 +1254,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
 
     # --- Phase 4: lift and hold ---------------------------------------
     right_pose = arms.ee_world_poses()[1]
-    if not tray_bimanual:
+    if not bimanual_grasp:
         lift_ok = arms.lift(
             "right",
             max(0.0, LIFT_Z - right_pose[0][2]),
@@ -1263,6 +1305,8 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     log_phase("lift", lift_ok)
     hold_pose = arms.ee_world_poses()[1]
     held_pose_box[0] = arms.arm_pose_relative("right")
+    if bimanual_grasp:
+        held_left_pose_box[0] = arms.arm_pose_relative("left")
     held_ticks = 0
     max_held_ticks = 0
     needed_ticks = int(args.hold_seconds / sim.cfg.dt)
@@ -1312,6 +1356,8 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         # The drive loop reissues it in the moving base frame, so the gripper
         # and physically held object travel with the base through the room.
         held_pose_box[0] = arms.arm_pose_relative("right")
+        if bimanual_grasp:
+            held_left_pose_box[0] = arms.arm_pose_relative("left")
         base_hold_anchor = None
         from task3_autonomy.navigation import route_via_door
 
