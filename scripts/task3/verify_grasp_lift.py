@@ -223,6 +223,15 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--cup-grasp-yaw-rad",
+        type=float,
+        default=0.0,
+        help=(
+            "Yaw applied to the top-down cup grasp. A quarter-turn changes "
+            "the parallel-jaw closing axis without altering the scene."
+        ),
+    )
+    parser.add_argument(
         "--grasp-ramp-seconds",
         type=float,
         default=1.0,
@@ -906,7 +915,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     approach_start = cup_position()
 
     # --- Phase 2: untuck to IK control, pregrasp above the cup ---------
-    top_down = _quaternion_from_rpy(math.pi, 0.0, 0.0)
+    top_down = _quaternion_from_rpy(
+        math.pi,
+        0.0,
+        args.cup_grasp_yaw_rad if args.object_name == "cup" else 0.0,
+    )
     if args.tray_orientation == "edge_y":
         # Rotate the wrist so the fingers close across the thin tray edge,
         # rather than descending into the flat tray surface.
