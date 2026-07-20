@@ -703,7 +703,11 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
             if args.transport_to_dining and held_pose_box[0] is not None:
                 held_pose = held_pose_box[0]
                 try:
-                    arms.set_arm_target("right", held_pose[0], held_pose[1])
+                    arms.set_arm_target_relative(
+                        "right",
+                        held_pose.position,
+                        held_pose.orientation_wxyz,
+                    )
                 except ValueError as error:
                     adapter.apply_twist(0.0, 0.0)
                     sim_tick()
@@ -1219,7 +1223,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         )
     log_phase("lift", lift_ok)
     hold_pose = arms.ee_world_poses()[1]
-    held_pose_box[0] = hold_pose
+    held_pose_box[0] = arms.arm_pose_relative("right")
     held_ticks = 0
     max_held_ticks = 0
     needed_ticks = int(args.hold_seconds / sim.cfg.dt)
@@ -1255,9 +1259,10 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     )
 
     if passed and args.transport_to_dining:
-        # Release the local arm-position hold before driving.  The held pose
-        # is reissued in world coordinates while the base follows the tested
-        # door route, so the object remains coupled by real gripper contact.
+        # Re-sample the attained carry pose once the hold gate has completed.
+        # The drive loop reissues it in the moving base frame, so the gripper
+        # and physically held object travel with the base through the room.
+        held_pose_box[0] = arms.arm_pose_relative("right")
         base_hold_anchor = None
         from task3_autonomy.navigation import route_via_door
 

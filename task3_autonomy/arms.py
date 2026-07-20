@@ -312,6 +312,20 @@ class DualArmController:
             (tuple(right[0]), tuple(right[1])),
         )
 
+    def arm_pose_relative(self, side: str):
+        """Return a measured end-effector pose in the robot-base frame."""
+        from teleop_targets import Pose, pose_world_to_base
+
+        if side not in ("left", "right"):
+            raise ValueError("side must be 'left' or 'right'")
+        pose = self.ee_world_poses()[0 if side == "left" else 1]
+        root_position, root_orientation = self._root_pose(self.robot)
+        return pose_world_to_base(
+            Pose(tuple(pose[0]), tuple(pose[1])),
+            root_position,
+            root_orientation,
+        )
+
     def set_arm_target(self, side: str, position, quat_wxyz) -> None:
         """Apply one ``TeleopCommand`` that sets an absolute world target."""
         from teleop_targets import Pose, pose_world_to_base
@@ -346,6 +360,25 @@ class DualArmController:
             raise ValueError(
                 "world target lies outside CartesianTargetTracker limits"
             )
+
+    def set_arm_target_relative(self, side: str, position, quat_wxyz) -> None:
+        """Set an arm target expressed in the current robot-base frame.
+
+        This is the carry counterpart to :meth:`set_arm_target`: a held
+        object should move with the robot base rather than leave its gripper
+        target fixed in the world while the robot drives through the room.
+        """
+        from teleop_targets import Pose
+
+        root_position, root_orientation = self._root_pose(self.robot)
+        world_target = self._pose_base_to_world(
+            Pose(tuple(position), tuple(quat_wxyz)),
+            root_position,
+            root_orientation,
+        )
+        self.set_arm_target(
+            side, world_target.position, world_target.orientation_wxyz
+        )
 
     def set_gripper(self, side: str, position_rad: float) -> None:
         from teleop_commands import TeleopCommand
