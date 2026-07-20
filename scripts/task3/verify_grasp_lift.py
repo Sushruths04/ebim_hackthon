@@ -743,15 +743,18 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
     def servo_arm(
         side, position, quat, *, budget_s: float, tol_m: float = 0.02
     ) -> bool:
-        return arms.reach(
-            side,
-            position,
-            quat,
-            step=sim_tick,
-            dt=sim.cfg.dt,
-            timeout_s=budget_s,
-            position_tolerance_m=tol_m,
-        )
+        try:
+            return arms.reach(
+                side,
+                position,
+                quat,
+                step=sim_tick,
+                dt=sim.cfg.dt,
+                timeout_s=budget_s,
+                position_tolerance_m=tol_m,
+            )
+        except ValueError:
+            return False
 
     def servo_bimanual(
         right_position,

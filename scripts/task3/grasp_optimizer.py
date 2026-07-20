@@ -85,7 +85,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=Path("/workspace/isaaclab/isaaclab.sh"),
     )
-    parser.add_argument("--timeout-seconds", type=float, default=900.0)
+    parser.add_argument("--timeout-seconds", type=float, default=1200.0)
     return parser.parse_args()
 
 
