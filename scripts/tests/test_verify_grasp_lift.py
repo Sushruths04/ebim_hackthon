@@ -17,6 +17,7 @@ sys.path.insert(0, str(REPO_ROOT / "scripts" / "task3"))
 from verify_grasp_lift import (  # noqa: E402
     GRASP_HEIGHT_ABOVE_CUP_ORIGIN,
     cup_grasp_target,
+    object_follows_end_effector,
 )
 
 
@@ -36,3 +37,25 @@ def test_transport_route_is_importable_from_package_namespace():
     from task3_autonomy.navigation import route_via_door
 
     assert callable(route_via_door)
+
+
+def test_object_follows_end_effector_rejects_counter_left_behind():
+    assert object_follows_end_effector(
+        (-4.10, -1.60, 0.99),
+        (-4.08, -1.56, 1.06),
+        max_distance_m=0.18,
+    )
+    assert not object_follows_end_effector(
+        (-4.22, -1.36, 0.78),
+        (-4.07, -1.56, 1.07),
+        max_distance_m=0.18,
+    )
+
+
+def test_object_follows_end_effector_requires_positive_threshold():
+    with pytest.raises(ValueError, match="positive"):
+        object_follows_end_effector(
+            (0.0, 0.0, 0.0),
+            (0.0, 0.0, 0.0),
+            max_distance_m=0.0,
+        )

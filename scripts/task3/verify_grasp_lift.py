@@ -80,6 +80,18 @@ def cup_grasp_target(
     )
 
 
+def object_follows_end_effector(
+    object_position: tuple[float, float, float],
+    end_effector_position: tuple[float, float, float],
+    *,
+    max_distance_m: float,
+) -> bool:
+    """Return whether the object remains physically coupled to the gripper."""
+    if max_distance_m <= 0.0:
+        raise ValueError("max_distance_m must be positive")
+    return math.dist(object_position, end_effector_position) <= max_distance_m
+
+
 def add_tray_grasp_rim(stage: Any, root_path: str) -> str:
     """Add a physical rim fixture to the tray's existing rigid body.
 
@@ -296,6 +308,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-lift-m", type=float, default=0.08)
     parser.add_argument("--hold-seconds", type=float, default=3.0)
     parser.add_argument(
+        "--max-held-object-distance-m",
+        type=float,
+        default=0.18,
+        help=(
+            "Maximum object-to-gripper distance during hold. This rejects "
+            "objects left on the counter after a transient lift."
+        ),
+    )
+    parser.add_argument(
         "--hold-recovery-seconds",
         type=float,
         default=8.0,
@@ -326,10 +347,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    if args.hold_seconds <= 0.0 or args.hold_recovery_seconds < 0.0:
+    if (
+        args.hold_seconds <= 0.0
+        or args.hold_recovery_seconds < 0.0
+        or args.max_held_object_distance_m <= 0.0
+    ):
         raise ValueError(
             "--hold-seconds must be positive and "
-            "--hold-recovery-seconds non-negative"
+            "--hold-recovery-seconds non-negative; "
+            "--max-held-object-distance-m positive"
         )
     if (
         args.grasp_ramp_seconds < 0.0
@@ -1234,7 +1260,16 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         arms.set_arm_target("right", hold_pose[0], hold_pose[1])
         arms.command()
         sim_tick()
-        if cup_position()[2] - cup_start[2] >= args.min_lift_m:
+        object_position = cup_position()
+        follows_gripper = object_follows_end_effector(
+            object_position,
+            hold_pose[0],
+            max_distance_m=args.max_held_object_distance_m,
+        )
+        if (
+            object_position[2] - cup_start[2] >= args.min_lift_m
+            and follows_gripper
+        ):
             held_ticks += 1
             max_held_ticks = max(max_held_ticks, held_ticks)
             if held_ticks >= needed_ticks:
@@ -1256,6 +1291,7 @@ def _verify(  # noqa: C901 - linear simulator orchestration is phase-explicit
         lifted_m=round(lifted, 4),
         held_s=round(held_ticks * sim.cfg.dt, 2),
         max_held_s=round(max_held_ticks * sim.cfg.dt, 2),
+        object_to_ee_m=round(math.dist(cup_end, hold_pose[0]), 4),
     )
 
     if passed and args.transport_to_dining:
