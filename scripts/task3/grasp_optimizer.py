@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import time
 from dataclasses import asdict, dataclass
@@ -86,7 +87,29 @@ def parse_args() -> argparse.Namespace:
         default=Path("/workspace/isaaclab/isaaclab.sh"),
     )
     parser.add_argument("--timeout-seconds", type=float, default=1200.0)
+    parser.add_argument(
+        "--resume-dir",
+        type=Path,
+        help="Reuse the contiguous valid trial records from this prior run.",
+    )
     return parser.parse_args()
+
+
+def load_resume_trials(resume_dir: Path) -> list[dict[str, Any]]:
+    """Load the contiguous valid prefix of a prior optimizer run."""
+    records: list[dict[str, Any]] = []
+    for expected_trial, path in enumerate(
+        sorted(resume_dir.glob("trial_*.json")), start=1
+    ):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        result = record.get("result", {})
+        if record.get("trial") != expected_trial or result.get("status") in {
+            "TIMEOUT",
+            "NO_RESULT",
+        }:
+            break
+        records.append(record)
+    return records
 
 
 def run_trial(
@@ -170,8 +193,22 @@ def main() -> None:
             "optimizer."
         ) from error
 
+    if args.resume_dir is not None and not args.resume_dir.is_dir():
+        raise ValueError("--resume-dir must name an existing directory")
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    trials: list[dict[str, Any]] = []
+    trials = (
+        load_resume_trials(args.resume_dir)
+        if args.resume_dir is not None
+        else []
+    )
+    if len(trials) >= args.trials:
+        raise ValueError("--resume-dir already contains the requested trials")
+    if args.resume_dir is not None:
+        for record in trials:
+            source = args.resume_dir / f"trial_{record['trial']:03d}.json"
+            destination = args.output_dir / source.name
+            if source != destination:
+                shutil.copy2(source, destination)
 
     def objective(values: list[float]) -> float:
         parameters = GraspParameters(
@@ -198,24 +235,38 @@ def main() -> None:
         )
         return -float(record["score"])
 
+    space = [
+        Real(0.04, 0.06, name="y_offset"),
+        Real(0.5, 2.0, name="close_ramp_seconds"),
+        Real(0.05, 0.25, name="close_effort_scale"),
+    ]
+    resumed_parameters = [
+        [
+            record["parameters"]["y_offset"],
+            record["parameters"]["close_ramp_seconds"],
+            record["parameters"]["close_effort_scale"],
+        ]
+        for record in trials
+    ]
+    resumed_scores = [-float(record["score"]) for record in trials]
     result = gp_minimize(
         objective,
-        [
-            Real(0.04, 0.06, name="y_offset"),
-            Real(0.5, 2.0, name="close_ramp_seconds"),
-            Real(0.05, 0.25, name="close_effort_scale"),
-        ],
-        n_calls=args.trials,
-        n_initial_points=5,
+        space,
+        n_calls=args.trials - len(trials),
+        n_initial_points=0 if trials else 5,
+        x0=resumed_parameters or None,
+        y0=resumed_scores or None,
         random_state=42,
     )
-    best = GraspParameters(*result.x)
+    best_record = max(trials, key=lambda record: float(record["score"]))
+    best = GraspParameters(**best_record["parameters"])
     success_rate = sum(bool(trial["success"]) for trial in trials) / len(
         trials
     )
     summary = {
         "best_parameters": asdict(best),
         "best_score": round(-float(result.fun), 6),
+        "resumed_trial_count": len(resumed_parameters),
         "success_rate": success_rate,
         "trials": trials,
     }

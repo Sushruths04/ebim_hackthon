@@ -68,3 +68,30 @@ def test_run_trial_writes_trial_record(monkeypatch, tmp_path):
     persisted = json.loads((tmp_path / "trial_001.json").read_text())
     assert record["success"]
     assert persisted["parameters"]["close_effort_scale"] == 0.2
+
+
+def test_load_resume_trials_stops_before_invalid_record(tmp_path):
+    for trial, result in (
+        (1, {"cup_lift_m": 0.03}),
+        (2, {"status": "TIMEOUT"}),
+        (3, {"cup_lift_m": 0.04}),
+    ):
+        (tmp_path / f"trial_{trial:03d}.json").write_text(
+            json.dumps(
+                {
+                    "trial": trial,
+                    "parameters": {
+                        "y_offset": 0.05,
+                        "close_ramp_seconds": 1.0,
+                        "close_effort_scale": 0.2,
+                    },
+                    "result": result,
+                    "score": 0.1,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    records = optimizer.load_resume_trials(tmp_path)
+
+    assert [record["trial"] for record in records] == [1]
