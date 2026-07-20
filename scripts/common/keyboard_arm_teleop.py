@@ -8,10 +8,10 @@ from dataclasses import dataclass
 
 from teleop_commands import PoseDelta, TeleopCommand
 
-LINEAR_SPEED_MPS = 0.25
-ANGULAR_SPEED_RADPS = 0.75
-TRANSLATION_RATE_MPS = 0.3
-ROTATION_RATE_RADPS = 0.8
+LINEAR_SPEED_MPS = 1.0
+ANGULAR_SPEED_RADPS = 2.5
+TRANSLATION_RATE_MPS = 1.2
+ROTATION_RATE_RADPS = 2.5
 
 
 @dataclass(frozen=True)

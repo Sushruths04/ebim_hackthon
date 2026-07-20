@@ -153,10 +153,12 @@ def compensate_yaw_rate(
     desired_yaw: float,
     *,
     manual_rotation: bool,
+    hold_while_stopped: bool = False,
 ) -> tuple[float, float]:
     """Hold heading during translation and reset hold heading otherwise."""
     current_yaw = get_root_yaw(robot)
-    if manual_rotation or math.hypot(vx, vy) < STOP_EPS:
+    stopped = math.hypot(vx, vy) < STOP_EPS
+    if manual_rotation or (stopped and not hold_while_stopped):
         return wz, current_yaw
 
     yaw_error = _wrap_to_pi_scalar(desired_yaw - current_yaw)

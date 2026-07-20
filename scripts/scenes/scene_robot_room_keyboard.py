@@ -18,8 +18,14 @@ from pathlib import Path
 from typing import Any
 
 COMMON_DIR = Path(__file__).resolve().parents[1] / "common"
+TASK3_DIR = Path(__file__).resolve().parents[1] / "task3"
+TASK3_EVAL_DIR = Path(__file__).resolve().parents[1] / "evaluation" / "task3"
 if str(COMMON_DIR) not in sys.path:
     sys.path.insert(0, str(COMMON_DIR))
+if str(TASK3_DIR) not in sys.path:
+    sys.path.insert(0, str(TASK3_DIR))
+if str(TASK3_EVAL_DIR) not in sys.path:
+    sys.path.insert(0, str(TASK3_EVAL_DIR))
 
 from path_utils import asset_path, franka_urdf_path
 
@@ -203,6 +209,44 @@ def parse_args() -> argparse.Namespace:
         help="Initial physics steps before enabling keyboard control.",
     )
     parser.add_argument(
+        "--record-teleop",
+        action="store_true",
+        help="Record sampled teleop targets and phase markers as JSONL.",
+    )
+    parser.add_argument(
+        "--record-dir",
+        type=Path,
+        default=Path("outputs/task3_teleop"),
+        help="Parent directory for recorded teleop probe episodes.",
+    )
+    parser.add_argument(
+        "--episode-name",
+        default=None,
+        help="Unique output directory name; auto-generated when omitted.",
+    )
+    parser.add_argument(
+        "--record-every-steps",
+        type=int,
+        default=10,
+        help="Record one JSONL sample every N simulation steps.",
+    )
+    parser.add_argument(
+        "--max-seconds",
+        type=float,
+        default=0.0,
+        help="Stop teleop after this many seconds; 0 means no timeout.",
+    )
+    parser.add_argument(
+        "--livestream",
+        action="store_true",
+        help="Enable public WebRTC streaming for remote keyboard control.",
+    )
+    parser.add_argument(
+        "--public-ip",
+        default=os.environ.get("PUBLIC_IP"),
+        help="Public IP advertised by WebRTC; defaults to PUBLIC_IP.",
+    )
+    parser.add_argument(
         "--dynamic-beans",
         action="store_true",
         help="Enable rigid-body physics for task3 beans in keyboard mode.",
@@ -250,6 +294,14 @@ def parse_args() -> argparse.Namespace:
         help="Launch Isaac Sim without a GUI window.",
     )
     parser.add_argument(
+        "--skip-initial-reset",
+        action="store_true",
+        help=(
+            "Skip the initial SimulationContext/InteractiveScene reset. "
+            "Useful for scenes whose imported rigid bodies fail during reset."
+        ),
+    )
+    parser.add_argument(
         "--inside-kit",
         action="store_true",
         help=argparse.SUPPRESS,
@@ -289,9 +341,11 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
         },
         "spine": {
             "joint_names_expr": ["franka_spine_vertical_joint"],
-            "stiffness": 5000.0,
-            "damping": 500.0,
-            "effort_limit_sim": 200.0,
+            # The spine lifts both FR3 arms; 200 N saturated before moving.
+            # Preserve the drive strength authored in the robot USD.
+            "stiffness": 50000.0,
+            "damping": 5000.0,
+            "effort_limit_sim": 500000.0,
         },
         "arms": {
             "joint_names_expr": [".*fr3v2_joint[1-7]"],
@@ -301,18 +355,26 @@ def robot_actuator_cfg_specs() -> dict[str, dict[str, Any]]:
         },
         "grippers": {
             # mobile_fr3_duo_v0_2.usd gripper joints: <side>_gripper_joint
-            # drives the linkage (<side>_left_2 / _right_1 / _right_2 /
-            # _support joints). No joint is named *finger* in this USD.
+            # drives each closed-loop linkage. The remaining linkage joints
+            # must stay passive; position-driving every joint fights the
+            # mechanism constraints.
             "joint_names_expr": [
-                ".*gripper_joint",
+                "left_gripper_joint",
+                "right_gripper_joint",
+            ],
+            "stiffness": 200.0,
+            "damping": 20.0,
+            "effort_limit_sim": 50.0,
+        },
+        "passive_gripper_linkage": {
+            "joint_names_expr": [
                 ".*_left_2_joint",
                 ".*_right_1_joint",
                 ".*_right_2_joint",
                 ".*_support_joint",
             ],
-            "stiffness": 200.0,
-            "damping": 20.0,
-            "effort_limit_sim": 50.0,
+            "stiffness": 0.0,
+            "damping": 0.0,
         },
     }
 
@@ -1539,7 +1601,22 @@ def run_keyboard_control(
             "Run this in the isaac-lab Docker profile, or pass "
             "--no-keyboard-control to use the passive Isaac Sim viewer."
         ) from exc
-    app_launcher = AppLauncher({"headless": args.headless})
+    if args.livestream:
+        if not args.public_ip:
+            raise ValueError(
+                "--livestream requires --public-ip or PUBLIC_IP"
+            )
+        os.environ["PUBLIC_IP"] = args.public_ip
+    app_launcher = AppLauncher(
+        {
+            "headless": args.headless,
+            "enable_cameras": bool(args.livestream),
+            # Isaac Sim 5.1 public WebRTC mode is 1.  Mode 2 is private/NVCF
+            # networking and leaves an Internet client connected to signaling
+            # but without a usable public media endpoint.
+            "livestream": 1 if args.livestream else -1,
+        }
+    )
     simulation_app = app_launcher.app
     run_with_app_cleanup(
         simulation_app,
@@ -1565,6 +1642,13 @@ def _run_keyboard_control_app(
     robot_rotation: tuple[float, float, float, float],
     robot_yaw: float,
 ) -> None:
+    from integration_test import resolve_prim_path
+    from run_episode import (
+        _fix_single_articulation_root,
+        make_headless_robot_usd,
+        prepare_rigid_body_view_path,
+    )
+
     from dual_arm_lula import (
         LEFT_ARM_JOINTS,
         RIGHT_ARM_JOINTS,
@@ -1572,6 +1656,7 @@ def _run_keyboard_control_app(
     )
     from keyboard_arm_teleop import KeyboardTeleopMapper, control_help
     from teleop_commands import safe_command
+    from teleop_recording import TeleopEpisodeRecorder
     from teleop_targets import (
         CartesianTargetTracker,
         DirectJointTargetLatch,
@@ -1629,24 +1714,34 @@ def _run_keyboard_control_app(
     print("Creating Isaac Lab InteractiveScene...", flush=True)
     scene_cfg = make_control_scene_cfg(
         num_envs=args.num_envs,
-        robot_path=robot_path,
+        robot_path=make_headless_robot_usd(robot_path),
         robot_position=robot_position,
         robot_rotation=robot_rotation,
     )
     scene = InteractiveScene(scene_cfg)
+    for object_name in ("simple_tray", "bowl2", "spoon2", "plate2", "cup"):
+        object_path = resolve_prim_path(sim.stage, object_name)
+        prepare_rigid_body_view_path(sim.stage, object_path)
+    _fix_single_articulation_root(sim.stage, "/World/envs/env_0/Robot")
     print("InteractiveScene ready.", flush=True)
-    print("Resetting simulation...", flush=True)
-    sim.reset()
-    print("Simulation reset complete.", flush=True)
-    print("Resetting scene...", flush=True)
-    scene.reset()
-    print("Scene reset complete.", flush=True)
+    if args.skip_initial_reset:
+        print("Skipping initial simulation and scene reset.", flush=True)
+    else:
+        print("Resetting simulation...", flush=True)
+        sim.reset()
+        print("Simulation reset complete.", flush=True)
+        print("Resetting scene...", flush=True)
+        scene.reset()
+        print("Scene reset complete.", flush=True)
 
     robot = scene["robot"]
-    print("Writing configured robot initial state to PhysX...", flush=True)
-    reset_robot_to_default_state(robot, scene.env_origins)
-    scene.write_data_to_sim()
-    print("Configured robot initial state ready.", flush=True)
+    if args.skip_initial_reset:
+        print("Skipping configured robot initial state write.", flush=True)
+    else:
+        print("Writing configured robot initial state to PhysX...", flush=True)
+        reset_robot_to_default_state(robot, scene.env_origins)
+        scene.write_data_to_sim()
+        print("Configured robot initial state ready.", flush=True)
     print(
         f"Robot joints ({len(robot.joint_names)}): {robot.joint_names}",
         flush=True,
@@ -1720,7 +1815,7 @@ def _run_keyboard_control_app(
             position_min=(-1.5, -1.5, -0.5),
             position_max=(1.5, 1.5, 2.5),
             gripper_min=0.0,
-            gripper_max=0.04,
+            gripper_max=1.0,
             spine_min=0.0,
             spine_max=0.85,
         ),
@@ -1740,12 +1835,39 @@ def _run_keyboard_control_app(
 
     count = 0
     listener_started = False
+    recorder = None
+    if args.record_teleop:
+        episode_name = args.episode_name
+        if episode_name is None:
+            episode_name = time.strftime("tray_probe_%Y%m%d_%H%M%S")
+        recorder = TeleopEpisodeRecorder(
+            args.record_dir,
+            episode_name,
+            sample_every_steps=args.record_every_steps,
+            metadata={
+                "task": args.task,
+                "head_placement": args.head_placement,
+                "robot_position": list(robot_position),
+                "robot_yaw": robot_yaw,
+                "control_help": control_help(),
+            },
+        )
+        print(f"Teleop recording: {recorder.output_path}", flush=True)
+    session_started = time.monotonic()
+    stop_reason = "operator_exit"
     try:
         teleop.start()
         listener_started = True
         print("Keyboard teleop listener started.", flush=True)
         while simulation_app.is_running() and not teleop.stop_requested:
             now = time.monotonic()
+            if (
+                args.max_seconds > 0.0
+                and now - session_started >= args.max_seconds
+            ):
+                stop_reason = "max_seconds"
+                print("Maximum teleop duration reached.", flush=True)
+                break
             command = mapper.map_keys(
                 set(teleop.pressed), timestamp=now, dt=sim.cfg.dt
             )
@@ -1825,6 +1947,19 @@ def _run_keyboard_control_app(
             sim.step()
             scene.update(sim.cfg.dt)
 
+            if recorder is not None:
+                recorder.record(
+                    step=count,
+                    sim_time=count * sim.cfg.dt,
+                    keys=set(teleop.pressed),
+                    command=command,
+                    targets=targets,
+                    root_position=root_position,
+                    root_orientation=root_orientation,
+                    left_world=left_world,
+                    right_world=right_world,
+                )
+
             count += 1
             if count % 400 == 0 and (vx != 0.0 or vy != 0.0 or wz != 0.0):
                 print(
@@ -1832,10 +1967,17 @@ def _run_keyboard_control_app(
                     f"wz={wz:+.2f} keys={sorted(teleop.pressed)}"
                 )
     except KeyboardInterrupt:
+        stop_reason = "keyboard_interrupt"
         print("\nStopped by user.")
     finally:
         if listener_started:
             teleop.stop()
+        if recorder is not None:
+            recorder.close(reason=stop_reason)
+            print(
+                f"Teleop recording closed: {recorder.output_path}",
+                flush=True,
+            )
 
 
 def main() -> None:
@@ -1846,7 +1988,7 @@ def main() -> None:
     )
     robot_path = resolve_usd_path(
         args.robot_usd,
-        franka_urdf_path("mobile_fr3_duo_v0_2_franka_hand.usd"),
+        asset_path("mobile_fr3_duo_v0_2.usd"),
     )
 
     if not room_path.is_file():
