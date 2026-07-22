@@ -1170,13 +1170,18 @@ def _run(  # noqa: C901
         )
 
     # ---- Phase 5: transport to sink ----
-    # Sink is between robot and spoon. Retract arm south into sink area
-    # without moving the base.
+    # Drive base south so the arm can reach the sink, then retract
+    # the arm and lower into the sink.
     base_hold_anchor = None
 
+    base_xy = (adapter.pose().x, adapter.pose().y)
+    sink_approach_xy = (base_xy[0], SINK_CENTER[1] + 0.15)
+    nav_ok = drive_to(sink_approach_xy, max_speed=0.25, budget_s=10.0)
+    log_phase("sink_navigate", nav_ok, target=list(sink_approach_xy))
+
     sink_target = (SINK_CENTER[0], SINK_CENTER[1], SINK_ABOVE_Z)
-    transport_ok = servo_arm(
-        active_side, sink_target, top_down, budget_s=8.0, tol_m=0.04
+    transport_ok = nav_ok and servo_arm(
+        active_side, sink_target, top_down, budget_s=10.0, tol_m=0.06
     )
     log_phase("sink_approach", transport_ok, target=list(sink_target))
 
@@ -1199,7 +1204,7 @@ def _run(  # noqa: C901
 
     # ---- Phase 6: lower and release into sink ----
     sink_down = (SINK_CENTER[0], SINK_CENTER[1], SINK_RELEASE_Z)
-    servo_arm(active_side, sink_down, top_down, budget_s=4.0, tol_m=0.03)
+    servo_arm(active_side, sink_down, top_down, budget_s=6.0, tol_m=0.05)
     log_phase("sink_descend", True)
 
     release_ok = arms.release(
