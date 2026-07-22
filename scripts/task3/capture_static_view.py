@@ -32,27 +32,39 @@ def parse_args() -> argparse.Namespace:
         "--height", type=int, default=720, help="Image height in pixels."
     )
     parser.add_argument(
-        "--camera-x", type=float, default=None,
+        "--camera-x",
+        type=float,
+        default=None,
         help="Optional world X coordinate for an explicit measurement camera.",
     )
     parser.add_argument(
-        "--camera-y", type=float, default=None,
+        "--camera-y",
+        type=float,
+        default=None,
         help="Optional world Y coordinate for an explicit measurement camera.",
     )
     parser.add_argument(
-        "--camera-z", type=float, default=None,
+        "--camera-z",
+        type=float,
+        default=None,
         help="Optional world Z coordinate for an explicit measurement camera.",
     )
     parser.add_argument(
-        "--look-at-x", type=float, default=None,
+        "--look-at-x",
+        type=float,
+        default=None,
         help="Optional world X coordinate for the measurement-camera target.",
     )
     parser.add_argument(
-        "--look-at-y", type=float, default=None,
+        "--look-at-y",
+        type=float,
+        default=None,
         help="Optional world Y coordinate for the measurement-camera target.",
     )
     parser.add_argument(
-        "--look-at-z", type=float, default=None,
+        "--look-at-z",
+        type=float,
+        default=None,
         help="Optional world Z coordinate for the measurement-camera target.",
     )
     return parser.parse_args()

@@ -1,4 +1,8 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fix: make rotate_spot recovery unconditional (not gated on transport_to_dining)."""
+
 path = "/workspace/EBiM_Challenge/_worktrees/task3-tray-fix/scripts/task3/fixed_grasp_lift.py"
 with open(path) as f:
     c = f.read()

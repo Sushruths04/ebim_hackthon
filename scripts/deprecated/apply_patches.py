@@ -1,5 +1,7 @@
+# Copyright (c) 2026 The EBiM Benchmark Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Apply patches to a copy of verify_grasp_lift.py for spine-first lift + friction."""
-import re
 
 path = "/workspace/EBiM_Challenge/_worktrees/task3-tray-fix/scripts/task3/fixed_grasp_lift.py"
 
@@ -9,19 +11,19 @@ with open(path) as f:
 # 1) Change default args in parse_args()
 content = content.replace(
     'default=None, help="Optional fraction',
-    'default=1.0, help="Optional fraction'
+    'default=1.0, help="Optional fraction',
 )
 content = content.replace(
     'default=1.5, help="Total close-and-force-settle',
-    'default=4.0, help="Total close-and-force-settle'
+    'default=4.0, help="Total close-and-force-settle',
 )
 content = content.replace(
     'default=1.0, help="Duration of the linear',
-    'default=2.0, help="Duration of the linear'
+    'default=2.0, help="Duration of the linear',
 )
 content = content.replace(
     'default=0.0, help=("Vertical offset for the live cup-rim target',
-    'default=-0.03, help=("Vertical offset for the live cup-rim target'
+    'default=-0.03, help=("Vertical offset for the live cup-rim target',
 )
 
 # 2) Add friction patch right after sim = SimulationContext(...)
@@ -149,11 +151,14 @@ for i, line in enumerate(lines):
         break
 
 if lift_start_idx is not None and lift_end_idx is not None:
-    old_lift_section = "\n".join(lines[lift_start_idx:lift_end_idx + 1])
+    old_lift_section = "\n".join(lines[lift_start_idx : lift_end_idx + 1])
     content = content.replace(old_lift_section, new_lift)
     print(f"LIFT_REPLACED: lines {lift_start_idx}-{lift_end_idx}", flush=True)
 else:
-    print(f"LIFT_NOT_FOUND: start={lift_start_idx}, end={lift_end_idx}", flush=True)
+    print(
+        f"LIFT_NOT_FOUND: start={lift_start_idx}, end={lift_end_idx}",
+        flush=True,
+    )
 
 with open(path, "w") as f:
     f.write(content)

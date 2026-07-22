@@ -930,9 +930,8 @@ def _run_push_stroke(
             drag_start_anchor[0]
             + args.base_follow_fraction * args.push_x_distance * progress
         )
-        followed_y = (
-            drag_start_anchor[1]
-            + args.base_follow_fraction * (anchor_y - drag_start_anchor[1])
+        followed_y = drag_start_anchor[1] + args.base_follow_fraction * (
+            anchor_y - drag_start_anchor[1]
         )
         hold_anchor_box["value"] = (anchor_x, followed_y)
         sim_tick()
@@ -984,9 +983,7 @@ def _run_push_stroke(
     # criterion, so stroke-stop on it directly, with a small margin so
     # push_result's own >= SLIDE_OVERHANG_GATE_M check clears rather than
     # landing exactly on the boundary. Still capped by MAX_PUSH_STROKES.
-    stroke_gate_met = push_gate_reached(
-        after_stroke[1], args, after_stroke[0]
-    )
+    stroke_gate_met = push_gate_reached(after_stroke[1], args, after_stroke[0])
     log(
         f"{stroke_prefix}_result",
         ok=stroke_gate_met,
