@@ -9,10 +9,26 @@
 - **HuggingFace dataset (private):**
   https://huggingface.co/datasets/sush0401/ebim-task3-outputs
   - Download later with: `hf download sush0401/ebim-task3-outputs --repo-type dataset --local-dir ./outputs`
-- **Local copy (until you delete the old folders):**
+- **Local copy (authoritative — DO NOT lose until HF is complete):**
   `EBiM-benchmark-codex/outputs/` (~5.8 GB) and inside `ebim/.git` history.
-- Upload was kicked off 2026-07-22; the small proven proofs went first, the
-  bulk (grasp-opt sweeps) uploads in the background and is resumable.
+
+### ⚠️ Upload gotcha (2026-07-22) — MUST disable xet on this network
+
+HuggingFace's new **xet** transfer backend is BLOCKED on this machine's network
+(every upload died with `ConnectionError` at `.../xet-write-token/main`). The
+classic LFS path works fine. **Always set `HF_HUB_DISABLE_XET=1`** when uploading
+from here:
+```
+cd "<path to outputs>"
+HF_HUB_DISABLE_XET=1 HF_HUB_ENABLE_HF_TRANSFER=0 \
+  hf upload sush0401/ebim-task3-outputs "." . --repo-type dataset
+```
+Re-run the same command to resume — it skips files already on the Hub. (On a
+normal network / Lightning AI you can drop `HF_HUB_DISABLE_XET`.)
+
+**Status:** 10/10 grasp proof + Stage-4 POC uploaded; full 5.8 GB bulk upload
+started with xet disabled. The bulk is ALSO preserved in `ebim/.git` and local
+`outputs/`, so nothing depends on the upload finishing.
 
 ## The proofs that matter (upload-first, high value)
 
