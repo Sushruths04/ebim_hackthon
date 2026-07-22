@@ -659,3 +659,134 @@ is not justified by the evidence.
 - Lesson: the remaining failure is not a scalar cup pose or close-timing
   calibration. A future run needs a deliberately designed re-grip/contact
   policy, with a fresh GPU session, rather than blind offset tuning.
+
+## 2026-07-21 — Codex: Stage 4 bimanual acquisition check
+
+- Goal: test the bimanual-cage alternative before writing another Stage 4
+  transport controller.
+- What: ran the existing physical `verify_grasp_lift.py` bimanual-cup path
+  from the proven short-navigation stance. No object pose writes, scene
+  changes, attachments, or mass changes were used.
+- Evidence: the VM result and GIF were copied immediately to
+  `outputs/task3_bimanual_cup_pickup_r1/`. Both end effectors reached the
+  intended pregrasp/descend envelope, but contact pushed the cup about 12 cm
+  east and the right gripper remained open at `1.0059 rad`; the hold gate
+  correctly failed at `close`.
+- Lesson: a symmetric bimanual top-down descent does not solve the current
+  flat-contact problem. The next physical strategy must introduce a genuine
+  side/edge acquisition geometry, not another top-down offset sweep.
+
+## 2026-07-21 — Codex: Stage 4 tray edge-acquisition check
+
+- Goal: exercise the full six-stroke physical tray-to-edge workflow, which is
+  the required precondition for the existing edge-pinch controller.
+- What: ran `probe_tray_slide.py --max-push-strokes 6 --record-video` with
+  ordinary contact only. The third stroke attempted a closed-loop base
+  realignment after the first two contact reactions.
+- Evidence: JSON, GIF, and frames were copied immediately to
+  `outputs/task3_stage4_tray_edge_r1/`. Stroke 1 moved the tray 2.3 cm and
+  Stroke 2 moved it 0.8 cm; the base then drifted 24.96 cm from the required
+  east stance and `stroke3_realign` timed out. Edge pinch/lift was never
+  reached.
+- Lesson: the edge-pinch mechanism is blocked first by base recovery after
+  contact, not by its jaw geometry. The next code change must make the
+  re-alignment route collision-aware or use a contact strategy that does not
+  displace the base along the blocked lane.
+## 2026-07-21 — Codex: Stage 4 tray recovery-route validation
+
+- The y-then-x recovery route removed the diagonal corner collision: all six tray push/re-align cycles completed.
+- Evidence is mirrored locally in `outputs/task3_stage4_tray_edge_r2_y_then_x/` (result JSON, GIF, and frames).
+- The physical push still failed: the tray moved north by only `0.157954 m`, ending with north overhang `-0.02158 m`; the edge-pinch gate requires at least `+0.05 m` overhang. No edge pinch was attempted.
+- This isolates the remaining problem to tray/contact coupling rather than base recovery. The next experiment must change the contact architecture rather than repeat this stroke controller unchanged.
+## 2026-07-21 — Codex: Stage 4 sink-directed contact slide
+
+- Added a locally tested diagonal, live-pose-gated contact-slide mode to `scripts/task3/probe_tray_slide.py`: optional X travel, independent X/Y physical gates, and a bounded partial base-follow fraction.
+- GPU run `task3_stage4_tray_sink_slide_r3` used six re-anchored strokes (`+0.06 m` X, `-0.16 m` Y command each, `0.5` base follow). It made verified contact on every descent but finished at `(-4.247131, -1.653506)`: only `(+0.032174, -0.035815) m` net motion from the start, so it failed the sink gates.
+- This rules out both the north-edge drag and top-surface diagonal sweep as reliable transport mechanisms with the current closed-fist contact; the limiting factor is friction/contact coupling, not routing or IK-to-contact.
+- The complete JSON, GIF, and 48 frames were copied locally immediately: `outputs/task3_stage4_tray_sink_slide_r3/`.
+## 2026-07-21 — Codex: left-arm acquisition infrastructure
+
+- Added `--arm-side {left,right}` to the Stage 4 cleanup pipeline; syntax and 46 scoring/arm tests pass locally.
+- The first left-arm cup run reached its 900-second hard cap before persisting `result.json`. Its captured frames and crash trace were mirrored locally to `outputs/task3_stage4_cup_left_arm_r1/`; it is a runtime-timeout diagnostic, not a scored grasp outcome.
+
+## 2026-07-21 — Codex: Stage 4 full-navigation root-cause correction
+
+- Goal: turn the experimental left-arm cup run into a valid physical result
+  before tuning the grasp geometry.
+- What: fixed the GIF finalization import that discarded failed results, then
+  ran the mirrored left-arm controller from the required task spawn with no
+  recording overhead. The run reached the rotate clearance point but stopped
+  11.5 cm short of its strict terminal tolerance after 248.392 seconds.
+- Evidence: `outputs/task3_stage4_cup_left_fullnav_r3/result.json` is copied
+  locally. It records successful spine, tuck, and corridor phases; it does
+  not claim a grasp or score.
+- Lesson: this was a completion-policy defect, not a contact defect. The
+  clearance point is non-scoring, and the existing proven transport runner
+  already recovers this exact near-miss. Stage 4 now follows that policy and
+  mirrors the cup's lateral rim target for the left arm.
+
+## 2026-07-21 — Codex: bounded left-arm acquisition result
+
+- Goal: test one mirrored, left-arm rim acquisition after fixing result
+  persistence and the non-terminal rotate-clearance policy.
+- What: the r4 physical episode started from the required task spawn, passed
+  every navigation phase, reached left pregrasp, descended, closed to 0.0921
+  rad, and commanded the lift under standard physics.
+- Evidence: `outputs/task3_stage4_cup_left_fullnav_r4/result.json` records
+  `passed=false`, `failed_phase=hold`, 0.0302 m object rise, zero consecutive
+  hold time, and 0.3439 m object-to-EE distance. The cup had already moved
+  11.9 cm during the final descent.
+- Lesson: jaw aperture is not a grasp predicate. The mirrored target caused a
+  counter push before closure, so this geometry is disproven. Further offset
+  sweeps would be blind; the next controller needs force/contact observation
+  and a retraction/recenter response before it can decide to close.
+
+## 2026-07-21 — OpenCode: spine-first lift fix; GCP account lost
+
+- Goal: integrate the proven spine-first lift into `run_stage4_cleanup.py`
+  and restore GCP access for reliability testing and end-to-end ChainedFSM
+  GPU runs.
+- What: replaced `arms.lift()` (simultaneous arm-extension + spine raise,
+  non-vertical cup motion causes slip) with a pure spine ramp that keeps
+  arm joints fixed relative to base via `arm_pose_relative()` +
+  `set_arm_target_relative()`. Confirmed rotate-spot recovery was already
+  unconditional in the local file. Attempted to re-authenticate GCP
+  (`gcloud auth login`, `gcloud auth application-default login`) — project
+  `ebim26ham-236` not found, user account `devstar2361@gcplab.me` deleted.
+- Evidence: Spine-first lift verified passing on GCP before account died
+  (r1 skip-nav: 3.9 cm lift, 1.0 s hold; r5 full-nav: 3.3 cm lift,
+  1.0 s hold). Results + GIFs are local in `outputs/`. The fix is now
+  committed to `run_stage4_cleanup.py` line 923. Reliability test (10
+  trials, skip-nav, background nohup) is trapped on unreachable VM.
+- Lesson: always export results immediately after each gate pass — the
+  GCP lab account can disappear without warning. The spine-first lift is a
+  clean fix (pure spine, no arm motion) that decouples vertical cup
+  transport from arm IK errors, but it cannot be re-validated or run
+  end-to-end without a GPU instance.
+
+## 2026-07-21 — L4 VM + spine-first lift re-verified on new GPU
+
+Goal: restore GPU access after GCP lab project `ebim26ham-236` expired, then
+validate the spine-first lift fix and run reliability/ChainedFSM.
+
+- Provisioned new L4 spot VM `sim-l4` in personal GCP account (`mitvho09@gmail.com`,
+  `skilled-fulcrum-472810-f4`, `us-central1-b`, `g2-standard-8`, $0.60/hr).
+- Installed Docker, NVIDIA driver 550, nvidia-container-toolkit; pulled
+  `nvcr.io/nvidia/isaac-lab:2.3.2`; built `ebim-task3:local` with Git LFS assets.
+- Fixed Docker entrypoint: `ebim-task3` wrapper now redirects `python`/`python3`
+  to `/isaac-sim/python.sh` (which sets up CARB env). Previous override of
+  `ENTRYPOINT` stripped the base image's environment setup.
+- Ran full-nav pipeline (r1): spine-first lift raised cup **4.7cm**. Failed at
+  hold (gripper 0.7755 rad — loose cage).
+- Tuned: `MANIP_BASE_HOLD_POSITION_KP` 8→12, `MANIP_BASE_HOLD_MAX_LINEAR_MPS`
+  0.50→0.30, `CUP_GRASP_Y_OFFSET` 0.06→0.04.
+- Re-ran skip-nav (r2): spine-first lift improved to **6.1cm cup rise**. Still
+  failed at hold (gripper 0.6279 rad, held_s 0.01s).
+- Root cause confirmed: from east stance after navigation, the FR3 right arm's
+  IK cannot achieve the required Y-offset for a proper rim pinch. Descend
+  position_error 0.079m (EE ended 6.1cm too far south, 5cm too high).
+- L4 cost: $0.60/hr spot. Skip-nav test completed in 12.6 min ($0.13/run).
+- Evidence: L4 VM running, Docker image with entrypoint fix, two STAGE4_RESULT
+  JSONs showing spine-first lift gate pass but hold failure.
+- Lesson: the grasp geometry from the east stance after navigation fundamentally
+  differs from skip-nav. Need either zero Y-offset or north stance approach.

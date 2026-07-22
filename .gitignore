@@ -58,6 +58,7 @@ task1_isaacsim/cable_world/assets/table_board_fixture/Assets/board_segment_upper
 # agent
 .claude/
 .codex
+.cache/
 
 # --- Org-standard additions (normalization pass) ---
 

@@ -31,6 +31,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--height", type=int, default=720, help="Image height in pixels."
     )
+    parser.add_argument(
+        "--camera-x", type=float, default=None,
+        help="Optional world X coordinate for an explicit measurement camera.",
+    )
+    parser.add_argument(
+        "--camera-y", type=float, default=None,
+        help="Optional world Y coordinate for an explicit measurement camera.",
+    )
+    parser.add_argument(
+        "--camera-z", type=float, default=None,
+        help="Optional world Z coordinate for an explicit measurement camera.",
+    )
+    parser.add_argument(
+        "--look-at-x", type=float, default=None,
+        help="Optional world X coordinate for the measurement-camera target.",
+    )
+    parser.add_argument(
+        "--look-at-y", type=float, default=None,
+        help="Optional world Y coordinate for the measurement-camera target.",
+    )
+    parser.add_argument(
+        "--look-at-z", type=float, default=None,
+        help="Optional world Z coordinate for the measurement-camera target.",
+    )
     return parser.parse_args()
 
 
@@ -60,9 +84,34 @@ def main() -> None:
         position, _ = scene.INITIAL_VIEW_POSE
         # Replicator uses a different Euler convention than the interactive viewport.
         # The target below is the workspace point in front of the benchmark camera.
+        if any(
+            value is not None
+            for value in (args.camera_x, args.camera_y, args.camera_z)
+        ):
+            if any(
+                value is None
+                for value in (args.camera_x, args.camera_y, args.camera_z)
+            ):
+                raise ValueError(
+                    "--camera-x, --camera-y, and --camera-z must be supplied together"
+                )
+            position = (args.camera_x, args.camera_y, args.camera_z)
+        look_at = (-4.46, -0.21, 1.35)
+        if any(
+            value is not None
+            for value in (args.look_at_x, args.look_at_y, args.look_at_z)
+        ):
+            if any(
+                value is None
+                for value in (args.look_at_x, args.look_at_y, args.look_at_z)
+            ):
+                raise ValueError(
+                    "--look-at-x, --look-at-y, and --look-at-z must be supplied together"
+                )
+            look_at = (args.look_at_x, args.look_at_y, args.look_at_z)
         camera = rep.create.camera(
             position=position,
-            look_at=(-4.46, -0.21, 1.35),
+            look_at=look_at,
         )
         render_product = rep.create.render_product(
             camera, (args.width, args.height)

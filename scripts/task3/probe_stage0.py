@@ -236,6 +236,20 @@ def _world_bounds(
     ]
 
 
+def _collision_prim_paths(stage: Any, root_path: str) -> list[str]:
+    """List authored collision bodies below an object without changing it."""
+    from pxr import Usd, UsdPhysics
+
+    root = stage.GetPrimAtPath(root_path)
+    if not root or not root.IsValid():
+        return []
+    return [
+        str(prim.GetPath())
+        for prim in Usd.PrimRange(root)
+        if prim.HasAPI(UsdPhysics.CollisionAPI)
+    ]
+
+
 def main() -> None:
     args = parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -344,6 +358,9 @@ def main() -> None:
                 authored_mass = float(mass_attr.Get())
             objects[name] = {
                 "physx_view_path": object_paths[name],
+                "collision_prim_paths": _collision_prim_paths(
+                    sim.stage, resolve_prim_path(sim.stage, name)
+                ),
                 "pose_world": [round(value, 6) for value in position],
                 "bbox_min_world": bbox_min,
                 "bbox_max_world": bbox_max,
