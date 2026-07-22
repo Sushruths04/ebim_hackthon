@@ -1,0 +1,6940 @@
+{
+  "best_parameters": {
+    "close_effort_scale": 0.194399754453365,
+    "close_ramp_seconds": 0.5846173685406504,
+    "y_offset": 0.05301776945897706
+  },
+  "best_score": 0.7912,
+  "resumed_trial_count": 6,
+  "success_rate": 0.6,
+  "trials": [
+    {
+      "parameters": {
+        "close_effort_scale": 0.20593820005455393,
+        "close_ramp_seconds": 0.7751521847992457,
+        "y_offset": 0.05593085973720466
+      },
+      "result": {
+        "close_effort_scale": 0.205938,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -4.0,
+          -1.5694,
+          0.7768
+        ],
+        "cup_lift_m": 0.0298,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "close",
+        "grasp_ramp_seconds": 0.775152,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.268,
+              -1.704,
+              3.131
+            ],
+            "cup": [
+              -4.084,
+              -1.702,
+              0.777
+            ],
+            "left_ee": [
+              -3.827,
+              -1.974,
+              0.997
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0585,
+            "right_ee": [
+              -4.151,
+              -1.74,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.439,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.697,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.293,
+              -1.726,
+              -3.035
+            ],
+            "cup": [
+              -4.084,
+              -1.702,
+              0.777
+            ],
+            "left_ee": [
+              -3.816,
+              -2.065,
+              0.994
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.02,
+            "right_ee": [
+              -4.05,
+              -1.661,
+              0.856
+            ],
+            "rim": null,
+            "spine": 0.434,
+            "tick": 17022
+          },
+          {
+            "base": [
+              -3.303,
+              -1.747,
+              -3.116
+            ],
+            "cup": [
+              -4.0,
+              -1.569,
+              0.777
+            ],
+            "gripper_position_rad": 0.0007,
+            "left_ee": [
+              -3.851,
+              -2.038,
+              0.99
+            ],
+            "ok": false,
+            "phase": "close",
+            "right_ee": [
+              -4.061,
+              -1.642,
+              0.872
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "tick": 17322
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 522.247
+      },
+      "score": 0.149,
+      "success": false,
+      "trial": 1,
+      "wall_time_seconds": 522.719
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.06999498316360059,
+        "close_ramp_seconds": 1.1687491292803869,
+        "y_offset": 0.05193700315892974
+      },
+      "result": {
+        "close_effort_scale": 0.069995,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -3.7427,
+          -2.4024,
+          0.0352
+        ],
+        "cup_lift_m": -0.7118,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 1.168749,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.297,
+              -1.746,
+              2.811
+            ],
+            "cup": [
+              -4.184,
+              -1.662,
+              0.776
+            ],
+            "left_ee": [
+              -3.913,
+              -1.83,
+              0.995
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0601,
+            "right_ee": [
+              -4.17,
+              -1.739,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.701,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.295,
+              -1.729,
+              -3.13
+            ],
+            "cup": [
+              -4.184,
+              -1.662,
+              0.776
+            ],
+            "left_ee": [
+              -3.848,
+              -2.014,
+              0.992
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.02,
+            "right_ee": [
+              -4.148,
+              -1.627,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "tick": 17183
+          },
+          {
+            "base": [
+              -3.271,
+              -1.709,
+              -3.066
+            ],
+            "cup": [
+              -3.743,
+              -2.402,
+              0.035
+            ],
+            "gripper_position_rad": 1.0,
+            "left_ee": [
+              -3.806,
+              -2.029,
+              0.997
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.131,
+              -1.656,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17483
+          },
+          {
+            "base": [
+              -3.293,
+              -1.744,
+              -3.067
+            ],
+            "cup": [
+              -3.743,
+              -2.402,
+              0.035
+            ],
+            "left_ee": [
+              -3.823,
+              -2.063,
+              1.111
+            ],
+            "ok": false,
+            "phase": "lift",
+            "right_ee": [
+              -4.124,
+              -1.635,
+              1.066
+            ],
+            "rim": null,
+            "spine": 0.553,
+            "tick": 18683
+          },
+          {
+            "base": [
+              -3.318,
+              -1.761,
+              -3.096
+            ],
+            "cup": [
+              -3.743,
+              -2.402,
+              0.035
+            ],
+            "held_s": 0.0,
+            "left_ee": [
+              -3.855,
+              -2.064,
+              1.106
+            ],
+            "lifted_m": -0.7118,
+            "max_held_s": 0.0,
+            "ok": false,
+            "phase": "hold",
+            "right_ee": [
+              -4.101,
+              -1.583,
+              0.999
+            ],
+            "rim": null,
+            "spine": 0.549,
+            "tick": 20883
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 627.63
+      },
+      "score": 0.0,
+      "success": false,
+      "trial": 2,
+      "wall_time_seconds": 628.097
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.07857336358438817,
+        "close_ramp_seconds": 1.0005629167085328,
+        "y_offset": 0.04918497783931734
+      },
+      "result": {
+        "close_effort_scale": 0.078573,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.0966,
+          -1.564,
+          0.7775
+        ],
+        "cup_lift_m": 0.0305,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 1.000563,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.362,
+              -1.697,
+              3.122
+            ],
+            "cup": [
+              -4.138,
+              -1.684,
+              0.778
+            ],
+            "left_ee": [
+              -3.92,
+              -1.966,
+              0.999
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0601,
+            "right_ee": [
+              -4.162,
+              -1.745,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.441,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.703,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.317,
+              -1.729,
+              -3.092
+            ],
+            "cup": [
+              -4.138,
+              -1.684,
+              0.778
+            ],
+            "left_ee": [
+              -3.857,
+              -2.033,
+              0.993
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0199,
+            "right_ee": [
+              -4.093,
+              -1.652,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "tick": 17068
+          },
+          {
+            "base": [
+              -3.299,
+              -1.743,
+              -3.104
+            ],
+            "cup": [
+              -4.078,
+              -1.626,
+              0.778
+            ],
+            "gripper_position_rad": 0.9304,
+            "left_ee": [
+              -3.843,
+              -2.041,
+              0.992
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.084,
+              -1.66,
+              0.858
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "tick": 17368
+          },
+          {
+            "base": [
+              -3.299,
+              -1.738,
+              -3.013
+            ],
+            "cup": [
+              -4.092,
+              -1.557,
+              0.777
+            ],
+            "left_ee": [
+              -3.812,
+              -2.083,
+              1.102
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.084,
+              -1.658,
+              1.082
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 17968
+          },
+          {
+            "base": [
+              -3.306,
+              -1.749,
+              3.14
+            ],
+            "cup": [
+              -4.097,
+              -1.564,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.863,
+              -2.027,
+              1.111
+            ],
+            "lifted_m": 0.0305,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.082,
+              -1.652,
+              1.064
+            ],
+            "rim": null,
+            "spine": 0.554,
+            "tick": 18568
+          },
+          {
+            "base": [
+              -3.311,
+              -0.398,
+              -3.1
+            ],
+            "cup": [
+              -4.097,
+              -1.564,
+              0.777
+            ],
+            "left_ee": [
+              -3.853,
+              -0.698,
+              1.11
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.089,
+              -0.323,
+              1.059
+            ],
+            "rim": null,
+            "spine": 0.553,
+            "target": [
+              -3.3062052726745605,
+              -0.37
+            ],
+            "tick": 19635
+          },
+          {
+            "base": [
+              -4.118,
+              -0.35,
+              -3.021
+            ],
+            "cup": [
+              -4.097,
+              -1.564,
+              0.777
+            ],
+            "left_ee": [
+              -4.64,
+              -0.691,
+              1.126
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.899,
+              -0.373,
+              1.126
+            ],
+            "rim": null,
+            "spine": 0.56,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 20766
+          },
+          {
+            "base": [
+              -4.156,
+              -0.156,
+              -3.047
+            ],
+            "cup": [
+              -4.097,
+              -1.564,
+              0.777
+            ],
+            "left_ee": [
+              -4.681,
+              -0.485,
+              1.101
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -4.935,
+              -0.121,
+              1.046
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 21103
+          },
+          {
+            "base": [
+              -4.156,
+              -0.156,
+              -3.047
+            ],
+            "cup": [
+              -4.097,
+              -1.564,
+              0.777
+            ],
+            "dining_pose": [
+              -4.096565246582031,
+              -1.5640157461166382,
+              0.7774636149406433
+            ],
+            "left_ee": [
+              -4.681,
+              -0.485,
+              1.101
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.935,
+              -0.121,
+              1.046
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 21103
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 636.186
+      },
+      "score": 0.4525,
+      "success": true,
+      "trial": 3,
+      "wall_time_seconds": 636.673
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.194399754453365,
+        "close_ramp_seconds": 0.5846173685406504,
+        "y_offset": 0.05301776945897706
+      },
+      "result": {
+        "close_effort_scale": 0.1944,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.0037,
+          -1.4853,
+          0.9774
+        ],
+        "cup_lift_m": 0.2304,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.584617,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.3,
+              -1.75,
+              2.838
+            ],
+            "cup": [
+              -4.107,
+              -1.648,
+              0.777
+            ],
+            "left_ee": [
+              -3.912,
+              -1.847,
+              0.998
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0681,
+            "right_ee": [
+              -4.152,
+              -1.755,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.289,
+              -1.697,
+              -3.041
+            ],
+            "cup": [
+              -4.107,
+              -1.648,
+              0.777
+            ],
+            "left_ee": [
+              -3.813,
+              -2.032,
+              0.995
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0127,
+            "right_ee": [
+              -4.07,
+              -1.592,
+              0.856
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "tick": 17511
+          },
+          {
+            "base": [
+              -3.29,
+              -1.724,
+              3.107
+            ],
+            "cup": [
+              -4.037,
+              -1.517,
+              0.788
+            ],
+            "gripper_position_rad": 0.6416,
+            "left_ee": [
+              -3.854,
+              -1.979,
+              0.998
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.063,
+              -1.54,
+              0.867
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17811
+          },
+          {
+            "base": [
+              -3.294,
+              -1.726,
+              -3.009
+            ],
+            "cup": [
+              -4.025,
+              -1.501,
+              0.999
+            ],
+            "left_ee": [
+              -3.806,
+              -2.075,
+              1.103
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.052,
+              -1.524,
+              1.077
+            ],
+            "rim": null,
+            "spine": 0.546,
+            "tick": 18421
+          },
+          {
+            "base": [
+              -3.29,
+              -1.726,
+              -3.042
+            ],
+            "cup": [
+              -4.004,
+              -1.485,
+              0.977
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.814,
+              -2.057,
+              1.109
+            ],
+            "lifted_m": 0.2304,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.038,
+              -1.508,
+              1.051
+            ],
+            "rim": null,
+            "spine": 0.552,
+            "tick": 19021
+          },
+          {
+            "base": [
+              -3.296,
+              -0.398,
+              -3.107
+            ],
+            "cup": [
+              -4.005,
+              -0.118,
+              0.992
+            ],
+            "left_ee": [
+              -3.839,
+              -0.694,
+              1.11
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.033,
+              -0.138,
+              1.064
+            ],
+            "rim": null,
+            "spine": 0.553,
+            "target": [
+              -3.289733409881592,
+              -0.37
+            ],
+            "tick": 20100
+          },
+          {
+            "base": [
+              -4.115,
+              -0.354,
+              -3.009
+            ],
+            "cup": [
+              -4.87,
+              -0.151,
+              1.008
+            ],
+            "left_ee": [
+              -4.633,
+              -0.698,
+              1.116
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.889,
+              -0.176,
+              1.082
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 21175
+          },
+          {
+            "base": [
+              -4.132,
+              0.054,
+              -2.775
+            ],
+            "cup": [
+              -4.904,
+              0.07,
+              1.006
+            ],
+            "left_ee": [
+              -4.562,
+              -0.406,
+              1.12
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -4.918,
+              0.041,
+              1.08
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "tick": 22707
+          },
+          {
+            "base": [
+              -4.132,
+              0.054,
+              -2.775
+            ],
+            "cup": [
+              -4.904,
+              0.07,
+              1.006
+            ],
+            "dining_pose": [
+              -4.903806209564209,
+              0.06977708637714386,
+              1.0063618421554565
+            ],
+            "left_ee": [
+              -4.562,
+              -0.406,
+              1.12
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.918,
+              0.041,
+              1.08
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "tick": 22707
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 707.26
+      },
+      "score": 0.7912,
+      "success": true,
+      "trial": 4,
+      "wall_time_seconds": 707.758
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.24844231185824356,
+        "close_ramp_seconds": 0.5011681487615215,
+        "y_offset": 0.058771054180315
+      },
+      "result": {
+        "close_effort_scale": 0.248442,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -3.868,
+          -2.7781,
+          0.0339
+        ],
+        "cup_lift_m": -0.7131,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.501168,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.296,
+              -1.749,
+              2.798
+            ],
+            "cup": [
+              -3.868,
+              -2.778,
+              0.034
+            ],
+            "left_ee": [
+              -3.914,
+              -1.823,
+              0.999
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0579,
+            "right_ee": [
+              -4.167,
+              -1.731,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.694,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.324,
+              -1.772,
+              2.886
+            ],
+            "cup": [
+              -3.868,
+              -2.778,
+              0.034
+            ],
+            "left_ee": [
+              -3.933,
+              -1.898,
+              0.997
+            ],
+            "ok": false,
+            "phase": "recenter_live_cup",
+            "position_error_m": 1.2326,
+            "right_ee": [
+              -4.184,
+              -1.81,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.439,
+            "tick": 17624
+          },
+          {
+            "base": [
+              -3.326,
+              -1.77,
+              2.914
+            ],
+            "cup": [
+              -3.868,
+              -2.778,
+              0.034
+            ],
+            "gripper_position_rad": 1.0,
+            "left_ee": [
+              -3.928,
+              -1.917,
+              0.996
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.191,
+              -1.838,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.439,
+            "tick": 17924
+          },
+          {
+            "base": [
+              -3.314,
+              -1.75,
+              -3.083
+            ],
+            "cup": [
+              -3.868,
+              -2.778,
+              0.034
+            ],
+            "left_ee": [
+              -3.852,
+              -2.061,
+              1.111
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.192,
+              -1.825,
+              1.073
+            ],
+            "rim": null,
+            "spine": 0.552,
+            "tick": 19061
+          },
+          {
+            "base": [
+              -3.283,
+              -1.705,
+              -3.055
+            ],
+            "cup": [
+              -3.868,
+              -2.778,
+              0.034
+            ],
+            "held_s": 0.0,
+            "left_ee": [
+              -3.811,
+              -2.03,
+              1.113
+            ],
+            "lifted_m": -0.7131,
+            "max_held_s": 0.0,
+            "ok": false,
+            "phase": "hold",
+            "right_ee": [
+              -4.199,
+              -1.784,
+              1.045
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "tick": 21261
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 647.889
+      },
+      "score": 0.0,
+      "success": false,
+      "trial": 5,
+      "wall_time_seconds": 648.383
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.1884517472716568,
+        "close_ramp_seconds": 0.582713499881595,
+        "y_offset": 0.052743561871364156
+      },
+      "result": {
+        "close_effort_scale": 0.188452,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.083,
+          -1.5074,
+          0.7774
+        ],
+        "cup_lift_m": 0.0304,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.582713,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.315,
+              -1.74,
+              2.975
+            ],
+            "cup": [
+              -4.169,
+              -1.697,
+              0.777
+            ],
+            "left_ee": [
+              -3.911,
+              -1.923,
+              0.999
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0566,
+            "right_ee": [
+              -4.155,
+              -1.739,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.294,
+              -1.726,
+              -3.01
+            ],
+            "cup": [
+              -4.169,
+              -1.697,
+              0.777
+            ],
+            "left_ee": [
+              -3.808,
+              -2.076,
+              0.993
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0199,
+            "right_ee": [
+              -4.139,
+              -1.657,
+              0.857
+            ],
+            "rim": null,
+            "spine": 0.432,
+            "tick": 17249
+          },
+          {
+            "base": [
+              -3.301,
+              -1.743,
+              -3.122
+            ],
+            "cup": [
+              -4.107,
+              -1.599,
+              0.777
+            ],
+            "gripper_position_rad": 0.2341,
+            "left_ee": [
+              -3.851,
+              -2.032,
+              0.993
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.138,
+              -1.596,
+              0.873
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "tick": 17549
+          },
+          {
+            "base": [
+              -3.304,
+              -1.737,
+              -3.111
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "left_ee": [
+              -3.851,
+              -2.031,
+              1.105
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.135,
+              -1.583,
+              1.074
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 18158
+          },
+          {
+            "base": [
+              -3.294,
+              -1.729,
+              -3.053
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.822,
+              -2.055,
+              1.108
+            ],
+            "lifted_m": 0.0304,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.133,
+              -1.57,
+              1.063
+            ],
+            "rim": null,
+            "spine": 0.551,
+            "tick": 18758
+          },
+          {
+            "base": [
+              -3.299,
+              -0.398,
+              -3.111
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "left_ee": [
+              -3.843,
+              -0.695,
+              1.106
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.126,
+              -0.198,
+              1.06
+            ],
+            "rim": null,
+            "spine": 0.55,
+            "target": [
+              -3.293708086013794,
+              -0.37
+            ],
+            "tick": 19776
+          },
+          {
+            "base": [
+              -4.115,
+              -0.356,
+              -3.023
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "left_ee": [
+              -4.641,
+              -0.695,
+              1.115
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.961,
+              -0.236,
+              1.071
+            ],
+            "rim": null,
+            "spine": 0.555,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 20657
+          },
+          {
+            "base": [
+              -4.273,
+              -0.151,
+              -2.735
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "left_ee": [
+              -4.646,
+              -0.425,
+              1.25
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -5.09,
+              -0.085,
+              1.156
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "tick": 24730
+          },
+          {
+            "base": [
+              -4.273,
+              -0.151,
+              -2.735
+            ],
+            "cup": [
+              -4.083,
+              -1.507,
+              0.777
+            ],
+            "dining_pose": [
+              -4.083024978637695,
+              -1.50737464427948,
+              0.7774182558059692
+            ],
+            "left_ee": [
+              -4.646,
+              -0.425,
+              1.25
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -5.09,
+              -0.085,
+              1.156
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "tick": 24730
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 743.259
+      },
+      "score": 0.687024,
+      "success": true,
+      "trial": 6,
+      "wall_time_seconds": 743.776
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.19953981245168095,
+        "close_ramp_seconds": 0.5935500693054321,
+        "y_offset": 0.05396600938539287
+      },
+      "result": {
+        "close_effort_scale": 0.19954,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -4.1281,
+          -1.5424,
+          0.7766
+        ],
+        "cup_lift_m": 0.0296,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "close",
+        "grasp_ramp_seconds": 0.59355,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.303,
+              -1.741,
+              -3.121
+            ],
+            "cup": [
+              -4.167,
+              -1.698,
+              0.777
+            ],
+            "left_ee": [
+              -3.852,
+              -2.031,
+              0.994
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0706,
+            "right_ee": [
+              -4.15,
+              -1.756,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.699,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.297,
+              -1.739,
+              -3.055
+            ],
+            "cup": [
+              -4.167,
+              -1.698,
+              0.777
+            ],
+            "left_ee": [
+              -3.828,
+              -2.065,
+              0.995
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0198,
+            "right_ee": [
+              -4.132,
+              -1.66,
+              0.856
+            ],
+            "rim": null,
+            "spine": 0.434,
+            "tick": 17009
+          },
+          {
+            "base": [
+              -3.301,
+              -1.743,
+              3.086
+            ],
+            "cup": [
+              -4.128,
+              -1.542,
+              0.777
+            ],
+            "gripper_position_rad": 0.0081,
+            "left_ee": [
+              -3.869,
+              -1.989,
+              0.991
+            ],
+            "ok": false,
+            "phase": "close",
+            "right_ee": [
+              -4.121,
+              -1.567,
+              0.872
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "tick": 17309
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 522.699
+      },
+      "score": 0.148,
+      "success": false,
+      "trial": 7,
+      "wall_time_seconds": 523.216
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.07706937511983611,
+        "close_ramp_seconds": 0.5822981983308659,
+        "y_offset": 0.053021118651648595
+      },
+      "result": {
+        "close_effort_scale": 0.077069,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -3.9691,
+          -1.2181,
+          0.7771
+        ],
+        "cup_lift_m": 0.0301,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.582298,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.28,
+              -1.723,
+              3.016
+            ],
+            "cup": [
+              -4.085,
+              -1.73,
+              0.778
+            ],
+            "left_ee": [
+              -3.868,
+              -1.928,
+              1.0
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0552,
+            "right_ee": [
+              -4.154,
+              -1.737,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.44,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.298,
+              -1.728,
+              -3.094
+            ],
+            "cup": [
+              -4.085,
+              -1.73,
+              0.778
+            ],
+            "left_ee": [
+              -3.842,
+              -2.033,
+              0.996
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0125,
+            "right_ee": [
+              -4.05,
+              -1.684,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17400
+          },
+          {
+            "base": [
+              -3.301,
+              -1.744,
+              3.136
+            ],
+            "cup": [
+              -3.989,
+              -1.634,
+              0.777
+            ],
+            "gripper_position_rad": 1.0099,
+            "left_ee": [
+              -3.861,
+              -2.018,
+              0.995
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.047,
+              -1.665,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17700
+          },
+          {
+            "base": [
+              -3.311,
+              -1.763,
+              -3.14
+            ],
+            "cup": [
+              -3.959,
+              -1.22,
+              0.777
+            ],
+            "left_ee": [
+              -3.868,
+              -2.042,
+              1.115
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.044,
+              -1.644,
+              1.08
+            ],
+            "rim": null,
+            "spine": 0.555,
+            "tick": 18649
+          },
+          {
+            "base": [
+              -3.296,
+              -1.727,
+              -3.065
+            ],
+            "cup": [
+              -3.969,
+              -1.218,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.834,
+              -2.048,
+              1.118
+            ],
+            "lifted_m": 0.0301,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.05,
+              -1.634,
+              1.085
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "tick": 19249
+          },
+          {
+            "base": [
+              -3.3,
+              -0.398,
+              -3.11
+            ],
+            "cup": [
+              -3.969,
+              -1.218,
+              0.777
+            ],
+            "left_ee": [
+              -3.844,
+              -0.693,
+              1.109
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.043,
+              -0.275,
+              1.072
+            ],
+            "rim": null,
+            "spine": 0.553,
+            "target": [
+              -3.296085834503174,
+              -0.37
+            ],
+            "tick": 20290
+          },
+          {
+            "base": [
+              -3.92,
+              -0.169,
+              -3.025
+            ],
+            "cup": [
+              -3.969,
+              -1.218,
+              0.777
+            ],
+            "dining_pose": [
+              -3.9691038131713867,
+              -1.218080759048462,
+              0.7771168947219849
+            ],
+            "left_ee": [
+              -4.437,
+              -0.51,
+              1.104
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.67,
+              -0.107,
+              1.069
+            ],
+            "rim": null,
+            "spine": 0.548,
+            "tick": 31291
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 945.852
+      },
+      "score": 0.4505,
+      "success": true,
+      "trial": 8,
+      "wall_time_seconds": 946.389
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.23278051248070641,
+        "close_ramp_seconds": 0.5800727800168863,
+        "y_offset": 0.0530201318344628
+      },
+      "result": {
+        "close_effort_scale": 0.232781,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.4615,
+          -1.6127,
+          0.777
+        ],
+        "cup_lift_m": 0.03,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.580073,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.294,
+              -1.716,
+              -2.975
+            ],
+            "cup": [
+              -4.114,
+              -1.647,
+              0.753
+            ],
+            "left_ee": [
+              -3.794,
+              -2.082,
+              0.995
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0623,
+            "right_ee": [
+              -4.174,
+              -1.739,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.295,
+              -1.724,
+              3.094
+            ],
+            "cup": [
+              -4.114,
+              -1.647,
+              0.753
+            ],
+            "left_ee": [
+              -3.863,
+              -1.973,
+              0.996
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0447,
+            "right_ee": [
+              -4.096,
+              -1.593,
+              0.86
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "tick": 17624
+          },
+          {
+            "base": [
+              -3.268,
+              -1.732,
+              -3.127
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "gripper_position_rad": 0.0985,
+            "left_ee": [
+              -3.817,
+              -2.021,
+              1.0
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.065,
+              -1.657,
+              0.875
+            ],
+            "rim": null,
+            "spine": 0.44,
+            "tick": 17924
+          },
+          {
+            "base": [
+              -3.312,
+              -1.744,
+              -3.028
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "left_ee": [
+              -3.836,
+              -2.084,
+              1.108
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.055,
+              -1.654,
+              1.072
+            ],
+            "rim": null,
+            "spine": 0.548,
+            "tick": 18538
+          },
+          {
+            "base": [
+              -3.298,
+              -1.733,
+              3.093
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.867,
+              -1.984,
+              1.113
+            ],
+            "lifted_m": 0.03,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.05,
+              -1.649,
+              1.062
+            ],
+            "rim": null,
+            "spine": 0.555,
+            "tick": 19138
+          },
+          {
+            "base": [
+              -3.303,
+              -0.398,
+              -3.104
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "left_ee": [
+              -3.847,
+              -0.696,
+              1.108
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.059,
+              -0.375,
+              1.055
+            ],
+            "rim": null,
+            "spine": 0.551,
+            "target": [
+              -3.297898769378662,
+              -0.37
+            ],
+            "tick": 20189
+          },
+          {
+            "base": [
+              -4.113,
+              -0.375,
+              -3.034
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "left_ee": [
+              -4.643,
+              -0.708,
+              1.122
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.868,
+              -0.423,
+              1.086
+            ],
+            "rim": null,
+            "spine": 0.559,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 21152
+          },
+          {
+            "base": [
+              -4.244,
+              -0.145,
+              -2.881
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "left_ee": [
+              -4.721,
+              -0.563,
+              1.118
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -4.986,
+              -0.297,
+              1.059
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "tick": 23978
+          },
+          {
+            "base": [
+              -4.244,
+              -0.145,
+              -2.881
+            ],
+            "cup": [
+              -4.461,
+              -1.613,
+              0.777
+            ],
+            "dining_pose": [
+              -4.461458683013916,
+              -1.612684726715088,
+              0.777007520198822
+            ],
+            "left_ee": [
+              -4.721,
+              -0.563,
+              1.118
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.986,
+              -0.297,
+              1.059
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "tick": 23978
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 717.342
+      },
+      "score": 0.732882,
+      "success": true,
+      "trial": 9,
+      "wall_time_seconds": 717.829
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.1980503985343463,
+        "close_ramp_seconds": 0.6545813065932766,
+        "y_offset": 0.05298987220113356
+      },
+      "result": {
+        "close_effort_scale": 0.19805,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.141,
+          -1.5332,
+          0.7765
+        ],
+        "cup_lift_m": 0.0295,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.654581,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.268,
+              -1.717,
+              2.846
+            ],
+            "cup": [
+              -4.193,
+              -1.65,
+              0.777
+            ],
+            "left_ee": [
+              -3.879,
+              -1.82,
+              0.992
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0563,
+            "right_ee": [
+              -4.168,
+              -1.734,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.316,
+              -1.762,
+              -2.996
+            ],
+            "cup": [
+              -4.193,
+              -1.65,
+              0.777
+            ],
+            "left_ee": [
+              -3.825,
+              -2.119,
+              0.993
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0199,
+            "right_ee": [
+              -4.162,
+              -1.612,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.434,
+            "tick": 17225
+          },
+          {
+            "base": [
+              -3.288,
+              -1.723,
+              -3.036
+            ],
+            "cup": [
+              -4.138,
+              -1.535,
+              0.777
+            ],
+            "gripper_position_rad": 0.1434,
+            "left_ee": [
+              -3.81,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.146,
+              -1.551,
+              0.872
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "tick": 17525
+          },
+          {
+            "base": [
+              -3.305,
+              -1.746,
+              -3.023
+            ],
+            "cup": [
+              -4.141,
+              -1.533,
+              0.776
+            ],
+            "left_ee": [
+              -3.827,
+              -2.087,
+              1.105
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.148,
+              -1.548,
+              1.083
+            ],
+            "rim": null,
+            "spine": 0.546,
+            "tick": 18125
+          },
+          {
+            "base": [
+              -3.294,
+              -1.73,
+              -3.121
+            ],
+            "cup": [
+              -4.141,
+              -1.533,
+              0.776
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.842,
+              -2.021,
+              1.109
+            ],
+            "lifted_m": 0.0295,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.145,
+              -1.552,
+              1.071
+            ],
+            "rim": null,
+            "spine": 0.551,
+            "tick": 18725
+          },
+          {
+            "base": [
+              -3.298,
+              -0.397,
+              -3.109
+            ],
+            "cup": [
+              -4.141,
+              -1.533,
+              0.776
+            ],
+            "left_ee": [
+              -3.843,
+              -0.694,
+              1.105
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.154,
+              -0.219,
+              1.067
+            ],
+            "rim": null,
+            "spine": 0.549,
+            "target": [
+              -3.2942144870758057,
+              -0.37
+            ],
+            "tick": 19796
+          },
+          {
+            "base": [
+              -3.958,
+              -0.271,
+              -3.035
+            ],
+            "cup": [
+              -4.141,
+              -1.533,
+              0.776
+            ],
+            "dining_pose": [
+              -4.141035079956055,
+              -1.5331861972808838,
+              0.7764613628387451
+            ],
+            "left_ee": [
+              -4.483,
+              -0.612,
+              1.108
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.825,
+              -0.164,
+              1.076
+            ],
+            "rim": null,
+            "spine": 0.552,
+            "tick": 30797
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 927.378
+      },
+      "score": 0.714535,
+      "success": true,
+      "trial": 10,
+      "wall_time_seconds": 927.911
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.19263703276227745,
+        "close_ramp_seconds": 0.5,
+        "y_offset": 0.05300090368193355
+      },
+      "result": {
+        "close_effort_scale": 0.192637,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -4.1052,
+          -1.6339,
+          0.747
+        ],
+        "cup_lift_m": 0.0,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.5,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.294,
+              -1.738,
+              -2.94
+            ],
+            "cup": [
+              -4.131,
+              -1.693,
+              0.755
+            ],
+            "left_ee": [
+              -3.783,
+              -2.122,
+              1.004
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0607,
+            "right_ee": [
+              -4.189,
+              -1.718,
+              0.852
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.253,
+              -1.715,
+              2.931
+            ],
+            "cup": [
+              -4.131,
+              -1.693,
+              0.755
+            ],
+            "left_ee": [
+              -3.853,
+              -1.87,
+              0.994
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0507,
+            "right_ee": [
+              -4.115,
+              -1.673,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "tick": 17624
+          },
+          {
+            "base": [
+              -3.277,
+              -1.778,
+              2.892
+            ],
+            "cup": [
+              -4.102,
+              -1.63,
+              0.747
+            ],
+            "gripper_position_rad": 0.8474,
+            "left_ee": [
+              -3.883,
+              -1.912,
+              1.001
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.119,
+              -1.708,
+              0.86
+            ],
+            "rim": null,
+            "spine": 0.441,
+            "tick": 17924
+          },
+          {
+            "base": [
+              -3.307,
+              -1.746,
+              -3.012
+            ],
+            "cup": [
+              -4.105,
+              -1.634,
+              0.747
+            ],
+            "left_ee": [
+              -3.819,
+              -2.094,
+              1.105
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.113,
+              -1.698,
+              1.073
+            ],
+            "rim": null,
+            "spine": 0.549,
+            "tick": 18585
+          },
+          {
+            "base": [
+              -3.288,
+              -1.709,
+              -3.045
+            ],
+            "cup": [
+              -4.105,
+              -1.634,
+              0.747
+            ],
+            "held_s": 0.0,
+            "left_ee": [
+              -3.818,
+              -2.04,
+              1.116
+            ],
+            "lifted_m": 0.0,
+            "max_held_s": 0.0,
+            "ok": false,
+            "phase": "hold",
+            "right_ee": [
+              -4.115,
+              -1.62,
+              1.026
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "tick": 20785
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 633.222
+      },
+      "score": 0.018565,
+      "success": false,
+      "trial": 11,
+      "wall_time_seconds": 633.721
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.19697501756522512,
+        "close_ramp_seconds": 0.592012218036887,
+        "y_offset": 0.053000205434998615
+      },
+      "result": {
+        "close_effort_scale": 0.196975,
+        "continuous_hold_seconds": 0.0,
+        "cup_end": [
+          -3.5612,
+          -1.5384,
+          0.3842
+        ],
+        "cup_lift_m": -0.3628,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.592012,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.3,
+              -1.752,
+              2.797
+            ],
+            "cup": [
+              -4.094,
+              -1.718,
+              0.777
+            ],
+            "left_ee": [
+              -3.918,
+              -1.825,
+              0.993
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0561,
+            "right_ee": [
+              -4.166,
+              -1.734,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.7,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.308,
+              -1.731,
+              -3.13
+            ],
+            "cup": [
+              -4.094,
+              -1.718,
+              0.777
+            ],
+            "left_ee": [
+              -3.862,
+              -2.015,
+              0.997
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0175,
+            "right_ee": [
+              -4.059,
+              -1.678,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17320
+          },
+          {
+            "base": [
+              -3.324,
+              -1.726,
+              -3.06
+            ],
+            "cup": [
+              -3.637,
+              -1.595,
+              0.385
+            ],
+            "gripper_position_rad": 0.2474,
+            "left_ee": [
+              -3.854,
+              -2.049,
+              1.003
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.076,
+              -1.749,
+              0.876
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 17620
+          },
+          {
+            "base": [
+              -3.312,
+              -1.756,
+              3.109
+            ],
+            "cup": [
+              -3.57,
+              -1.552,
+              0.384
+            ],
+            "left_ee": [
+              -3.876,
+              -2.016,
+              1.11
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.085,
+              -1.739,
+              1.073
+            ],
+            "rim": null,
+            "spine": 0.55,
+            "tick": 18370
+          },
+          {
+            "base": [
+              -3.305,
+              -1.744,
+              3.131
+            ],
+            "cup": [
+              -3.561,
+              -1.538,
+              0.384
+            ],
+            "held_s": 0.0,
+            "left_ee": [
+              -3.866,
+              -2.017,
+              1.109
+            ],
+            "lifted_m": -0.3628,
+            "max_held_s": 0.0,
+            "ok": false,
+            "phase": "hold",
+            "right_ee": [
+              -4.089,
+              -1.687,
+              1.021
+            ],
+            "rim": null,
+            "spine": 0.552,
+            "tick": 20570
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 629.507
+      },
+      "score": 0.230329,
+      "success": false,
+      "trial": 12,
+      "wall_time_seconds": 630.016
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.19426439368757858,
+        "close_ramp_seconds": 0.667910353660468,
+        "y_offset": 0.05832361434971359
+      },
+      "result": {
+        "close_effort_scale": 0.194264,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -3.9839,
+          -1.6247,
+          0.9672
+        ],
+        "cup_lift_m": 0.2202,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.66791,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.322,
+              -1.764,
+              2.966
+            ],
+            "cup": [
+              -4.079,
+              -1.735,
+              0.777
+            ],
+            "left_ee": [
+              -3.915,
+              -1.942,
+              0.995
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0623,
+            "right_ee": [
+              -4.152,
+              -1.742,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.694,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.298,
+              -1.737,
+              -3.037
+            ],
+            "cup": [
+              -4.079,
+              -1.735,
+              0.777
+            ],
+            "left_ee": [
+              -3.825,
+              -2.072,
+              0.994
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0157,
+            "right_ee": [
+              -4.04,
+              -1.689,
+              0.854
+            ],
+            "rim": null,
+            "spine": 0.434,
+            "tick": 17225
+          },
+          {
+            "base": [
+              -3.288,
+              -1.727,
+              -3.037
+            ],
+            "cup": [
+              -3.981,
+              -1.643,
+              0.777
+            ],
+            "gripper_position_rad": 0.822,
+            "left_ee": [
+              -3.813,
+              -2.061,
+              0.994
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.032,
+              -1.684,
+              0.861
+            ],
+            "rim": null,
+            "spine": 0.436,
+            "tick": 17525
+          },
+          {
+            "base": [
+              -3.302,
+              -1.748,
+              -3.023
+            ],
+            "cup": [
+              -3.979,
+              -1.62,
+              1.0
+            ],
+            "left_ee": [
+              -3.825,
+              -2.089,
+              1.105
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.032,
+              -1.67,
+              1.077
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 18125
+          },
+          {
+            "base": [
+              -3.307,
+              -1.748,
+              -3.041
+            ],
+            "cup": [
+              -3.984,
+              -1.625,
+              0.967
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.836,
+              -2.08,
+              1.113
+            ],
+            "lifted_m": 0.2202,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.034,
+              -1.674,
+              1.072
+            ],
+            "rim": null,
+            "spine": 0.554,
+            "tick": 18725
+          },
+          {
+            "base": [
+              -3.314,
+              -0.398,
+              -3.109
+            ],
+            "cup": [
+              -3.976,
+              -0.224,
+              0.948
+            ],
+            "left_ee": [
+              -3.861,
+              -0.693,
+              1.111
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.029,
+              -0.26,
+              1.07
+            ],
+            "rim": null,
+            "spine": 0.554,
+            "target": [
+              -3.3071577548980713,
+              -0.37
+            ],
+            "tick": 19821
+          },
+          {
+            "base": [
+              -4.116,
+              -0.353,
+              -3.022
+            ],
+            "cup": [
+              -4.779,
+              -0.235,
+              0.034
+            ],
+            "left_ee": [
+              -4.642,
+              -0.693,
+              1.113
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.845,
+              -0.293,
+              1.079
+            ],
+            "rim": null,
+            "spine": 0.554,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 20940
+          },
+          {
+            "base": [
+              -4.146,
+              -0.171,
+              -3.012
+            ],
+            "cup": [
+              -4.89,
+              -0.4,
+              0.034
+            ],
+            "left_ee": [
+              -4.661,
+              -0.518,
+              1.102
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -4.87,
+              -0.105,
+              1.059
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 21265
+          },
+          {
+            "base": [
+              -4.146,
+              -0.171,
+              -3.012
+            ],
+            "cup": [
+              -4.89,
+              -0.4,
+              0.034
+            ],
+            "dining_pose": [
+              -4.890270233154297,
+              -0.40033841133117676,
+              0.034495674073696136
+            ],
+            "left_ee": [
+              -4.661,
+              -0.518,
+              1.102
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.87,
+              -0.105,
+              1.059
+            ],
+            "rim": null,
+            "spine": 0.545,
+            "tick": 21265
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 656.14
+      },
+      "score": 0.727529,
+      "success": true,
+      "trial": 13,
+      "wall_time_seconds": 656.651
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.12622758589189137,
+        "close_ramp_seconds": 0.6616390752616221,
+        "y_offset": 0.045180563182025076
+      },
+      "result": {
+        "close_effort_scale": 0.126228,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.1003,
+          -1.7386,
+          0.7772
+        ],
+        "cup_lift_m": 0.0302,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.661639,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.309,
+              -1.758,
+              2.865
+            ],
+            "cup": [
+              -4.141,
+              -1.701,
+              0.778
+            ],
+            "left_ee": [
+              -3.918,
+              -1.878,
+              1.0
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.066,
+            "right_ee": [
+              -4.161,
+              -1.759,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.438,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.707,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.297,
+              -1.738,
+              -3.066
+            ],
+            "cup": [
+              -4.141,
+              -1.701,
+              0.778
+            ],
+            "left_ee": [
+              -3.83,
+              -2.058,
+              0.992
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0197,
+            "right_ee": [
+              -4.103,
+              -1.673,
+              0.855
+            ],
+            "rim": null,
+            "spine": 0.432,
+            "tick": 17218
+          },
+          {
+            "base": [
+              -3.294,
+              -1.724,
+              -3.139
+            ],
+            "cup": [
+              -4.077,
+              -1.604,
+              0.781
+            ],
+            "gripper_position_rad": 0.5068,
+            "left_ee": [
+              -3.846,
+              -2.003,
+              0.989
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.096,
+              -1.618,
+              0.87
+            ],
+            "rim": null,
+            "spine": 0.432,
+            "tick": 17518
+          },
+          {
+            "base": [
+              -3.296,
+              -1.735,
+              -3.132
+            ],
+            "cup": [
+              -4.101,
+              -1.739,
+              0.777
+            ],
+            "left_ee": [
+              -3.847,
+              -2.017,
+              1.113
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.085,
+              -1.597,
+              1.083
+            ],
+            "rim": null,
+            "spine": 0.555,
+            "tick": 18240
+          },
+          {
+            "base": [
+              -3.289,
+              -1.724,
+              -2.993
+            ],
+            "cup": [
+              -4.1,
+              -1.739,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.803,
+              -2.08,
+              1.117
+            ],
+            "lifted_m": 0.0302,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.079,
+              -1.606,
+              1.078
+            ],
+            "rim": null,
+            "spine": 0.557,
+            "tick": 18840
+          },
+          {
+            "base": [
+              -3.295,
+              -0.397,
+              -3.106
+            ],
+            "cup": [
+              -4.1,
+              -1.739,
+              0.777
+            ],
+            "left_ee": [
+              -3.838,
+              -0.694,
+              1.106
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.061,
+              -0.176,
+              1.066
+            ],
+            "rim": null,
+            "spine": 0.55,
+            "target": [
+              -3.289052724838257,
+              -0.37
+            ],
+            "tick": 19912
+          },
+          {
+            "base": [
+              -4.114,
+              -0.357,
+              -3.02
+            ],
+            "cup": [
+              -4.1,
+              -1.739,
+              0.777
+            ],
+            "left_ee": [
+              -4.641,
+              -0.696,
+              1.113
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.911,
+              -0.202,
+              1.079
+            ],
+            "rim": null,
+            "spine": 0.556,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 20762
+          },
+          {
+            "base": [
+              -4.144,
+              -0.088,
+              -2.993
+            ],
+            "cup": [
+              -4.1,
+              -1.739,
+              0.777
+            ],
+            "left_ee": [
+              -4.649,
+              -0.445,
+              1.104
+            ],
+            "message": "world target lies outside CartesianTargetTracker limits",
+            "ok": false,
+            "phase": "transport_workspace_limit",
+            "right_ee": [
+              -4.934,
+              0.031,
+              1.071
+            ],
+            "rim": null,
+            "spine": 0.548,
+            "tick": 21190
+          },
+          {
+            "base": [
+              -4.144,
+              -0.088,
+              -2.993
+            ],
+            "cup": [
+              -4.1,
+              -1.739,
+              0.777
+            ],
+            "dining_pose": [
+              -4.100310325622559,
+              -1.7386150360107422,
+              0.7772142887115479
+            ],
+            "left_ee": [
+              -4.649,
+              -0.445,
+              1.104
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.934,
+              0.031,
+              1.071
+            ],
+            "rim": null,
+            "spine": 0.548,
+            "tick": 21190
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 637.526
+      },
+      "score": 0.589776,
+      "success": true,
+      "trial": 14,
+      "wall_time_seconds": 638.067
+    },
+    {
+      "parameters": {
+        "close_effort_scale": 0.25,
+        "close_ramp_seconds": 0.6812256523205666,
+        "y_offset": 0.05988280500376134
+      },
+      "result": {
+        "close_effort_scale": 0.25,
+        "continuous_hold_seconds": 3.0,
+        "cup_end": [
+          -4.1331,
+          -1.5207,
+          0.777
+        ],
+        "cup_lift_m": 0.03,
+        "cup_start": [
+          -4.1849,
+          -1.7527,
+          0.747
+        ],
+        "final_phase": "hold",
+        "grasp_ramp_seconds": 0.681226,
+        "hold_seconds": 3.0,
+        "min_lift_m": 0.02,
+        "object_name": "cup",
+        "passed": false,
+        "phases": [
+          {
+            "base": [
+              -4.601,
+              2.692,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.067,
+              1.997,
+              1.378
+            ],
+            "ok": true,
+            "phase": "raise_spine",
+            "right_ee": [
+              -5.138,
+              1.999,
+              1.378
+            ],
+            "rim": null,
+            "spine": 0.43,
+            "target_spine": 0.45,
+            "tick": 894
+          },
+          {
+            "base": [
+              -4.601,
+              2.682,
+              -1.573
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -4.325,
+              2.122,
+              0.996
+            ],
+            "ok": true,
+            "phase": "tuck_spine_up",
+            "right_ee": [
+              -4.88,
+              2.123,
+              0.996
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 1394
+          },
+          {
+            "base": [
+              -3.178,
+              -1.572,
+              -1.557
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.894,
+              -2.127,
+              1.0
+            ],
+            "ok": true,
+            "phase": "navigate_corridor_stop",
+            "right_ee": [
+              -3.449,
+              -2.135,
+              1.001
+            ],
+            "rim": null,
+            "spine": 0.442,
+            "tick": 4429
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "rotate_spot_recovery",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.108,
+              -3.061,
+              -1.313
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -2.699,
+              -3.522,
+              1.012
+            ],
+            "ok": true,
+            "phase": "navigate_rotate_spot",
+            "right_ee": [
+              -3.239,
+              -3.671,
+              1.009
+            ],
+            "rim": null,
+            "spine": 0.445,
+            "tick": 11430
+          },
+          {
+            "base": [
+              -3.134,
+              -2.815,
+              -3.072
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.668,
+              -3.132,
+              1.004
+            ],
+            "ok": true,
+            "phase": "rotate_west",
+            "right_ee": [
+              -3.706,
+              -2.576,
+              1.006
+            ],
+            "rim": null,
+            "spine": 0.444,
+            "tick": 14270
+          },
+          {
+            "base": [
+              -3.297,
+              -1.736,
+              -3.089
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.836,
+              -2.047,
+              1.018
+            ],
+            "ok": true,
+            "phase": "navigate_stance",
+            "right_ee": [
+              -3.872,
+              -1.49,
+              1.017
+            ],
+            "rim": null,
+            "spine": 0.45,
+            "tick": 15514
+          },
+          {
+            "base": [
+              -3.353,
+              -1.714,
+              -3.023
+            ],
+            "cup": [
+              -4.185,
+              -1.753,
+              0.747
+            ],
+            "left_ee": [
+              -3.871,
+              -2.057,
+              0.992
+            ],
+            "ok": true,
+            "phase": "pregrasp",
+            "right_ee": [
+              -4.149,
+              -1.751,
+              1.036
+            ],
+            "rim": null,
+            "spine": 0.433,
+            "target": [
+              -4.145,
+              -1.75,
+              1.05
+            ],
+            "tick": 15624
+          },
+          {
+            "base": [
+              -3.284,
+              -1.711,
+              2.802
+            ],
+            "cup": [
+              -4.182,
+              -1.665,
+              0.776
+            ],
+            "left_ee": [
+              -3.899,
+              -1.789,
+              0.991
+            ],
+            "ok": true,
+            "phase": "descend",
+            "position_error_m": 0.0546,
+            "right_ee": [
+              -4.162,
+              -1.728,
+              0.853
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "strict_reach": false,
+            "target": [
+              -4.145,
+              -1.693,
+              0.815
+            ],
+            "tick": 16824
+          },
+          {
+            "base": [
+              -3.3,
+              -1.731,
+              3.127
+            ],
+            "cup": [
+              -4.182,
+              -1.665,
+              0.776
+            ],
+            "left_ee": [
+              -3.861,
+              -1.998,
+              0.993
+            ],
+            "ok": true,
+            "phase": "recenter_live_cup",
+            "position_error_m": 0.0199,
+            "right_ee": [
+              -4.147,
+              -1.62,
+              0.856
+            ],
+            "rim": null,
+            "spine": 0.435,
+            "tick": 17388
+          },
+          {
+            "base": [
+              -3.293,
+              -1.707,
+              3.077
+            ],
+            "cup": [
+              -4.113,
+              -1.558,
+              0.781
+            ],
+            "gripper_position_rad": 0.1318,
+            "left_ee": [
+              -3.865,
+              -1.949,
+              0.997
+            ],
+            "ok": true,
+            "phase": "close",
+            "right_ee": [
+              -4.137,
+              -1.574,
+              0.874
+            ],
+            "rim": null,
+            "spine": 0.437,
+            "tick": 17688
+          },
+          {
+            "base": [
+              -3.307,
+              -1.75,
+              -3.05
+            ],
+            "cup": [
+              -4.133,
+              -1.521,
+              0.777
+            ],
+            "left_ee": [
+              -3.834,
+              -2.076,
+              1.103
+            ],
+            "ok": true,
+            "phase": "lift",
+            "right_ee": [
+              -4.139,
+              -1.575,
+              1.083
+            ],
+            "rim": null,
+            "spine": 0.546,
+            "tick": 18288
+          },
+          {
+            "base": [
+              -3.324,
+              -1.733,
+              -3.054
+            ],
+            "cup": [
+              -4.133,
+              -1.521,
+              0.777
+            ],
+            "held_s": 3.0,
+            "left_ee": [
+              -3.85,
+              -2.061,
+              1.107
+            ],
+            "lifted_m": 0.03,
+            "max_held_s": 3.0,
+            "ok": true,
+            "phase": "hold",
+            "right_ee": [
+              -4.136,
+              -1.579,
+              1.072
+            ],
+            "rim": null,
+            "spine": 0.55,
+            "tick": 18888
+          },
+          {
+            "base": [
+              -3.329,
+              -0.398,
+              -3.105
+            ],
+            "cup": [
+              -4.133,
+              -1.521,
+              0.777
+            ],
+            "left_ee": [
+              -3.872,
+              -0.696,
+              1.108
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.133,
+              -0.193,
+              1.074
+            ],
+            "rim": null,
+            "spine": 0.552,
+            "target": [
+              -3.3244593143463135,
+              -0.37
+            ],
+            "tick": 19982
+          },
+          {
+            "base": [
+              -4.114,
+              -0.359,
+              -3.008
+            ],
+            "cup": [
+              -4.133,
+              -1.521,
+              0.777
+            ],
+            "left_ee": [
+              -4.638,
+              -0.709,
+              1.125
+            ],
+            "ok": true,
+            "phase": "transport_waypoint",
+            "right_ee": [
+              -4.932,
+              -0.248,
+              1.088
+            ],
+            "rim": null,
+            "spine": 0.558,
+            "target": [
+              -4.14,
+              -0.37
+            ],
+            "tick": 20784
+          },
+          {
+            "base": [
+              -4.136,
+              0.208,
+              -2.331
+            ],
+            "cup": [
+              -4.133,
+              -1.521,
+              0.777
+            ],
+            "dining_pose": [
+              -4.133103847503662,
+              -1.5207432508468628,
+              0.7770058512687683
+            ],
+            "left_ee": [
+              -4.314,
+              -0.385,
+              1.117
+            ],
+            "ok": false,
+            "phase": "transport_result",
+            "right_ee": [
+              -4.85,
+              -0.206,
+              1.077
+            ],
+            "rim": null,
+            "spine": 0.561,
+            "tick": 31785
+          }
+        ],
+        "sim_dt": 0.005,
+        "tray_grasp_rim_fixture": false,
+        "wall_time_seconds": 949.588
+      },
+      "score": 0.721129,
+      "success": true,
+      "trial": 15,
+      "wall_time_seconds": 950.102
+    }
+  ]
+}

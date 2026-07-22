@@ -13,6 +13,12 @@ if [[ "${1:-}" == "bash" || "${1:-}" == "shell" ]]; then
 fi
 
 if [[ $# -gt 0 ]]; then
+  # Use Isaac Sim's python.sh for python/python3 calls so CARB environment
+  # (CARB_APP_PATH, ISAAC_PATH, etc.) is set up correctly.
+  if [[ "$1" == "python" || "$1" == "python3" ]]; then
+    shift
+    exec /isaac-sim/python.sh "$@"
+  fi
   exec "$@"
 fi
 

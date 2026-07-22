@@ -87,7 +87,10 @@ from task3_autonomy.arms import (  # noqa: E402
     linear_ramp_target,
     synchronized_drag_targets,
 )
-from task3_autonomy.navigation import route_via_door  # noqa: E402
+from task3_autonomy.navigation import (  # noqa: E402
+    route_via_door,
+    waypoints_y_then_x,
+)
 
 TRAY_NAME = "simple_tray"
 NORTH_COUNTER_EDGE_Y = -1.22
@@ -203,6 +206,31 @@ def north_overhang_m(
     measured half-extent, matching the tray's actual footprint.
     """
     return (tray_y + half_extent_y) - counter_edge_y
+
+
+def push_gate_reached(
+    object_y: float, args: argparse.Namespace, object_x: float | None = None
+) -> bool:
+    """Return whether the live physical object pose passed the requested gate."""
+    target_y = getattr(args, "target_y", None)
+    target_x = getattr(args, "target_x", None)
+    if target_y is None:
+        return north_overhang_m(object_y) >= SLIDE_OVERHANG_GATE_M
+    y_reached = (
+        object_y <= target_y
+        if args.push_distance < 0.0
+        else object_y >= target_y
+    )
+    if target_x is None:
+        return y_reached
+    if object_x is None:
+        return False
+    x_reached = (
+        object_x >= target_x
+        if getattr(args, "push_x_distance", 0.0) >= 0.0
+        else object_x <= target_x
+    )
+    return y_reached and x_reached
 
 
 def north_pinch_target(
@@ -810,13 +838,24 @@ def _run_push_stroke(
     if stroke_needs_realign(stroke_contact_y, base_pose.y):
         realign_target = (STANCE[0], stroke_contact_y)
         hold_anchor_box["value"] = None
-        realign_ok = drive(realign_target, 0.2, 10.0)
+        # A diagonal correction from the post-contact pose cuts across the
+        # island's east corner (r1: it stalled 25 cm short). First recover
+        # the clear y lane at the current x, then move west along that row.
+        # This is the project's existing, unit-tested local route primitive;
+        # it changes only base wheel commands and preserves physical contact.
+        realign_waypoints = waypoints_y_then_x(
+            (base_pose.x, base_pose.y), realign_target
+        )[1:]
+        realign_ok = all(
+            drive(waypoint, 0.2, 10.0) for waypoint in realign_waypoints
+        )
         pose = adapter.pose()
         hold_anchor_box["value"] = (pose.x, pose.y)
         log(
             f"{stroke_prefix}_realign",
             ok=realign_ok,
             target=list(realign_target),
+            waypoints=[list(waypoint) for waypoint in realign_waypoints],
             drift_m=round(abs(stroke_contact_y - base_pose.y), 6),
         )
         if not realign_ok:
@@ -874,6 +913,8 @@ def _run_push_stroke(
     drag_start_anchor = hold_anchor_box["value"]
     drag_ramp_ticks = max(1, math.ceil(args.drag_seconds / dt))
     for tick_index in range(drag_ramp_ticks):
+        progress = (tick_index + 1) / drag_ramp_ticks
+        arm_x = stroke_contact_x + args.push_x_distance * progress
         arm_y, anchor_y = synchronized_drag_targets(
             stroke_contact_y,
             drag_start_anchor[1],
@@ -882,24 +923,46 @@ def _run_push_stroke(
             drag_ramp_ticks,
         )
         arms.set_arm_target(
-            "right", (stroke_contact_x, arm_y, args.descend_ee_z), top_down
+            "right", (arm_x, arm_y, args.descend_ee_z), top_down
         )
         arms.command()
-        hold_anchor_box["value"] = (drag_start_anchor[0], anchor_y)
+        anchor_x = (
+            drag_start_anchor[0]
+            + args.base_follow_fraction * args.push_x_distance * progress
+        )
+        followed_y = (
+            drag_start_anchor[1]
+            + args.base_follow_fraction * (anchor_y - drag_start_anchor[1])
+        )
+        hold_anchor_box["value"] = (anchor_x, followed_y)
         sim_tick()
     log(
         f"{stroke_prefix}_drag",
         ok=True,
-        target_arm_y=round(stroke_contact_y + args.push_distance, 6),
+        target_arm=[
+            round(stroke_contact_x + args.push_x_distance, 6),
+            round(stroke_contact_y + args.push_distance, 6),
+        ],
         target_anchor=[
-            round(drag_start_anchor[0], 6),
-            round(drag_start_anchor[1] + args.push_distance, 6),
+            round(
+                drag_start_anchor[0]
+                + args.base_follow_fraction * args.push_x_distance,
+                6,
+            ),
+            round(
+                drag_start_anchor[1]
+                + args.base_follow_fraction * args.push_distance,
+                6,
+            ),
         ],
     )
 
     raise_info = ramp_vertical(
         "right",
-        (stroke_contact_x, stroke_contact_y + args.push_distance),
+        (
+            stroke_contact_x + args.push_x_distance,
+            stroke_contact_y + args.push_distance,
+        ),
         top_down,
         args.descend_ee_z,
         PREGRASP_EE_Z,
@@ -921,13 +984,16 @@ def _run_push_stroke(
     # criterion, so stroke-stop on it directly, with a small margin so
     # push_result's own >= SLIDE_OVERHANG_GATE_M check clears rather than
     # landing exactly on the boundary. Still capped by MAX_PUSH_STROKES.
-    stroke_gate_met = overhang_north >= SLIDE_OVERHANG_GATE_M + 0.01
+    stroke_gate_met = push_gate_reached(
+        after_stroke[1], args, after_stroke[0]
+    )
     log(
         f"{stroke_prefix}_result",
         ok=stroke_gate_met,
         moved_y_m=round(moved_y, 6),
         north_overhang_m=round(overhang_north, 6),
         stroke_moved_y_m=round(after_stroke[1] - live_tray[1], 6),
+        stroke_moved_x_m=round(after_stroke[0] - live_tray[0], 6),
     )
     return stroke_gate_met, None
 
@@ -966,6 +1032,12 @@ def _finish_recording(recorder: Any, gif_name: str = "run.gif") -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--object-name",
+        choices=("simple_tray", "bowl2", "spoon2", "plate2", "cup"),
+        default=TRAY_NAME,
+        help="Dynamic object to move through ordinary robot contact.",
+    )
+    parser.add_argument(
         "--head-placement", choices=("a", "b", "c"), default="a"
     )
     parser.add_argument(
@@ -973,6 +1045,21 @@ def parse_args() -> argparse.Namespace:
         type=float,
         default=0.16,
         help="North travel per press-drag stroke; short strokes reduce fist slip.",
+    )
+    parser.add_argument(
+        "--push-x-distance",
+        type=float,
+        default=0.0,
+        help="East/west travel per physical press-drag stroke in metres.",
+    )
+    parser.add_argument(
+        "--base-follow-fraction",
+        type=float,
+        default=1.0,
+        help=(
+            "Fraction of each arm drag followed by the base; values below 1 "
+            "preserve a bounded relative sweep for stronger contact."
+        ),
     )
     parser.add_argument(
         "--max-push-strokes",
@@ -992,6 +1079,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--edge-lower-max-m", type=float, default=0.08)
     parser.add_argument("--edge-lower-bias-m", type=float, default=0.0)
     parser.add_argument(
+        "--target-y",
+        type=float,
+        help=(
+            "Optional live PhysX Y target. With a negative push distance, "
+            "success requires object Y <= this value."
+        ),
+    )
+    parser.add_argument(
+        "--target-x",
+        type=float,
+        help="Optional live PhysX X target; requires --target-y as well.",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=REPO_ROOT / "outputs" / "task3_stage1_tray_slide",
@@ -1006,6 +1106,10 @@ def main() -> None:
         raise ValueError(
             f"--max-push-strokes must be in [1, {MAX_PUSH_STROKES}]"
         )
+    if not 0.0 <= args.base_follow_fraction <= 1.0:
+        raise ValueError("--base-follow-fraction must be in [0, 1]")
+    if args.target_x is not None and args.target_y is None:
+        raise ValueError("--target-x requires --target-y")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     from isaaclab.app import AppLauncher
 
@@ -1036,7 +1140,9 @@ def main() -> None:
         simulation_app.close()
 
 
-def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
+def _run(  # noqa: C901 - linear simulator phase orchestration
+    args: argparse.Namespace, simulation_app: Any
+) -> dict[str, Any]:
     from scene_robot_room_keyboard import (
         configure_keyboard_control_stage,
         configure_robot_room_stage,
@@ -1079,7 +1185,7 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         robot_yaw=ROBOT_SPAWN_YAW,
         dynamic_beans=False,
     )
-    tray_root_path = resolve_prim_path(sim.stage, TRAY_NAME)
+    tray_root_path = resolve_prim_path(sim.stage, args.object_name)
     tray_view_path = prepare_rigid_body_view_path(sim.stage, tray_root_path)
     scene = InteractiveScene(
         make_control_scene_cfg(
@@ -1148,8 +1254,8 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
                 vx, vy = base_twist_toward(
                     adapter.pose(),
                     hold_anchor_box["value"],
-                    max_linear_mps=0.12,
-                    position_kp=2.0,
+                    max_linear_mps=0.25,
+                    position_kp=4.0,
                 )
                 adapter.apply_twist(vx, vy, hold_heading=True)
             scene.write_data_to_sim()
@@ -1398,17 +1504,24 @@ def _run(args: argparse.Namespace, simulation_app: Any) -> dict[str, Any]:
         overhang_north = north_overhang_m(after_push[1])
         # A net translation is only a diagnostic proxy. The tray must actually
         # clear the counter before the edge-lift/carry chain is attempted.
-        slide_ok = overhang_north >= SLIDE_OVERHANG_GATE_M
+        slide_ok = push_gate_reached(after_push[1], args, after_push[0])
         log(
             "push_result",
             ok=slide_ok,
             moved_y_m=round(moved_y, 6),
             north_overhang_m=round(overhang_north, 6),
+            target_y=args.target_y,
+            target_x=args.target_x,
             strokes_used=strokes_used,
         )
         if not slide_ok:
             return _result(
                 False, "push_result", phases, start, tray_pose(), args
+            )
+
+        if args.target_y is not None:
+            return _result(
+                True, "target_y_reached", phases, start, after_push, args
             )
 
         # Move to a TRAY-RELATIVE north-side stance, then try a true thin-edge
@@ -1549,12 +1662,14 @@ def _result(
         "passed": bool(passed),
         "failed_phase": failed_phase,
         "mode": "physics_contact_only",
-        "object_name": TRAY_NAME,
+        "object_name": args.object_name,
         "head_placement": args.head_placement,
         "start_pose": [round(v, 6) for v in start],
         "final_pose": [round(v, 6) for v in final],
         "net_translation_m": [round(final[i] - start[i], 6) for i in range(3)],
         "push_distance_commanded_m": args.push_distance,
+        "push_x_distance_commanded_m": args.push_x_distance,
+        "base_follow_fraction": args.base_follow_fraction,
         "descend_ee_z_commanded_m": args.descend_ee_z,
         "north_edge_world_y": NORTH_COUNTER_EDGE_Y,
         "phases": phases,

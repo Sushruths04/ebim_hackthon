@@ -58,6 +58,7 @@ task1_isaacsim/cable_world/assets/table_board_fixture/Assets/board_segment_upper
 # agent
 .claude/
 .codex
+.cache/
 
 # --- Org-standard additions (normalization pass) ---
 
@@ -98,3 +99,4 @@ checkpoints/
 task1_mujoco/robotiq_duo_full_scene_minimal_core/build/
 task1_mujoco/**/mnet_out/
 task1_mujoco/MUJOCO_LOG.TXT
+outputs/

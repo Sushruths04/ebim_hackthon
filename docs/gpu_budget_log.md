@@ -427,3 +427,64 @@ each session, not retroactively.
 - The GUI launcher was tested in public WebRTC mode 1. The server announces
   startup, but the containerized headless session does not retain an exposed
   public socket; the local evidence dashboard is the reliable GUI fallback.
+
+## 2026-07-21 — bimanual cup acquisition validation
+
+- Reused `sim-dev-g4b` in `us-central1-b` for one isolated, recorded
+  standard-physics run: `task3_bimanual_cup_pickup_r1`.
+- Wall time: 179.842 s. Result: failed at `close`; no grasp was claimed.
+- `result.json`, 53 captured frames, and `grasp_lift.gif` were copied to the
+  local `outputs/task3_bimanual_cup_pickup_r1/` immediately after completion.
+
+## 2026-07-21 — tray edge-acquisition validation
+
+- Reused `sim-dev-g4b` for one isolated six-stroke, recorded
+  `probe_tray_slide.py` run (`task3_stage4_tray_edge_r1`).
+- Wall time: 635.713 s. Result: failed at `stroke3_realign`; edge pinch was
+  not attempted. JSON, 18 frames, and `run.gif` were copied locally to
+  `outputs/task3_stage4_tray_edge_r1/` immediately after the VM run.
+## 2026-07-21 — Stage 4 tray edge r2 (recovery-route validation)
+
+- Run: `outputs/task3_stage4_tray_edge_r2_y_then_x/`
+- Wall time: `886.63 s`.
+- Result: recovery navigation passed for all six strokes, but `push_result=false`; net tray north motion was `+0.157954 m`, insufficient for the edge-pinch gate.
+- Artifacts copied to the local worktree immediately after completion.
+## 2026-07-21 — Stage 4 tray sink slide r3
+
+- Run: `outputs/task3_stage4_tray_sink_slide_r3/`
+- Wall time: `942.209 s`.
+- Contact: detected on all six vertical descents (`EE z ≈ 0.854–0.869 m`).
+- Result: `passed=false`, `failed_phase=push_result`; net tray motion `(+0.032174, -0.035815) m`, far below the sink-directed X/Y gates.
+- Artifacts mirrored to the local worktree immediately after completion.
+
+## 2026-07-21 — Stage 4 left-arm full-navigation r3
+
+- Run: `outputs/task3_stage4_cup_left_fullnav_r3/` on `sim-dev-g4b`.
+- Wall time: `248.392 s`, no video capture (diagnostic run).
+- Result: persisted `passed=false`, `failed_phase=navigation`; the robot
+  reached the rotate clearance waypoint 0.115 m away, beyond its strict
+  0.03 m terminal tolerance. No manipulation phase was reached.
+- Follow-up: adopted the proven non-terminal clearance recovery and launched
+  the corrected r4 run.
+
+## 2026-07-21 — Stage 4 left-arm full-navigation r4
+
+- Run: `outputs/task3_stage4_cup_left_fullnav_r4/` on `sim-dev-g4b`.
+- Wall time: `421.5 s`, no video capture (state-gated diagnostic run).
+- Result: full navigation and pregrasp passed; gripper closed to `0.0921`
+  rad, but the cup translated 11.9 cm during descent and failed physical
+  hold (`0.3439 m` EE separation, `0.0302 m` rise, `0.0 s` held).
+- Result JSON copied locally. The VM is now idle; do not launch another
+  offset-tuning run from this evidence.
+
+## 2026-07-21 — OpenCode: L4 VM bring-up + spine-first lift re-verify
+
+- Provisioned new L4 spot VM `sim-l4` in personal GCP account (`mitvho09@gmail.com`, `skilled-fulcrum-472810-f4`, `us-central1-b`, `g2-standard-8`, ~$0.60/hr).
+- GCP lab project `ebim26ham-236` (with `sim-dev-g4b` RTX 6000) is dead.
+- Docker + NVIDIA driver + Isaac Lab 2.3.2 container + Git LFS set up on L4.
+- Fixed Docker entrypoint so `python` resolves to `/isaac-sim/python.sh`.
+- Full-nav test (r1): spine-first lift 4.7cm cup rise. Hold failed (gripper 0.7755 rad).
+- Tuned base hold (KP 8→12, max speed 0.5→0.3) + Y-offset (0.06→0.04).
+- Skip-nav test (r2): spine-first lift improved to **6.1cm cup rise**. Still failed at hold (gripper 0.6279 rad, held only 0.01s).
+- L4 cost: $0.60/hr spot. 12.6 min per skip-nav test ($0.13/run). 23 min per full-nav run ($0.23/run).
+- Total estimated spend: ~2h VM uptime ≈ $1.20. All costs from personal account.
