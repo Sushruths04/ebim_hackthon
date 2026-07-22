@@ -545,19 +545,7 @@ unless everything else is done — PPO on the physical scene is out of budget.
 ## 10. Detailed TODO Checklist
 
 ### Phase 0 — Sync & bootstrap
-- [x] GCP project + billing + L4×2/A100×1 quota request — submitted
-      2026-07-16 17:33 UTC via `gcloud alpha quotas preferences create`
-      (project `gen-lang-client-0186028838`, billing already enabled):
-      `NVIDIA-L4-GPUS-per-project-region` (2, us-central1, preference id
-      `ebim-l4-us-central1`), `NVIDIA-A100-GPUS-per-project-region` (1,
-      us-central1, `ebim-a100-us-central1`), `GPUS-ALL-REGIONS-per-project`
-      (3, `ebim-gpus-all-regions`). All three show `grantedValue: 0`
-      (pending review) as of submission — check with `gcloud alpha quotas
-      preferences list --service=compute.googleapis.com
-      --project=gen-lang-client-0186028838`. Approval still takes 24-48h.
-- [ ] **(Manual)** Set GCP billing alerts (250/500/750 EUR) — not
-      submittable via CLI in a way that's safe to do unattended (alert
-      recipients/thresholds are a judgment call); still needs you.
+- [x] GCP decommissioned (2026-07-23). Lightning AI is the sole compute platform.
 - [ ] **(Manual)** Competition registration (team name + email) — status not verifiable by the executor session; confirm done
 - [x] Push merged local main to fork — pushed as a clean single-commit
       snapshot (`9cc7088`) instead of full history: the fork's old history
