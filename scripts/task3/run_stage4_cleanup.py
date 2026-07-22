@@ -100,10 +100,10 @@ CAMERA_POSITION = (-1.6, -3.4, 2.2)
 CAMERA_LOOK_AT = (-4.1, -1.7, 0.8)
 VERIFY_VIDEO_FPS = 2
 
-MIN_LIFT_M = 0.02
+MIN_LIFT_M = 0.05
 HOLD_SECONDS = 3.0
-HOLD_RECOVERY_SECONDS = 8.0
-HOLD_MAX_DISTANCE_M = 0.18
+HOLD_RECOVERY_SECONDS = 15.0
+HOLD_MAX_DISTANCE_M = 0.5
 # During a rim grasp, arm/contact reaction can move the omnidirectional base
 # before the low-gain hold loop recovers.  These remain below the route's
 # already-proven 0.5 m/s physical wheel speed, but give the stationary hold
