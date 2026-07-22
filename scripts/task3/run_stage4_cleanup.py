@@ -93,8 +93,8 @@ GENERIC_LIFT_Z = 1.00
 FINAL_APPROACH_CONTACT_TOLERANCE_M = 0.10
 
 SINK_CENTER = (-4.025322, -2.227793)
-SINK_ABOVE_Z = 0.85
-SINK_RELEASE_Z = 0.78
+SINK_ABOVE_Z = 0.88
+SINK_RELEASE_Z = 0.84
 
 CAMERA_POSITION = (-1.6, -3.4, 2.2)
 CAMERA_LOOK_AT = (-4.1, -1.7, 0.8)
@@ -1202,11 +1202,10 @@ def _run(  # noqa: C901
             pickup_passed=pickup_passed,
         )
 
-    # ---- Phase 6: lower and release into sink ----
-    sink_down = (SINK_CENTER[0], SINK_CENTER[1], SINK_RELEASE_Z)
-    servo_arm(active_side, sink_down, top_down, budget_s=6.0, tol_m=0.05)
-    log_phase("sink_descend", True)
-
+    # ---- Phase 6: release into sink (drop from approach height) ----
+    # The arm can't descend to the release Z without losing the sink XY
+    # position (kinematic limit).  Release at the approach height and let
+    # the cup drop into the sink.
     release_ok = arms.release(
         active_side, step=sim_tick, dt=sim.cfg.dt, timeout_s=2.0
     )
