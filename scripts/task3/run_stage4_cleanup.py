@@ -1093,14 +1093,14 @@ def _run(  # noqa: C901
         cup_rise=round(cup_rise, 3),
     )
 
-    hold_relative = arms.arm_pose_relative(active_side)
+    hold_pose = arms.ee_world_poses()[0 if active_side == "left" else 1]
     needed_ticks = int(HOLD_SECONDS / sim.cfg.dt)
     recovery_ticks = math.ceil(HOLD_RECOVERY_SECONDS / sim.cfg.dt)
     held_ticks = 0
     max_held_ticks = 0
     for _ in range(needed_ticks + recovery_ticks):
-        arms.set_arm_target_relative(
-            active_side, hold_relative[0], hold_relative[1]
+        arms.set_arm_target(
+            active_side, hold_pose[0], hold_pose[1]
         )
         arms.command()
         sim_tick()
