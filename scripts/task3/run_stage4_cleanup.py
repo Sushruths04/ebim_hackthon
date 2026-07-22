@@ -1100,7 +1100,7 @@ def _run(  # noqa: C901
     max_held_ticks = 0
     for _ in range(needed_ticks + recovery_ticks):
         arms.set_arm_target_relative(
-            active_side, hold_relative[0], hold_relative[1]
+            active_side, hold_relative.position, hold_relative.orientation_wxyz
         )
         arms.command()
         sim_tick()
