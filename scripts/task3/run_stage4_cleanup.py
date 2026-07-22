@@ -82,7 +82,7 @@ GENERIC_PREGRASP_Z = 0.95
 # them without re-proving against verify_grasp_lift.py. See
 # docs/task3_stage4_RUNBOOK.md.
 CUP_RIM_X_OFFSET = 0.04
-CUP_GRASP_Y_OFFSET = 0.03
+CUP_GRASP_Y_OFFSET = 0.06
 CUP_GRASP_HEIGHT_ABOVE_ORIGIN_M = 0.068
 GRASP_Z_OFFSET = 0.10
 FLAT_OBJECT_Z_OFFSET = 0.01
@@ -973,7 +973,7 @@ def _run(  # noqa: C901
     # that real pose rather than an authored/stale transform.
     _, grasp, lift_z = grasp_targets(args.object_name, obj_pose(), args)
     strict_reach = servo_arm(
-        active_side, grasp, top_down, budget_s=12.0, tol_m=0.03
+        active_side, grasp, top_down, budget_s=10.0, tol_m=0.02
     )
     final_error = arms.position_error(active_side, grasp)
     ok = strict_reach or (final_error <= FINAL_APPROACH_CONTACT_TOLERANCE_M)
