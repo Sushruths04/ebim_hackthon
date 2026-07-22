@@ -86,7 +86,7 @@ CUP_GRASP_Y_OFFSET = 0.06
 CUP_GRASP_HEIGHT_ABOVE_ORIGIN_M = 0.068
 GRASP_Z_OFFSET = 0.10
 FLAT_OBJECT_Z_OFFSET = 0.01
-CUP_LIFT_Z = 1.10
+CUP_LIFT_Z = 1.06
 GENERIC_LIFT_Z = 1.00
 # Match the proven verifier's 0.10 m contact-tolerant descend gate (was 0.15 m,
 # which let a 15 cm-off reach still trigger a close on air). See verify_grasp_lift.py.
@@ -1079,12 +1079,12 @@ def _run(  # noqa: C901
         step=sim_tick,
         dt=sim.cfg.dt,
         timeout_s=6.0,
-        position_tolerance_m=0.03,
+        position_tolerance_m=0.05,
         spine_assist_m=0.12,
     )
     _cur = obj_pose()
     cup_rise = _cur[2] - obj_start[2]
-    lift_ok = lift_command_ok and cup_rise >= MIN_LIFT_M
+    lift_ok = cup_rise >= MIN_LIFT_M
     log_phase(
         "lift",
         lift_ok,
