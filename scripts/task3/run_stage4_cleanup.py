@@ -16,7 +16,6 @@ welding, no kinematic rigid-body edits.
 from __future__ import annotations
 
 import argparse
-import contextlib
 import json
 import math
 import os
@@ -1068,56 +1067,27 @@ def _run(  # noqa: C901
             obj_start=obj_start,
         )
 
-    # ---- Phase 4: lift and hold (spine-first) ----
-    # Keep arm joints fixed relative to base; raise spine to lift cup vertically.
-    start_spine = arms.measured_spine_position()
-    spine_rise = 0.12
-    target_spine = min(0.57, start_spine + spine_rise)
-    rel_pose = arms.arm_pose_relative(active_side)
-    spine_ramp_ticks = max(1, int(4.0 / sim.cfg.dt))
-    spine_timeout_ticks = int(8.0 / sim.cfg.dt)
-    lift_ok = False
-    cup_rise = 0.0
-    for _tick in range(spine_timeout_ticks):
-        _alpha = min(1.0, (_tick + 1) / spine_ramp_ticks)
-        arms.spine = start_spine + (target_spine - start_spine) * _alpha
-        with contextlib.suppress(ValueError):
-            arms.set_arm_target_relative(
-                active_side, rel_pose.position, rel_pose.orientation_wxyz
-            )
-        arms.command()
-        sim_tick()
-        if _tick + 1 >= spine_ramp_ticks:
-            _cur = obj_pose()
-            cup_rise = _cur[2] - obj_start[2]
-            if cup_rise >= MIN_LIFT_M:
-                lift_ok = True
-                break
-    if not lift_ok:
-        _cur = obj_pose()
-        cup_rise = _cur[2] - obj_start[2]
-        print(
-            f"SPINE_LIFT: cup rose only {cup_rise:.3f}m, arm extend",
-            flush=True,
-        )
-        _remaining = max(0.0, 0.08 - cup_rise)
-        if _remaining > 0.01:
-            _pp = arms.ee_world_poses()[0 if active_side == "left" else 1]
-            for _t in range(int(3.0 / sim.cfg.dt)):
-                _a = min(1.0, (_t + 1) / max(1, int(2.0 / sim.cfg.dt)))
-                _tz = _pp[0][2] + _remaining * _a
-                arms.set_arm_target(
-                    active_side, (_pp[0][0], _pp[0][1], _tz), _pp[1]
-                )
-                arms.command()
-                sim_tick()
-            _cur = obj_pose()
-            cup_rise = _cur[2] - obj_start[2]
-            lift_ok = cup_rise >= MIN_LIFT_M
+    # ---- Phase 4: lift and hold ----
+    # Match verify_grasp_lift.py's proven arm-lift primitive, including spine
+    # assist, instead of the custom spine-first lift that let the cup slip.
+    lift_pose = arms.ee_world_poses()[0 if active_side == "left" else 1]
+    lift_command_ok = arms.lift(
+        active_side,
+        max(0.0, lift_z - lift_pose[0][2]),
+        step=sim_tick,
+        dt=sim.cfg.dt,
+        timeout_s=6.0,
+        position_tolerance_m=0.03,
+        spine_assist_m=0.12,
+    )
+    _cur = obj_pose()
+    cup_rise = _cur[2] - obj_start[2]
+    lift_ok = lift_command_ok and cup_rise >= MIN_LIFT_M
     log_phase(
         "lift",
         lift_ok,
-        spine_rise=round(spine_rise, 3),
+        arm_lift_ok=lift_command_ok,
+        spine_assist_m=0.12,
         cup_rise=round(cup_rise, 3),
     )
 

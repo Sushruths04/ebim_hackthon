@@ -291,10 +291,16 @@ outputs/task3_stage4_place_POC`. Confirm `"passed": true` and `score >= 1`.
   known instances verified TERMINATED and all gcloud credentials revoked on
   the local machine. **Lightning AI is now the only compute venue.** See §11
   for the exact bootstrap and disaster-recovery commands.
-- 2026-07-22 | Claude | GPU RUN r-poc2 (Lightning AI L4, in progress at time
-  of writing). Lever #1 applied: `MANIP_BASE_HOLD_POSITION_KP` 12.0→4.0,
+- 2026-07-22 | Claude/OpenCode | GPU RUN r-poc2 (Lightning AI L4) finished:
+  `passed=false`, `failed_phase=hold`. Lever #1 applied:
+  `MANIP_BASE_HOLD_POSITION_KP` 12.0→4.0,
   `MANIP_BASE_HOLD_MAX_LINEAR_MPS` 0.30→0.25 (matches verify_grasp_lift.py
-  exactly, commit 09aece5f). Before launching, did a full side-by-side diff
+  exactly, commit 09aece5f). Result evidence: descend, close, and lift all
+  reached; final hold failed with `object_lift_m=0.0219`, `max_held_s=0.04`,
+  `object_to_ee_m=0.1702`. Proof preserved on Lightning at
+  `/home/zeus/ebim_hackthon/proofs/task3_stage4_r_poc2_failed_hold` and linked
+  into the Lightning UI as `LATEST_TASK3_STAGE4_R_POC2_FAILED_HOLD`. Before
+  launching, did a full side-by-side diff
   of every grasp-relevant constant/formula between run_stage4_cleanup.py and
   verify_grasp_lift.py: `CUP_PREGRASP_Z`/`PREGRASP_Z`=1.05 (match),
   `CUP_RIM_X_OFFSET`=0.04 (match), grasp-z formula `cup.z + 0.068 +
@@ -303,15 +309,15 @@ outputs/task3_stage4_place_POC`. Confirm `"passed": true` and `score >= 1`.
   =0.10 (match). Only real differences found: Stage4's descend uses
   `budget_s=10.0, tol_m=0.02` vs verifier's `budget_s=6.0, tol_m=0.015` (both
   make Stage4 MORE lenient, not less — should not cause a stall). So base-hold
-  stiffness is the one clean, isolated variable this run tests. If it still
-  fails at descend/close, the next suspects are NOT lever #2 by default —
+  stiffness is the one clean, isolated variable this run tested. Since r-poc2
+  no longer failed at descend/close but failed during hold after lift, apply
+  lever #2 next: port `arms.lift(..., spine_assist_m=0.12)` from
+  verify_grasp_lift.py lines 1341-1352, replacing Stage4's custom spine-first
+  lift block. If it fails at descend/close again, the suspects are NOT further
+  lift tuning by default —
   re-diagnose from the GIF first: (a) tuck_arms/navigate_stance may leave a
   different residual joint config before pregrasp than the verifier's path,
-  (b) contact/collision geometry differences. Lever #2 (port `arms.lift()`
-  with `spine_assist_m=0.12` from verify_grasp_lift.py lines 1341-1352,
-  replacing Stage4's custom spine-to-0.57 lift block) is still the right
-  fix ONLY if descend/close now succeed and hold/lift is the remaining
-  failure (matching r-poc1's IK-failure-during-hold symptom specifically).
+  (b) contact/collision geometry differences.
 
 ---
 
