@@ -357,7 +357,7 @@ def main() -> None:
     app_launcher = AppLauncher(
         {
             "headless": True,
-            "enable_cameras": False,
+            "enable_cameras": True,
             "livestream": -1,
         }
     )
