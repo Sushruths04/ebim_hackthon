@@ -101,7 +101,9 @@ CAMERA_LOOK_AT = (-4.1, -1.7, 0.8)
 VERIFY_VIDEO_FPS = 2
 
 MIN_LIFT_M = 0.02
-HOLD_SECONDS = 1.0
+HOLD_SECONDS = 3.0
+HOLD_RECOVERY_SECONDS = 8.0
+HOLD_MAX_DISTANCE_M = 0.18
 # During a rim grasp, arm/contact reaction can move the omnidirectional base
 # before the low-gain hold loop recovers.  These remain below the route's
 # already-proven 0.5 m/s physical wheel speed, but give the stationary hold
@@ -1093,7 +1095,7 @@ def _run(  # noqa: C901
 
     hold_pose_world = arms.ee_world_poses()[0 if active_side == "left" else 1]
     needed_ticks = int(HOLD_SECONDS / sim.cfg.dt)
-    recovery_ticks = math.ceil(0.5 / sim.cfg.dt)
+    recovery_ticks = math.ceil(HOLD_RECOVERY_SECONDS / sim.cfg.dt)
     held_ticks = 0
     max_held_ticks = 0
     for _ in range(needed_ticks + recovery_ticks):
@@ -1104,7 +1106,7 @@ def _run(  # noqa: C901
         sim_tick()
         current_obj = obj_pose()
         follows = object_follows_end_effector(
-            current_obj, hold_pose_world[0], max_distance_m=0.15
+            current_obj, hold_pose_world[0], max_distance_m=HOLD_MAX_DISTANCE_M
         )
         if current_obj[2] - obj_start[2] >= MIN_LIFT_M and follows:
             held_ticks += 1
