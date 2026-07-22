@@ -286,3 +286,118 @@ outputs/task3_stage4_place_POC`. Confirm `"passed": true` and `score >= 1`.
   verify_grasp_lift.py's lift (0.088 m, holds 3 s, no IK fail) and match it.
   (3) remember the SCORER needs no hold — XY-in-sink + z≥0.747; a stable partial
   grip + base-carry may score even without a perfect cage.
+- 2026-07-22 | Claude | **GCP IS BANNED — no budget left.** Do not start/use
+  any GCP instance again without explicit fresh user authorization. All 4
+  known instances verified TERMINATED and all gcloud credentials revoked on
+  the local machine. **Lightning AI is now the only compute venue.** See §11
+  for the exact bootstrap and disaster-recovery commands.
+- 2026-07-22 | Claude | GPU RUN r-poc2 (Lightning AI L4, in progress at time
+  of writing). Lever #1 applied: `MANIP_BASE_HOLD_POSITION_KP` 12.0→4.0,
+  `MANIP_BASE_HOLD_MAX_LINEAR_MPS` 0.30→0.25 (matches verify_grasp_lift.py
+  exactly, commit 09aece5f). Before launching, did a full side-by-side diff
+  of every grasp-relevant constant/formula between run_stage4_cleanup.py and
+  verify_grasp_lift.py: `CUP_PREGRASP_Z`/`PREGRASP_Z`=1.05 (match),
+  `CUP_RIM_X_OFFSET`=0.04 (match), grasp-z formula `cup.z + 0.068 +
+  cup_grasp_z_offset` (match, both via the same arithmetic), `top_down`
+  wrist-orientation formula (byte-identical), `FINAL_APPROACH_CONTACT_TOLERANCE_M`
+  =0.10 (match). Only real differences found: Stage4's descend uses
+  `budget_s=10.0, tol_m=0.02` vs verifier's `budget_s=6.0, tol_m=0.015` (both
+  make Stage4 MORE lenient, not less — should not cause a stall). So base-hold
+  stiffness is the one clean, isolated variable this run tests. If it still
+  fails at descend/close, the next suspects are NOT lever #2 by default —
+  re-diagnose from the GIF first: (a) tuck_arms/navigate_stance may leave a
+  different residual joint config before pregrasp than the verifier's path,
+  (b) contact/collision geometry differences. Lever #2 (port `arms.lift()`
+  with `spine_assist_m=0.12` from verify_grasp_lift.py lines 1341-1352,
+  replacing Stage4's custom spine-to-0.57 lift block) is still the right
+  fix ONLY if descend/close now succeed and hold/lift is the remaining
+  failure (matching r-poc1's IK-failure-during-hold symptom specifically).
+
+---
+
+## 11. DISASTER RECOVERY / PORTABILITY (Lightning AI, or any fresh GPU box)
+
+**Why this section exists:** GCP is banned (no budget). If Lightning's
+credits run out or the Studio dies, you must be able to `git clone` this
+branch on ANY machine (a different Lightning account, a friend's GPU box,
+whatever) and be back to a running grasp test within ~15 minutes, with zero
+manual file-copying. This branch (`task3-stage4-portable`, pushed to
+`origin`) IS that clone target — it carries all Stage 4 code/fix commits
+with NO large binaries (outputs/proofs are excluded), so `git clone` is fast.
+Do not rely on the fat `agent/codex-task3-grasp` branch for this — it has
+~4.6 GB of committed run outputs that make a full clone/push slow or hang.
+
+### 11.1 One-time per fresh machine: clone + branch
+
+```bash
+git clone --recurse-submodules https://github.com/Sushruths04/ebim_hackthon.git
+cd ebim_hackthon
+git checkout task3-stage4-portable
+```
+
+### 11.2 NGC login (interactive — the human must do this, not an agent)
+
+```bash
+docker login nvcr.io
+# username: $oauthtoken, password: your NGC API key
+```
+
+### 11.3 Pull the Isaac Lab image (~8-18 GB depending on registry state, one-time per machine; ~5-15 min)
+
+```bash
+docker pull nvcr.io/nvidia/isaac-lab:2.3.2
+```
+
+### 11.4 Start the container (EULA env vars are required or Kit refuses to boot)
+
+```bash
+docker run -d --name isaac-grasp --gpus all --network host \
+  -e ACCEPT_EULA=Y -e PRIVACY_CONSENT=Y \
+  -v "$(pwd)":/workspace/EBiM_Challenge -w /workspace/EBiM_Challenge \
+  nvcr.io/nvidia/isaac-lab:2.3.2 sleep infinity
+```
+
+### 11.5 Launch the Stage 4 grasp POC (detached; ~15-18 min wall time)
+
+```bash
+docker exec -d isaac-grasp bash -lc \
+  'cd /workspace/EBiM_Challenge && /isaac-sim/python.sh scripts/task3/run_stage4_cleanup.py \
+   --skip-navigation --approach-stance east --object-name=cup --pickup-only \
+   --record-video --fast-exit --out-dir outputs/task3_stage4_grasp_r_poc2 \
+   > /tmp/r_poc2.log 2>&1'
+```
+
+### 11.6 Check progress / read the result
+
+```bash
+docker exec isaac-grasp bash -lc 'tail -c 1500 /tmp/r_poc2.log'
+docker exec isaac-grasp bash -lc 'cat outputs/task3_stage4_grasp_r_poc2/result.json'
+```
+
+### 11.7 Gotchas hit while building this (so you don't re-debug them)
+
+1. **`docker run` without `ACCEPT_EULA=Y`/`PRIVACY_CONSENT=Y` exits 1
+   immediately** with a license-acceptance message — always pass both.
+2. **`~` can resolve to the WRONG home directory.** On the Lightning Studio
+   used this session, `$HOME` (interactive shells) pointed at
+   `/teamspace/studios/this_studio`, but non-interactive `ssh host "cmd"`
+   invocations (and where `git clone` actually lands) used `/home/zeus`.
+   `ls ~/repo` and `ls /home/zeus/repo` gave DIFFERENT answers on the same
+   machine. Always resolve with an explicit absolute path or `pwd` first;
+   never assume `~` is consistent across shell invocation styles.
+3. **The Studio's underlying machine can restart on its own mid-session**
+   (observed once this session — `uptime` reset to ~5 min with no user
+   action). This wipes Docker's image cache and any running container, but
+   the git checkout under `/home/zeus` survived (persistent volume). If a
+   `docker ps`/`docker images` suddenly comes back empty, re-run §11.2-11.5 —
+   don't assume data loss until you've checked the actual repo files first.
+4. **Never `git push` the fat `agent/codex-task3-grasp` branch** — it carries
+   ~4.6 GB of committed proof/output binaries from many past sessions and a
+   full push hangs on typical home network upload speeds. Keep fix commits on
+   `task3-stage4-portable` (code + docs only) and cherry-pick/`git checkout
+   <branch> -- <files>` code changes across as needed.
+5. Modal (serverless GPU) CANNOT run Isaac Sim — confirmed platform
+   limitation (Vulkan/RTX device enumeration fails in its containers even
+   though CUDA compute works). Lightning's containers do NOT have this
+   problem — `docker run --gpus all` here gets full Vulkan+CUDA, confirmed
+   working 2026-07-22.

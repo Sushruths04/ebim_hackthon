@@ -107,8 +107,12 @@ HOLD_SECONDS = 1.0
 # before the low-gain hold loop recovers.  These remain below the route's
 # already-proven 0.5 m/s physical wheel speed, but give the stationary hold
 # enough authority to oppose that reaction while the arm descends/closes.
-MANIP_BASE_HOLD_MAX_LINEAR_MPS = 0.30
-MANIP_BASE_HOLD_POSITION_KP = 12.0
+# Lever #1 (r-poc2, 2026-07-22): softened to match verify_grasp_lift.py's
+# proven base-hold gain (0.25/kp4.0). r-poc1 showed the stiffer 0.30/kp12.0
+# hold resisting the descend enough that the EE stalled 5 cm above the rim
+# (z=0.865 vs 0.815 target) and caged the cup body instead of the rim.
+MANIP_BASE_HOLD_MAX_LINEAR_MPS = 0.25
+MANIP_BASE_HOLD_POSITION_KP = 4.0
 
 
 def object_grasp_target(
