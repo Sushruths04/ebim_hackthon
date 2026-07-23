@@ -44,14 +44,14 @@ from run_episode import (
 # Navigation waypoints (world frame, same as Stage 4).
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
-ISLAND_STANCE = (-3.52, -1.68)  # directly east of spoon, ~0.82m reach, clears island by ~0.1m
+ISLAND_STANCE = (-3.47, -1.61)  # proven navigable stance (matches Stage 4), ~0.87m to spoon
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
 TRAVEL_SPINE_M = 0.45
-PREGRASP_Z = 0.88  # 12cm above spoon (vs 19cm before) — shorter descend for better IK
+PREGRASP_Z = 0.95  # 19cm above spoon — safe collision clearance during approach
 LIFT_Z = 1.05
-DESCEND_TILT_RAD = -0.25  # pitch-back tilt for descend (relieves wrist pitch limit at extended reach)
+DESCEND_TILT_RAD = -0.40  # 23° pitch-back tilt for descend (relieves wrist pitch limit at extended reach)
 
 HEAD_Z_OFFSET_M = 0.17
 SPOON_START_Y_OFFSET_M = -0.20
@@ -522,6 +522,10 @@ def _run(
         y_offset=args.object_grasp_y_offset,
         z_offset=FLAT_OBJECT_Z_OFFSET,
     )
+    # Multi-step descend: first go halfway down, then final descent.
+    spoon_mid = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
+    step_ok = servo_arm("right", spoon_mid, tilted_quat, budget_s=4.0, tol_m=0.03)
+    log_phase("descend_spoon_mid", step_ok, target=[round(v, 3) for v in spoon_mid])
     strict_reach = servo_arm("right", spoon_grasp, tilted_quat, budget_s=6.0, tol_m=0.015)
     final_error = arms.position_error("right", spoon_grasp)
     ok = strict_reach or final_error <= 0.10
@@ -535,6 +539,8 @@ def _run(
             y_offset=args.object_grasp_y_offset,
             z_offset=FLAT_OBJECT_Z_OFFSET,
         )
+        mid_pos = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
+        servo_arm("right", mid_pos, tilted_quat, budget_s=3.0, tol_m=0.04)
         retry_ok = servo_arm("right", spoon_grasp, tilted_quat, budget_s=5.0, tol_m=0.02)
         retry_error = arms.position_error("right", spoon_grasp)
         ok = retry_ok or retry_error <= 0.10
