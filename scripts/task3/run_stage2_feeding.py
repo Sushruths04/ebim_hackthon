@@ -284,7 +284,7 @@ def _run(
         return (float(row[0]), float(row[1]), float(row[2]))
 
     def head_pose() -> tuple[float, float, float]:
-        from pxr import UsdGeom
+        from pxr import Usd, UsdGeom
         matrix = UsdGeom.Xformable(
             sim.stage.GetPrimAtPath(head_path)
         ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
