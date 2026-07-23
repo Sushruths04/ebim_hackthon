@@ -44,13 +44,14 @@ from run_episode import (
 # Navigation waypoints (world frame, same as Stage 4).
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
-ISLAND_STANCE = (-3.50, -1.60)  # closer to spoon at (~-4.34, -1.68) for ~0.85m reach
+ISLAND_STANCE = (-3.52, -1.68)  # directly east of spoon, ~0.82m reach, clears island by ~0.1m
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
 TRAVEL_SPINE_M = 0.45
-PREGRASP_Z = 0.95
+PREGRASP_Z = 0.88  # 12cm above spoon (vs 19cm before) — shorter descend for better IK
 LIFT_Z = 1.05
+DESCEND_TILT_RAD = -0.25  # pitch-back tilt for descend (relieves wrist pitch limit at extended reach)
 
 HEAD_Z_OFFSET_M = 0.17
 SPOON_START_Y_OFFSET_M = -0.20
@@ -455,6 +456,7 @@ def _run(
             return False
 
     top_down_quat = _quaternion_from_rpy(math.pi, 0.0, 0.0)
+    tilted_quat = _quaternion_from_rpy(math.pi, DESCEND_TILT_RAD, 0.0)  # pitched back for better IK at extended reach
 
     spoon_start = spoon_pose()
     log_phase("scene_loaded", True, spoon_start=[round(v, 3) for v in spoon_start])
@@ -520,7 +522,7 @@ def _run(
         y_offset=args.object_grasp_y_offset,
         z_offset=FLAT_OBJECT_Z_OFFSET,
     )
-    strict_reach = servo_arm("right", spoon_grasp, top_down_quat, budget_s=6.0, tol_m=0.015)
+    strict_reach = servo_arm("right", spoon_grasp, tilted_quat, budget_s=6.0, tol_m=0.015)
     final_error = arms.position_error("right", spoon_grasp)
     ok = strict_reach or final_error <= 0.10
     log_phase("descend_spoon", ok, position_error_m=round(final_error, 4), target=[round(v, 3) for v in spoon_grasp])
@@ -533,7 +535,7 @@ def _run(
             y_offset=args.object_grasp_y_offset,
             z_offset=FLAT_OBJECT_Z_OFFSET,
         )
-        retry_ok = servo_arm("right", spoon_grasp, top_down_quat, budget_s=5.0, tol_m=0.02)
+        retry_ok = servo_arm("right", spoon_grasp, tilted_quat, budget_s=5.0, tol_m=0.02)
         retry_error = arms.position_error("right", spoon_grasp)
         ok = retry_ok or retry_error <= 0.10
         log_phase("recenter_spoon", ok, position_error_m=round(retry_error, 4),
