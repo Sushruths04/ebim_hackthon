@@ -44,7 +44,7 @@ from run_episode import (
 # Navigation waypoints (world frame, same as Stage 4).
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
-ISLAND_STANCE = (-3.32, -1.72)
+ISLAND_STANCE = (-3.50, -1.60)  # closer to spoon at (~-4.34, -1.68) for ~0.85m reach
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
@@ -525,7 +525,22 @@ def _run(
     ok = strict_reach or final_error <= 0.10
     log_phase("descend_spoon", ok, position_error_m=round(final_error, 4), target=[round(v, 3) for v in spoon_grasp])
     if not ok:
-        return _result(False, "descend_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        # Re-read the spoon's live position and re-target before giving up.
+        live_spoon = spoon_pose()
+        spoon_grasp = object_grasp_target(
+            live_spoon,
+            x_offset=args.object_grasp_x_offset,
+            y_offset=args.object_grasp_y_offset,
+            z_offset=FLAT_OBJECT_Z_OFFSET,
+        )
+        retry_ok = servo_arm("right", spoon_grasp, top_down_quat, budget_s=5.0, tol_m=0.02)
+        retry_error = arms.position_error("right", spoon_grasp)
+        ok = retry_ok or retry_error <= 0.10
+        log_phase("recenter_spoon", ok, position_error_m=round(retry_error, 4),
+                  target=[round(v, 3) for v in spoon_grasp],
+                  live_spoon=[round(v, 3) for v in live_spoon])
+        if not ok:
+            return _result(False, "descend_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
 
     holding = arms.grasp(
         "right",
