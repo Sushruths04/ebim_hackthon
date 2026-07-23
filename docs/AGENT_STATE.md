@@ -4,6 +4,18 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **⚠️ READ BEFORE ANY STAGE 2 WORK (2026-07-23 late session): read
+> `docs/HANDOFF_2026-07-23_Stage2_v2.md` first — it supersedes
+> `HANDOFF_2026-07-23_Stage2.md`, whose studio/SSH info is dead.** Studio
+> environment issues from that session were a false lead (a debug script's
+> own `sys.stdout` reassignment, not a real crash) — do not re-diagnose it.
+> Real fixes landed: `route_via_door()` wired into `navigate_dining`
+> (commit `b01ed8bb`) and a one-shot new-studio bootstrap script (`b16760ed`).
+> Current blocker: the base stalls before the first post-fix door waypoint
+> during `navigate_dining` — diagnose stall-vs-slow from evidence before
+> picking a fix; leading hypothesis is an untucked arm fouling the
+> island-adjacent lane. See the v2 handoff for the full plan.
+
 > **⚠️ READ BEFORE ANY STAGE-4 WORK (2026-07-20): the open-loop push loop is
 > abandoned.** The spoon→sink push is a controllability dead end (coasting
 > object + cliff = uncontrollable by scalar tuning). Corrective strategy =
