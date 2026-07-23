@@ -44,14 +44,21 @@ from run_episode import (
 # Navigation waypoints (world frame, same as Stage 4).
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
-ISLAND_STANCE = (-3.47, -1.61)  # proven navigable stance (matches Stage 4), ~0.87m to spoon
+ISLAND_STANCE = (
+    -3.47,
+    -1.61,
+)  # proven navigable stance (matches Stage 4), ~0.87m to spoon
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
 TRAVEL_SPINE_M = 0.45
-PREGRASP_Z = 0.95  # 19cm above spoon — safe collision clearance during approach
+PREGRASP_Z = (
+    0.95  # 19cm above spoon — safe collision clearance during approach
+)
 LIFT_Z = 1.05
-DESCEND_TILT_RAD = -0.80  # 46° pitch-back tilt — extreme angle to unlock wrist at 0.87m reach
+DESCEND_TILT_RAD = (
+    -0.80
+)  # 46° pitch-back tilt — extreme angle to unlock wrist at 0.87m reach
 
 HEAD_Z_OFFSET_M = 0.17
 SPOON_START_Y_OFFSET_M = -0.20
@@ -109,14 +116,32 @@ def parse_args() -> argparse.Namespace:
         description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--head-placement", choices=("a", "b", "c"), default="a")
-    parser.add_argument("--out-dir", type=Path, default=REPO_ROOT / "outputs" / "task3_stage2_feeding")
+    parser.add_argument(
+        "--head-placement", choices=("a", "b", "c"), default="a"
+    )
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=REPO_ROOT / "outputs" / "task3_stage2_feeding",
+    )
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument("--fast-exit", action="store_true")
     parser.add_argument("--skip-navigation", action="store_true")
-    parser.add_argument("--object-grasp-x-offset", type=float, default=DEFAULT_OBJECT_GRASP_X_OFFSET)
-    parser.add_argument("--object-grasp-y-offset", type=float, default=DEFAULT_OBJECT_GRASP_Y_OFFSET)
-    parser.add_argument("--object-grasp-z-offset", type=float, default=DEFAULT_OBJECT_GRASP_Z_OFFSET)
+    parser.add_argument(
+        "--object-grasp-x-offset",
+        type=float,
+        default=DEFAULT_OBJECT_GRASP_X_OFFSET,
+    )
+    parser.add_argument(
+        "--object-grasp-y-offset",
+        type=float,
+        default=DEFAULT_OBJECT_GRASP_Y_OFFSET,
+    )
+    parser.add_argument(
+        "--object-grasp-z-offset",
+        type=float,
+        default=DEFAULT_OBJECT_GRASP_Z_OFFSET,
+    )
     parser.add_argument("--grasp-ramp-seconds", type=float, default=1.0)
     parser.add_argument("--grasp-settle-seconds", type=float, default=1.5)
     parser.add_argument("--close-effort-scale", type=float, default=None)
@@ -148,13 +173,17 @@ def main() -> None:
         (args.out_dir / "result.json").write_text(
             json.dumps(result, indent=2, sort_keys=True)
         )
-        print("STAGE2_RESULT " + json.dumps(result, sort_keys=True), flush=True)
+        print(
+            "STAGE2_RESULT " + json.dumps(result, sort_keys=True), flush=True
+        )
         sys.stdout.flush()
         if args.fast_exit:
             os._exit(0 if result["passed"] else 1)
     except BaseException:
         traceback.print_exc()
-        (args.out_dir / "crash_traceback.txt").write_text(traceback.format_exc())
+        (args.out_dir / "crash_traceback.txt").write_text(
+            traceback.format_exc()
+        )
         sys.stderr.flush()
         simulation_app.close()
         raise
@@ -164,7 +193,7 @@ def main() -> None:
             raise SystemExit(1)
 
 
-def _run(
+def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     args: argparse.Namespace,
     simulation_app: Any,
     frames_dir: Path,
@@ -173,7 +202,7 @@ def _run(
         if str(path) not in sys.path:
             sys.path.insert(0, str(path))
 
-    from grading import feed_score, update_feed_hold, FeedHoldState
+    from grading import FeedHoldState, feed_score, update_feed_hold
     from integration_test import resolve_prim_path
     from scene_robot_room_keyboard import (
         configure_keyboard_control_stage,
@@ -192,7 +221,6 @@ def _run(
     from isaaclab.sim import SimulationContext
 
     from task3_autonomy.arms import (
-        GRIPPER_CLOSED_RAD,
         GRIPPER_OPEN_RAD,
         DualArmController,
     )
@@ -212,7 +240,11 @@ def _run(
     )
 
     if args.skip_navigation:
-        spawn_position = (ROTATE_SPOT[0], ROTATE_SPOT[1], ROBOT_SPAWN_POSITION[2])
+        spawn_position = (
+            ROTATE_SPOT[0],
+            ROTATE_SPOT[1],
+            ROBOT_SPAWN_POSITION[2],
+        )
         spawn_yaw = math.degrees(FACE_WEST_YAW_RAD)
     else:
         spawn_position = ROBOT_SPAWN_POSITION
@@ -286,6 +318,7 @@ def _run(
 
     def head_pose() -> tuple[float, float, float]:
         from pxr import Usd, UsdGeom
+
         matrix = UsdGeom.Xformable(
             sim.stage.GetPrimAtPath(head_path)
         ).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
@@ -294,6 +327,7 @@ def _run(
 
     def bean_poses() -> list[tuple[float, float, float]]:
         from pxr import Usd, UsdGeom
+
         paths = []
         for prim in Usd.PrimRange(sim.stage.GetPrimAtPath("/World/Task3")):
             name = str(prim.GetName())
@@ -304,17 +338,22 @@ def _run(
         for p in paths:
             prim = sim.stage.GetPrimAtPath(p)
             if prim:
-                matrix = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+                matrix = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
+                    Usd.TimeCode.Default()
+                )
                 t = matrix.ExtractTranslation()
                 result.append((float(t[0]), float(t[1]), float(t[2])))
         return result
 
     def bowl_pose() -> tuple[float, float, float] | None:
         from pxr import Usd, UsdGeom
+
         bowl_path = resolve_prim_path(sim.stage, "bowl2")
         prim = sim.stage.GetPrimAtPath(bowl_path)
         if prim:
-            matrix = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(Usd.TimeCode.Default())
+            matrix = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
+                Usd.TimeCode.Default()
+            )
             t = matrix.ExtractTranslation()
             return (float(t[0]), float(t[1]), float(t[2]))
         return None
@@ -322,7 +361,8 @@ def _run(
     def place_beans_on_spoon(
         spoon_pos: tuple[float, float, float],
     ) -> None:
-        from pxr import Usd, UsdGeom, Gf
+        from pxr import Gf, Usd, UsdGeom
+
         bean_paths = []
         for prim in Usd.PrimRange(sim.stage.GetPrimAtPath("/World/Task3")):
             name = str(prim.GetName())
@@ -456,10 +496,14 @@ def _run(
             return False
 
     top_down_quat = _quaternion_from_rpy(math.pi, 0.0, 0.0)
-    tilted_quat = _quaternion_from_rpy(math.pi, DESCEND_TILT_RAD, 0.0)  # pitched back for better IK at extended reach
+    tilted_quat = _quaternion_from_rpy(
+        math.pi, DESCEND_TILT_RAD, 0.0
+    )  # pitched back for better IK at extended reach
 
     spoon_start = spoon_pose()
-    log_phase("scene_loaded", True, spoon_start=[round(v, 3) for v in spoon_start])
+    log_phase(
+        "scene_loaded", True, spoon_start=[round(v, 3) for v in spoon_start]
+    )
 
     # ---- Phase 0: raise spine, tuck arms ----
     spine_ok = arms.move_spine(
@@ -471,7 +515,17 @@ def _run(
     )
     log_phase("raise_spine", spine_ok, target_spine=TRAVEL_SPINE_M)
     if not spine_ok:
-        return _result(False, "raise_spine", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "raise_spine",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
     ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
     arms.sync_targets_from_measured()
     log_phase("tuck_arms", True)
@@ -493,7 +547,17 @@ def _run(
             ok = drive_to(ISLAND_STANCE, max_speed=0.25, budget_s=25.0)
             log_phase("navigate_island_stance", ok)
     if not ok:
-        return _result(False, "navigation", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "navigation",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
     settled = adapter.pose()
     base_hold_anchor = (settled.x, settled.y)
 
@@ -510,9 +574,21 @@ def _run(
     spoon_pregrasp = (spoon_pregrasp[0], spoon_pregrasp[1], PREGRASP_Z)
     arms.set_gripper("right", GRIPPER_OPEN_RAD)
     ok = servo_arm("right", spoon_pregrasp, top_down_quat, budget_s=8.0)
-    log_phase("pregrasp_spoon", ok, target=[round(v, 3) for v in spoon_pregrasp])
+    log_phase(
+        "pregrasp_spoon", ok, target=[round(v, 3) for v in spoon_pregrasp]
+    )
     if not ok:
-        return _result(False, "pregrasp_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "pregrasp_spoon",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
 
     # ---- Phase 3: descend to spoon and close ----
     spoon_before_grasp = spoon_pose()
@@ -524,12 +600,23 @@ def _run(
     )
     # Multi-step descend: first go halfway down, then final descent.
     spoon_mid = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
-    step_ok = servo_arm("right", spoon_mid, tilted_quat, budget_s=4.0, tol_m=0.03)
-    log_phase("descend_spoon_mid", step_ok, target=[round(v, 3) for v in spoon_mid])
-    strict_reach = servo_arm("right", spoon_grasp, tilted_quat, budget_s=6.0, tol_m=0.015)
+    step_ok = servo_arm(
+        "right", spoon_mid, tilted_quat, budget_s=4.0, tol_m=0.03
+    )
+    log_phase(
+        "descend_spoon_mid", step_ok, target=[round(v, 3) for v in spoon_mid]
+    )
+    strict_reach = servo_arm(
+        "right", spoon_grasp, tilted_quat, budget_s=6.0, tol_m=0.015
+    )
     final_error = arms.position_error("right", spoon_grasp)
     ok = strict_reach or final_error <= 0.10
-    log_phase("descend_spoon", ok, position_error_m=round(final_error, 4), target=[round(v, 3) for v in spoon_grasp])
+    log_phase(
+        "descend_spoon",
+        ok,
+        position_error_m=round(final_error, 4),
+        target=[round(v, 3) for v in spoon_grasp],
+    )
     if not ok:
         # Re-read the spoon's live position and re-target before giving up.
         live_spoon = spoon_pose()
@@ -541,14 +628,30 @@ def _run(
         )
         mid_pos = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
         servo_arm("right", mid_pos, tilted_quat, budget_s=3.0, tol_m=0.04)
-        retry_ok = servo_arm("right", spoon_grasp, tilted_quat, budget_s=5.0, tol_m=0.02)
+        retry_ok = servo_arm(
+            "right", spoon_grasp, tilted_quat, budget_s=5.0, tol_m=0.02
+        )
         retry_error = arms.position_error("right", spoon_grasp)
         ok = retry_ok or retry_error <= 0.10
-        log_phase("recenter_spoon", ok, position_error_m=round(retry_error, 4),
-                  target=[round(v, 3) for v in spoon_grasp],
-                  live_spoon=[round(v, 3) for v in live_spoon])
+        log_phase(
+            "recenter_spoon",
+            ok,
+            position_error_m=round(retry_error, 4),
+            target=[round(v, 3) for v in spoon_grasp],
+            live_spoon=[round(v, 3) for v in live_spoon],
+        )
         if not ok:
-            return _result(False, "descend_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+            return _result(
+                False,
+                "descend_spoon",
+                phases,
+                args,
+                frames_dir,
+                frames_written,
+                rgb_annotator,
+                render_product,
+                sim,
+            )
 
     holding = arms.grasp(
         "right",
@@ -559,9 +662,21 @@ def _run(
         close_effort_scale=args.close_effort_scale,
     )
     gripper_pos = arms.gripper_position("right")
-    log_phase("close_spoon", holding, gripper_position_rad=round(gripper_pos, 4))
+    log_phase(
+        "close_spoon", holding, gripper_position_rad=round(gripper_pos, 4)
+    )
     if not holding:
-        return _result(False, "close_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "close_spoon",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
 
     spoon_held = spoon_pose()
     held_pose_box[0] = arms.arm_pose_relative("right")
@@ -573,17 +688,39 @@ def _run(
         bowl_target = (bowl_pos[0], bowl_pos[1], bowl_pos[2] + 0.02)
         scoop_pitch_rad = math.radians(args.scoop_pitch_deg)
         scoop_quat = _quaternion_from_rpy(math.pi + scoop_pitch_rad, 0.0, 0.0)
-        scoop_ok = servo_arm("right", bowl_target, scoop_quat, budget_s=5.0, tol_m=0.04)
-        log_phase("scoop_enter", scoop_ok, target=[round(v, 3) for v in bowl_target],
-                  bowl=[round(v, 3) for v in bowl_pos])
+        scoop_ok = servo_arm(
+            "right", bowl_target, scoop_quat, budget_s=5.0, tol_m=0.04
+        )
+        log_phase(
+            "scoop_enter",
+            scoop_ok,
+            target=[round(v, 3) for v in bowl_target],
+            bowl=[round(v, 3) for v in bowl_pos],
+        )
         if scoop_ok:
             scoop_lift = (bowl_pos[0], bowl_pos[1], bowl_pos[2] + 0.10)
-            scoop_ok = servo_arm("right", scoop_lift, top_down_quat, budget_s=5.0, tol_m=0.04)
-            log_phase("scoop_lift", scoop_ok, target=[round(v, 3) for v in scoop_lift])
+            scoop_ok = servo_arm(
+                "right", scoop_lift, top_down_quat, budget_s=5.0, tol_m=0.04
+            )
+            log_phase(
+                "scoop_lift",
+                scoop_ok,
+                target=[round(v, 3) for v in scoop_lift],
+            )
     else:
-        bowl_target = (spoon_at_island[0], spoon_at_island[1] - 0.05, spoon_at_island[2] + 0.02)
-        scoop_ok = servo_arm("right", bowl_target, top_down_quat, budget_s=5.0, tol_m=0.04)
-        log_phase("scoop_no_bowl", scoop_ok, target=[round(v, 3) for v in bowl_target])
+        bowl_target = (
+            spoon_at_island[0],
+            spoon_at_island[1] - 0.05,
+            spoon_at_island[2] + 0.02,
+        )
+        scoop_ok = servo_arm(
+            "right", bowl_target, top_down_quat, budget_s=5.0, tol_m=0.04
+        )
+        log_phase(
+            "scoop_no_bowl",
+            scoop_ok,
+            target=[round(v, 3) for v in bowl_target],
+        )
 
     spoon_after_scoop = spoon_pose()
     beans_now = bean_poses()
@@ -604,23 +741,50 @@ def _run(
     )
     log_phase("lift_spoon", lift_ok)
     if not lift_ok:
-        return _result(False, "lift_spoon", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "lift_spoon",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
 
-    hold_pose = arms.ee_world_poses()[1]
     held_relative = arms.arm_pose_relative("right")
 
     # ---- Phase 5: navigate to dining table (near head) ----
-    if args.skip_navigation:
-        nav_dining_ok = drive_to(DINING_TARGET, max_speed=0.25, budget_s=25.0)
-        log_phase("navigate_dining_short", nav_dining_ok)
-    else:
-        nav_dining_ok = drive_to(CORRIDOR_STOP, max_speed=0.5, budget_s=30.0)
-        log_phase("navigate_dining_corridor", nav_dining_ok)
-        if nav_dining_ok:
-            nav_dining_ok = drive_to(DINING_TARGET, max_speed=0.4, budget_s=40.0)
-            log_phase("navigate_dining_target", nav_dining_ok)
+    # The direct drive_to(DINING_TARGET) used here previously drove straight
+    # into the kitchen/dining partition: the wall only has a doorway gap at
+    # x in (-4.74, -3.54) (task3_autonomy/navigation.py), and neither the
+    # skip-navigation shortcut nor CORRIDOR_STOP=(-3.18, -1.6) passes through
+    # it. route_via_door() is the same proven waypoint helper already used
+    # by verify_grasp_lift.py and probe_tray_slide.py for this exact crossing.
+    from task3_autonomy.navigation import route_via_door
+
+    route = route_via_door((adapter.pose().x, adapter.pose().y), DINING_TARGET)
+    nav_dining_ok = True
+    for waypoint in route[1:]:
+        nav_dining_ok = drive_to(waypoint, max_speed=0.35, budget_s=45.0)
+        log_phase(
+            "navigate_dining_waypoint", nav_dining_ok, target=list(waypoint)
+        )
+        if not nav_dining_ok:
+            break
     if not nav_dining_ok:
-        return _result(False, "navigate_dining", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "navigate_dining",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
     base_hold_anchor = (adapter.pose().x, adapter.pose().y)
 
     # ---- Phase 6: find head and position spoon at feed pose ----
@@ -632,21 +796,55 @@ def _run(
     spoon_insertion = (head[0], head[1] + INSERTION_Y_OFFSET_M, feed_z)
     feed_quat = _quaternion_from_rpy(math.pi, 0.0, 0.0)
 
-    arms.set_arm_target_relative("right", held_relative.position, held_relative.orientation_wxyz)
+    arms.set_arm_target_relative(
+        "right", held_relative.position, held_relative.orientation_wxyz
+    )
     arms.command()
     sim_tick()
 
-    ok = servo_arm("right", spoon_feed_start, feed_quat, budget_s=12.0, tol_m=0.04)
-    log_phase("feed_start_pose", ok, target=[round(v, 3) for v in spoon_feed_start],
-              head_offset_m=SPOON_START_Y_OFFSET_M)
+    ok = servo_arm(
+        "right", spoon_feed_start, feed_quat, budget_s=12.0, tol_m=0.04
+    )
+    log_phase(
+        "feed_start_pose",
+        ok,
+        target=[round(v, 3) for v in spoon_feed_start],
+        head_offset_m=SPOON_START_Y_OFFSET_M,
+    )
     if not ok:
-        return _result(False, "feed_start_pose", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "feed_start_pose",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
 
-    ok = servo_arm("right", spoon_insertion, feed_quat, budget_s=8.0, tol_m=0.04)
-    log_phase("feed_insertion", ok, target=[round(v, 3) for v in spoon_insertion],
-              head_offset_m=INSERTION_Y_OFFSET_M)
+    ok = servo_arm(
+        "right", spoon_insertion, feed_quat, budget_s=8.0, tol_m=0.04
+    )
+    log_phase(
+        "feed_insertion",
+        ok,
+        target=[round(v, 3) for v in spoon_insertion],
+        head_offset_m=INSERTION_Y_OFFSET_M,
+    )
     if not ok:
-        return _result(False, "feed_insertion", phases, args, frames_dir, frames_written, rgb_annotator, render_product, sim)
+        return _result(
+            False,
+            "feed_insertion",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
 
     # ---- Phase 7: place beans on spoon (kinematic), settle, then hold ----
     current_spoon = spoon_pose()
@@ -659,10 +857,13 @@ def _run(
             arms.command()
             sim_tick()
         current_on_spoon = count_beans(bean_poses(), spoon_pose())
-        log_phase("bean_place_at_feed", current_on_spoon > 0, beans_on_spoon=current_on_spoon)
+        log_phase(
+            "bean_place_at_feed",
+            current_on_spoon > 0,
+            beans_on_spoon=current_on_spoon,
+        )
 
     head_pos = head_pose()
-    insertion_pos = arms.ee_world_poses()[1][0]
     feed_state = FeedHoldState()
     hold_ticks = 0
     needed_ticks = int(HOLD_SECONDS / sim.cfg.dt)
@@ -676,7 +877,9 @@ def _run(
         current_beans = bean_poses()
         bean_count = count_beans(current_beans, current_spoon)
         current_ee = arms.ee_world_poses()[1][0]
-        in_zone = math.dist(current_ee, (head_pos[0], head_pos[1], feed_z)) <= 0.35
+        in_zone = (
+            math.dist(current_ee, (head_pos[0], head_pos[1], feed_z)) <= 0.35
+        )
         feed_state = update_feed_hold(
             feed_state,
             bean_count=bean_count,
@@ -694,10 +897,13 @@ def _run(
     beans_left = count_beans(final_beans, final_spoon)
     total_hold_s = hold_ticks * sim.cfg.dt
 
-    log_phase("feed_hold", feed_state.completed,
-              hold_seconds=round(total_hold_s, 3),
-              beans_on_spoon=beans_left,
-              total_beans=len(final_beans))
+    log_phase(
+        "feed_hold",
+        feed_state.completed,
+        hold_seconds=round(total_hold_s, 3),
+        beans_on_spoon=beans_left,
+        total_beans=len(final_beans),
+    )
 
     retract_pose = (head[0], head[1] + SPOON_START_Y_OFFSET_M, feed_z)
     servo_arm("right", retract_pose, feed_quat, budget_s=6.0, tol_m=0.05)
@@ -705,6 +911,7 @@ def _run(
 
     path_poses = [spoon_feed_start, spoon_insertion, retract_pose]
     from grading import movement_is_smooth
+
     smooth = movement_is_smooth(path_poses, max_step=1.5)
 
     score = feed_score(
@@ -713,11 +920,14 @@ def _run(
         smooth=smooth,
     )
 
-    log_phase("complete", score >= 3,
-              score=score,
-              beans_left=beans_left,
-              hold_seconds=round(total_hold_s, 3),
-              smooth_motion=smooth)
+    log_phase(
+        "complete",
+        score >= 3,
+        score=score,
+        beans_left=beans_left,
+        hold_seconds=round(total_hold_s, 3),
+        smooth_motion=smooth,
+    )
 
     return _result(
         score >= 3,
@@ -752,6 +962,7 @@ def _result(
 ) -> dict[str, Any]:
     if args.record_video and frames_written > 0:
         from verify_grasp_lift import _encode_compact_gif
+
         gif_path = args.out_dir / "stage2.gif"
         try:
             _encode_compact_gif(frames_dir, gif_path)
