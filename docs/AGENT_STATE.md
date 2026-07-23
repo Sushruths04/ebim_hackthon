@@ -18,8 +18,11 @@
 > immediately before the Phase 5 nav loop in `run_stage2_feeding.py`.
 > CPU-verified (py_compile/ruff/pytest, 220/223 pass, 3 pre-existing
 > unrelated `rmpflow` failures) but **NOT YET GPU-verified** — that is the
-> next required step, on Lightning AI (GCP is banned, no budget). See the
-> new handoff for full detail and next steps after that.
+> next required step, on Lightning AI (GCP is banned, no budget). **Before
+> that GPU run: a prior session may have run Isaac Sim without a real GPU
+> attached (CPU/software-render fallback) — the new handoff's "STEP 0 — GPU
+> gate" is mandatory and must pass before trusting any run's results.** See
+> the new handoff for full detail, the GPU gate commands, and next steps.
 
 > **⚠️ READ BEFORE ANY STAGE-4 WORK (2026-07-20): the open-loop push loop is
 > abandoned.** The spoon→sink push is a controllability dead end (coasting

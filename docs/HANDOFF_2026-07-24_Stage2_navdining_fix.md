@@ -4,6 +4,74 @@ Read this before touching Stage 2. It supersedes the blocker section of
 `docs/HANDOFF_2026-07-23_Stage2_v2.md` (that doc's environment/SSH info is
 still valid — only the `navigate_dining` blocker section is stale now).
 
+## STEP 0 — GPU gate (MANDATORY, do this before any other action)
+
+A prior session's runs may have executed **without a real GPU attached** —
+this was discovered after the fact and is suspected to have produced
+misleading physics/timing results. Isaac Sim silently falling back to a
+software (CPU) Vulkan renderer is a known failure mode in this exact repo
+(see `docs/AGENT_STATE.md` / memory `ebim-task3-strategy`: Modal's GPU
+containers exposed CUDA but not Vulkan, and Kit fell back to `llvmpipe`
+software rendering with degraded/wrong behavior instead of erroring out
+loudly). **Do not trust any run's result.json/timing/physics behavior
+unless you have confirmed a real GPU was engaged for that specific run.**
+
+Before launching ANY Isaac Sim process, run and paste the raw output of all
+three checks:
+
+```bash
+# 1. Host sees the GPU at all
+nvidia-smi
+
+# 2. The container was actually started with GPU access
+docker exec isaac-lab-2-3-2-workshop nvidia-smi
+
+# 3. While a sim run is active, confirm GPU utilization is actually nonzero
+#    (run this in a second terminal a few seconds after launching a script)
+nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv -l 2
+```
+
+If any of these fail, or `nvidia-smi` inside the container errors, or GPU
+utilization stays at 0% during a run: **STOP. Do not proceed to a physics
+run.** Fix the GPU wiring first (`docker/docker-compose.yaml` has the GPU
+reservation block; `scripts/task3/bootstrap_new_studio.sh` already checks
+`nvidia-smi` before it will bootstrap at all — if you bypassed that script
+and ran raw `docker` commands instead, that's the likely cause). Also grep
+the Isaac Sim boot log for the software-fallback signature before trusting
+any run:
+
+```bash
+grep -i "llvmpipe\|No device could be created\|software rasterizer" /tmp/stage2_run.log
+```
+
+Any hit there means the run was not physically real — discard its results
+entirely, do not reason about them, do not report them to the user.
+
+## Anti-hallucination rules for this session (non-negotiable)
+
+1. **Never report a PASS/FAIL, a number, or a phase result from memory or
+   inference.** Every claim about what happened in a run must be backed by
+   a pasted excerpt of `result.json`, the run log, or a specific frame
+   file you actually opened. If you didn't read the file this turn, you
+   don't get to state its contents.
+2. **One hypothesis, one code change, one run.** Do not stack multiple
+   fixes into a single trial — if it fails you won't know which change
+   mattered (this is exactly how the previous 5 failed attempts on this
+   same bug wasted a full session — see "Process note" below).
+3. **GIF/frame evidence before tuning.** Per `docs/HANDOFF_2026-07-23_Stage2_v2.md`
+   and this repo's established practice: read `outputs/.../stage2.gif` or
+   sampled frames around the relevant phase transition before deciding
+   what's actually wrong. Do not guess from the phase name alone.
+4. **If you're not >80% sure a code change is safe or correct, say so and
+   stop rather than applying it speculatively.** Do not paper over an
+   unexplained result with a plausible-sounding narrative.
+5. **Standard physics only** — no kinematic attach, no scene/asset edits,
+   no teleportation, no shortcuts to make a gate pass. This is a hard
+   competition-legality rule the whole project has followed throughout.
+6. Update `docs/AGENT_STATE.md` and commit after every meaningful result
+   (pass or fail) — git is the shared memory across agents on this repo;
+   an unpushed result does not exist for the next session.
+
 ## Root cause (found by CPU code-reading, not by GPU trial-and-error)
 
 `scripts/task3/run_stage2_feeding.py` has a local `base_hold_anchor` used to
