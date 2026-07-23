@@ -51,7 +51,7 @@ FACE_WEST_YAW_RAD = math.pi
 TRAVEL_SPINE_M = 0.45
 PREGRASP_Z = 0.95  # 19cm above spoon — safe collision clearance during approach
 LIFT_Z = 1.05
-DESCEND_TILT_RAD = -0.40  # 23° pitch-back tilt for descend (relieves wrist pitch limit at extended reach)
+DESCEND_TILT_RAD = -0.80  # 46° pitch-back tilt — extreme angle to unlock wrist at 0.87m reach
 
 HEAD_Z_OFFSET_M = 0.17
 SPOON_START_Y_OFFSET_M = -0.20
