@@ -310,7 +310,7 @@ def _run(
         return result
 
     def bowl_pose() -> tuple[float, float, float] | None:
-        from pxr import UsdGeom
+        from pxr import Usd, UsdGeom
         bowl_path = resolve_prim_path(sim.stage, "bowl2")
         prim = sim.stage.GetPrimAtPath(bowl_path)
         if prim:
