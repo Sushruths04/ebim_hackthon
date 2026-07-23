@@ -764,6 +764,14 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     # by verify_grasp_lift.py and probe_tray_slide.py for this exact crossing.
     from task3_autonomy.navigation import route_via_door
 
+    # base_hold_anchor was set to the island stance at Phase 1 arrival and
+    # must be released before free navigation: sim_tick() re-applies a
+    # hold-twist toward it every tick (skills.py apply_twist is last-write-
+    # wins), which silently cancels drive_to()'s own twist commands and
+    # pins the base at the island regardless of the commanded direction.
+    # Same bug class already root-caused for probe_tray_slide.py (see
+    # docs/AGENT_STATE.md, Day 3 Step 1 fix3).
+    base_hold_anchor = None
     route = route_via_door((adapter.pose().x, adapter.pose().y), DINING_TARGET)
     nav_dining_ok = True
     for waypoint in route[1:]:

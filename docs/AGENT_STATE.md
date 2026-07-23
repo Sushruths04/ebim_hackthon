@@ -4,17 +4,22 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-> **⚠️ READ BEFORE ANY STAGE 2 WORK (2026-07-23 late session): read
-> `docs/HANDOFF_2026-07-23_Stage2_v2.md` first — it supersedes
-> `HANDOFF_2026-07-23_Stage2.md`, whose studio/SSH info is dead.** Studio
-> environment issues from that session were a false lead (a debug script's
-> own `sys.stdout` reassignment, not a real crash) — do not re-diagnose it.
-> Real fixes landed: `route_via_door()` wired into `navigate_dining`
-> (commit `b01ed8bb`) and a one-shot new-studio bootstrap script (`b16760ed`).
-> Current blocker: the base stalls before the first post-fix door waypoint
-> during `navigate_dining` — diagnose stall-vs-slow from evidence before
-> picking a fix; leading hypothesis is an untucked arm fouling the
-> island-adjacent lane. See the v2 handoff for the full plan.
+> **⚠️ READ BEFORE ANY STAGE 2 WORK (2026-07-24 session): read
+> `docs/HANDOFF_2026-07-24_Stage2_navdining_fix.md` first — it supersedes
+> the blocker section of `HANDOFF_2026-07-23_Stage2_v2.md` (that doc's
+> environment/SSH setup is still valid).** Root cause of the
+> `navigate_dining` base-stall found and fixed by CPU code-reading (no GPU
+> run needed to find it): `base_hold_anchor` was set at island arrival and
+> never cleared before the dining nav loop, so `sim_tick()`'s hold-twist
+> silently overwrote every `drive_to()` command every tick (`apply_twist`
+> is last-write-wins) — the base was fighting a phantom "return to island"
+> controller, which is why 5 prior arm/geometry fixes all failed
+> identically regardless of direction. Fix: `base_hold_anchor = None` added
+> immediately before the Phase 5 nav loop in `run_stage2_feeding.py`.
+> CPU-verified (py_compile/ruff/pytest, 220/223 pass, 3 pre-existing
+> unrelated `rmpflow` failures) but **NOT YET GPU-verified** — that is the
+> next required step, on Lightning AI (GCP is banned, no budget). See the
+> new handoff for full detail and next steps after that.
 
 > **⚠️ READ BEFORE ANY STAGE-4 WORK (2026-07-20): the open-loop push loop is
 > abandoned.** The spoon→sink push is a controllability dead end (coasting

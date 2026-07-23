@@ -59,6 +59,11 @@ TASK3_DOOR_X = -4.14
 TASK3_DOOR_Y = 0.22
 TASK3_DOOR_APPROACH_M = 0.9
 
+# East edge of the doorway gap. The partition is solid for x > -3.54;
+# the base must be at or west of this x to pass through the gap.
+# Measured from assets/robot_room.usd (2026-07-17).
+TASK3_GAP_EAST_EDGE = -3.54
+
 # Kitchen-side door point sits in the shallow lane between the partition
 # (south face y=0.10) and the kitchen island (north face y=-1.22): rear
 # extent ~0.42 clears the wall (rear tip 0.05) and the tucked arms' 0.80 m
