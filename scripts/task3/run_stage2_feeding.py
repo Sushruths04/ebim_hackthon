@@ -434,8 +434,13 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
         *,
         max_speed: float,
         budget_s: float,
+        position_tolerance_m: float = 0.03,
     ) -> bool:
-        skill = NavigateTo(target_xy, max_linear_mps=max_speed)
+        skill = NavigateTo(
+            target_xy,
+            max_linear_mps=max_speed,
+            position_tolerance_m=position_tolerance_m,
+        )
         for _ in range(int(budget_s / sim.cfg.dt)):
             pose = adapter.pose()
             vx, vy, done = skill.compute(pose)
@@ -538,7 +543,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
         ok = drive_to(CORRIDOR_STOP, max_speed=0.5, budget_s=45.0)
         log_phase("navigate_corridor_stop", ok)
         if ok:
-            ok = drive_to(ROTATE_SPOT, max_speed=0.4, budget_s=35.0)
+            ok = drive_to(ROTATE_SPOT, max_speed=0.4, budget_s=60.0, position_tolerance_m=0.15)
             log_phase("navigate_rotate_spot", ok)
         if ok:
             ok = rotate_to(FACE_WEST_YAW_RAD, budget_s=15.0)
