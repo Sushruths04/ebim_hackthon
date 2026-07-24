@@ -1,5 +1,27 @@
 # Agent Protocol — EBiM Task 3 Sprint
 
+> ## ⭐ AUTHORITATIVE, PERMANENT — READ THIS FIRST (2026-07-24 onward)
+> **The single source of truth for continuing Task 3 is `plans/handoff.md`.**
+> EVERY session, EVERY agent (Claude, Codex, OpenCode) MUST:
+> 1. **START:** read `plans/handoff.md` in full, then
+>    `docs/TASK3_MASTER_EXECUTION_PLAN_2026-07-24.md`. `git pull` on
+>    `task3-current-clean`. Begin the first unchecked step in `plans/handoff.md` §5.
+> 2. **WORK:** one hypothesis → one change → one run. **Never claim a run result
+>    you did not just observe — paste the real evidence.** `"ok":true` ≠ a real hold.
+> 3. **END (you may be cut off mid-task by a usage limit at any time):** update
+>    `plans/handoff.md` (§2 current state, §4 new failures + why, §5 next steps),
+>    then `git commit && git push origin task3-current-clean`. Unpushed = lost.
+> 4. **STUCK (3 fails on one symptom / a decision this doesn't cover):** write it
+>    into `plans/handoff.md` §6 NEEDS OPUS, commit+push, stop. Don't guess.
+>
+> This process is mandatory and permanent — maintain `plans/handoff.md` as the
+> living record so any fresh session continues without redoing or deviating.
+> **Note:** GCP is BANNED (no budget) — Lightning AI is the only GPU venue;
+> ignore any `gcloud` instructions in the older ritual text below.
+
+The following (older) ritual text predates the pivot and is kept for reference;
+`plans/handoff.md` supersedes it wherever they conflict.
+
 Three agents rotate on this repo (each has ~5-hour usage windows):
 **Claude** (branch `main`, worktree `EBiM-benchmark`), **Codex**
 (`agent/codex-packaging`, worktree `EBiM-benchmark-codex`), **OpenCode**
