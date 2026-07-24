@@ -45,24 +45,32 @@ from run_episode import (
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
 ISLAND_STANCE = (
-    -3.53,
-    -1.62,
-)  # redesigned 2026-07-24: single static stance, ~0.77m to spoon pregrasp
-# target (was -3.47,-1.61 / ~0.83m). Calibrated against the PROVEN 10/10
-# cup-grasp distance (0.8255m, verify_grasp_lift.py STANCE+CUP_GRASP_XY) —
-# the old stance was only 6.9mm past that proven distance (not a huge
-# overreach), but right at the edge where IK convergence is unreliable.
-# This gives ~5.3cm of margin under the proven distance. Replaces the
-# two-phase pregrasp->drive-8cm-closer->re-pregrasp maneuver (commits
-# f6558f82/86590df6/8aef9f66), which never executed cleanly (anchor bug,
-# then a ~0.2-0.3 rad yaw drift/no-net-translation issue never resolved) —
-# navigating directly to one closer stance sidesteps that entirely.
+    -3.47,
+    -1.61,
+)  # REVERTED 2026-07-24: tried -3.53 (6cm closer) to shrink the ~6.9mm XY
+# reach overrun vs the proven 10/10 cup-grasp distance. GPU-verified TWICE
+# (runs 15 & 16, different tolerance/budget): the base stalls at x=-3.466
+# every time, never reaching -3.53 — a real physical stop, not a slow
+# controller (waypoints_y_then_x has no hidden intermediate stop near this
+# value, ruling out a stale-route bug). -3.466 is ~4mm from this original
+# stance, strongly suggesting -3.47 was ALREADY tuned to sit right at this
+# same collision boundary. There is no XY slack left to exploit here — the
+# real lever is the vertical descent (see PREGRASP_Z below), not moving
+# the base closer.
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
 TRAVEL_SPINE_M = 0.45
 PREGRASP_Z = (
-    0.95  # 19cm above spoon — safe collision clearance during approach
+    0.85  # REDUCED 2026-07-24 from 0.95 (was 19cm above spoon). That much
+    # clearance existed to protect a secondary base-approach drive that no
+    # longer exists (ISLAND_STANCE revert, see above) -- the base doesn't
+    # need to be moved again after pregrasp now, so the descent doesn't
+    # need to clear a moving-base collision, only the spoon/table itself.
+    # 8.9cm above spoon (0.761) is still real clearance. This shrinks the
+    # required vertical descent from ~17.9cm to ~7.9cm at the SAME (already
+    # near-max) horizontal reach -- the actual lever available now that the
+    # base can't get closer in XY (see ISLAND_STANCE note above).
 )
 LIFT_Z = 1.05
 DESCEND_TILT_RAD = (
@@ -618,7 +626,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     )
     # Multi-step descend using top-down orientation (no tilt so the arm
     # reaches farthest and the open fingers straddle the spoon handle).
-    spoon_mid = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
+    spoon_mid = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.04)
     step_ok = servo_arm(
         "right", spoon_mid, top_down_quat, budget_s=4.0, tol_m=0.03
     )
@@ -645,7 +653,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
             y_offset=args.object_grasp_y_offset,
             z_offset=FLAT_OBJECT_Z_OFFSET,
         )
-        mid_pos = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
+        mid_pos = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.04)
         servo_arm("right", mid_pos, tilted_quat, budget_s=3.0, tol_m=0.04)
         retry_ok = servo_arm(
             "right", spoon_grasp, tilted_quat, budget_s=5.0, tol_m=0.02
