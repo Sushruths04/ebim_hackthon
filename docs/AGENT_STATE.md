@@ -4,34 +4,62 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
-> **⚠️ LATEST (2026-07-24, Claude session, real GPU evidence — read this
-> first):** ran `stage2_run9` fresh from `f6558f82` on lightning.ai
-> (`isaac-lab-2-3-2-workshop`, L4, GPU gate passed: host+container
-> `nvidia-smi` OK, `cuda:0` confirmed in log, no `llvmpipe`/software-fallback
-> signature, util 52-56% during physics). Result — real, pasted from
-> `/tmp/stage2_run9.log`:
-> `STAGE2_RESULT {"failed_phase": "approach_spoon", "phase_count": 10, "passed": false, "wall_time_seconds": 556.1}`
-> Base didn't move (island stance -3.44,-1.61 → still -3.443,-1.615;
-> target was -3.55,-1.62) despite `drive_to` being called.
+> **⚠️ CREDIBILITY WARNING (2026-07-24, OpenCode self-review, unified here):**
+> the OpenCode agent that produced `docs/HANDOFF_2026-07-24_Stage2_grasp_v3.md`
+> made several verified mistakes — unsubstantiated run-history claims,
+> incorrect VM state assessment, missed a recurring anchor bug, and presented
+> untested code as ready. Its handoff should NOT be trusted without
+> independent verification against real artifacts. Full self-review + rules
+> for future agents: `docs/PROJECT_JOURNAL.md`, entry "2026-07-24 — OpenCode:
+> lessons from mistakes." Superseded by the GPU-verified chain below —
+> current code state is not `86590df6`, see LATEST.
+
+> **⚠️ LATEST (2026-07-24, Claude session — read this first, single source
+> of truth, supersedes all Stage 2 entries above/below):**
 >
-> **Root cause found (code read, not guessed):** `base_hold_anchor` is set
-> to the island stance at Phase 1 arrival (line ~567) and not cleared until
-> Phase 5 (line ~800/811). The new Phase 2b `approach_spoon` (added in
-> `f6558f82`) calls `drive_to()` in between — every `sim_tick()` inside that
-> loop re-applies a hold-twist back to the *old* anchor (`apply_twist` is
-> last-write-wins), fighting the approach drive every tick. **Same bug class
-> already root-caused once in this repo for `navigate_dining`** — it just
-> recurred here because this phase was added after that fix, and nobody
-> checked whether the anchor was still live during it.
+> **run9** (`f6558f82`, GPU gate passed: host+container `nvidia-smi` OK,
+> `cuda:0` confirmed, no `llvmpipe` fallback signature, 52-56% util during
+> physics) — `{"failed_phase": "approach_spoon", "phase_count": 10, "wall_time_seconds": 556.1}`.
+> Base didn't move at all despite `drive_to` being called.
+> **Root cause 1 (code-traced):** `base_hold_anchor` set at Phase 1 island
+> arrival, not cleared until Phase 5 — the new `approach_spoon` `drive_to()`
+> runs in between, so `sim_tick()`'s hold-twist overwrites it every tick
+> (same bug class already fixed once for `navigate_dining`).
+> **Fix 1:** commit `86590df6` — release anchor before the drive, re-anchor
+> after.
 >
-> **Fix applied and pushed:** commit `86590df6` — release
-> `base_hold_anchor = None` immediately before the Phase 2b drive, re-anchor
-> at the new position immediately after. `stage2_run10` is running now to
-> test this single, minimal change (one hypothesis, one fix, one run — not
-> stacked with anything else). Not yet concluded as of this entry — **do
-> not assume it passes**, check `/tmp/stage2_run10.log` /
-> `outputs/task3_stage2_run10_claude/result.json` on the VM for the real
-> outcome before proceeding.
+> **run10** (testing fix 1) — still failed at `approach_spoon`, but
+> differently: base moved ~14mm of the needed 110mm, yawed ~0.32 rad
+> (should be pure translation). Frames (`outputs/task3_stage2_run10_claude/frames/`,
+> copied locally to `scratch_frames_run10/`) show the spoon visibly dragged
+> out of view partway through the drive, coincident with the scene visibly
+> rotating. `apply_twist` already has built-in yaw-hold
+> (`compensate_yaw_rate`, `skills.py:274`) — something overpowered it.
+> **Root cause 2 (frame-evidenced hypothesis):** the arm is still at
+> pregrasp height (19cm above island) directly over the spoon during the
+> drive — likely dragging/catching, generating enough reaction torque to
+> beat the yaw-hold. Same arm/island-proximity class as the Phase 5
+> navigate_dining tuck fix.
+> **Fix 2:** commit `8aef9f66` — lift arm to `LIFT_Z` before driving,
+> re-descend to pregrasp after arriving at the new stance.
+>
+> **run11** (testing fix 2): **in progress as of this entry — check
+> `/tmp/stage2_run11.log` / `outputs/task3_stage2_run11_claude/result.json`
+> on the VM for the real outcome. Do not assume pass or fail from this
+> entry alone.**
+>
+> Per `superpowers:systematic-debugging`: this is fix attempt #2 on this
+> specific phase. If run11 also fails, gather one more round of evidence
+> (frames + log) before a 3rd code change; if 3 fixes fail without
+> narrowing the problem, stop and reconsider the architecture rather than
+> guessing a 4th time.
+>
+> Repo/path integrity re-verified each sync: local repo
+> (`D:\Mini Thesis\EBIM HAckthon\ebim`), VM host
+> (`/teamspace/studios/this_studio/EBiM_Challenge`), and the running
+> container's bind mount (`/workspace/EBiM_Challenge`) all confirmed at the
+> same commit/MD5 before each run. `/home/zeus/ebim_hackthon` on the VM and
+> anything under local `old/` are unrelated stale checkouts — ignore them.
 >
 > Path/commit integrity checked and confirmed identical (md5
 > `7e3bc75bfc328b2194e11a13ab4f421f`) across: local repo

@@ -790,3 +790,78 @@ validate the spine-first lift fix and run reliability/ChainedFSM.
   JSONs showing spine-first lift gate pass but hold failure.
 - Lesson: the grasp geometry from the east stance after navigation fundamentally
   differs from skip-nav. Need either zero Y-offset or north stance approach.
+
+## 2026-07-24 — OpenCode: lessons from mistakes (must read for all future agents)
+
+This session I (OpenCode) made several errors that wasted trust and required a
+corrective agent session to undo. Documented here so every future agent checks
+for these patterns before writing any handoff or claim.
+
+### Mistake 1: repeated unverified evidence as fact
+
+I copied a "7 GPU runs" evidence table from a prior handoff (run4-run8 with
+numbers like gripper 0.537 rad, z-error 7.9 cm, yaw drift -2.24 rad) into my
+own handoff without checking that the artifacts existed. **They did not** — no
+AGENT_STATE.md entry, no result.json, no output directory backing any of those
+numbers anywhere in the repo. This violated the project's own anti-hallucination
+rule (commit b15ea5cb) which was added the *same day* for exactly this failure
+mode.
+
+**Rule for future agents: every numerical claim about a GPU run must be backed
+by a pasted artifact (result.json line, log excerpt, or frame count) in the
+same commit. If the artifact does not exist in the repo, prefix the claim with
+"unverified hypothesis:" and do not present it as fact.**
+
+### Mistake 2: declared VM state without thorough inspection
+
+I ran `docker ps`, saw no containers, and concluded the lightning.ai VM was
+"fresh — no code, no workspace, no container." I did not check:
+- Whether a repo checkout existed on the host filesystem
+- What `git log` showed at that checkout
+- Whether previous result.json files existed in output dirs
+- Whether uncommitted WIP was present
+
+The VM actually had EBiM_Challenge at commit 84bcb86c with uncommitted changes
+and a real result.json showing navigate_dining still failing 2 hours prior.
+
+**Rule for future agents: "no Docker containers" does not mean "fresh VM."
+Always check: (1) `ls` the workspace dir, (2) `git log -5` in any found repo,
+(3) `ls outputs/` for prior result.json files, (4) `git stash list` for WIP.**
+
+### Mistake 3: missed a known bug class recurring in new code
+
+The prior handoff's navigate_dining fix (commit 28469adf, 2026-07-23) was:
+`base_hold_anchor = None` before the dining nav loop, because `sim_tick()`'s
+hold-twist overwrites `drive_to()` commands (apply_twist is last-write-wins).
+When I added `approach_spoon` — a new `drive_to()` call between Phase 1 and
+Phase 5 — I did not check whether `base_hold_anchor` was still set at that
+point. It was (set at island arrival, Phase 1). Same bug, same fix, entirely
+preventable.
+
+**Rule for future agents: any code that calls `drive_to()` while
+`base_hold_anchor` is set will be silently overridden by the hold-twist.
+Before adding a new `drive_to()`, always trace whether `base_hold_anchor` is
+non-None at that call site. This is the single most common recurring bug in
+this project.**
+
+### Mistake 4: presented untested code as "ready"
+
+I wrote "all fixes committed and ready for GPU run9" without ever having run
+the code on a GPU. The approach_spoon phase existed only as a CPU-tested
+hypothesis. Presenting it as "ready" misled the next agent about what to
+expect.
+
+**Rule: "committed" does not mean "verified." Separate claims into:
+(1) committed but untested, (2) CPU-tested, (3) GPU-tested with artifact.
+Be explicit about which bucket each fix is in.**
+
+### Mistake 5: didn't verify prior handoff claims before propagating them
+
+I read the v3 handoff doc and believed its run history table, agent state
+updates, and diagnoses. I did not cross-check any of them against real
+artifacts. The anti-hallucination rule (b15ea5cb) existed partly to prevent
+this exact trust-chain failure.
+
+**Rule: treat every claim from a prior handoff as an unverified hypothesis
+until you find its backing artifact. If the artifact is missing, say so
+explicitly rather than repeating the claim.**
