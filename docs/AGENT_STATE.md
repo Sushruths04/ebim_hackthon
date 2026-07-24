@@ -11,6 +11,53 @@
 > Read it before the entries below (which are the detailed evidence trail
 > that plan was built from).
 
+> **🎯 STAGE 1 — real finding, GPU-verified fresh baseline (2026-07-24,
+> Claude session):** re-ran the exact r9 config
+> (`--object-name simple_tray --descend-ee-z 0.815 --push-distance 0.26
+> --head-placement a`, `scripts/task3/probe_tray_slide.py`) fresh on the
+> rebuilt environment (`outputs/task3_stage1_tray_slide_r14_claude/`,
+> GPU-gate passed). **Result is worse than either historical run**:
+> `stroke1_result` overhang went **negative** (-0.160m, wrong direction)
+> and `stroke2_realign` hit a 0.251m base drift before stroke 2 even
+> started — ending the run. Log shows repeated
+> `Right arm IK failed: solver reported no solution` warnings during
+> `stroke1_drag`. **Confirmed visually** (frames pulled and viewed
+> directly, `rgb_0008.png`/`rgb_0010.png`): at `stroke1_result` the arm is
+> **completely collapsed**, draped flat across the table edge with the
+> gripper hanging off the side — not a subtle friction/contact-tuning
+> issue, an actual control/IK breakdown during the drag maneuver. Also
+> confirms real run-to-run variance exists even with identical commanded
+> parameters (r9: +0.099m overhang/reached pinch; r13: +0.039m/never
+> reached pinch; r14 today: -0.160m/arm collapsed) — do not draw
+> conclusions from a single trial, per the master plan's own ≥6/10-run bar.
+>
+> Also re-confirmed (from r9's own already-existing `result.json`, no new
+> GPU run needed): the exact same "reports success without verifying an
+> actual hold" bug found in Stage 2 exists here too — r9's `edge_close`
+> phase logged `"pinch_plausible": false` yet was marked `"ok": true`, and
+> the tray's tracked world position barely moved (a few mm) across three
+> `carry_waypoint` phases that were all marked `"ok": true` despite the
+> base traveling over a meter — meaning the "successful carry" very likely
+> never actually held the tray. This is now a **third confirmed instance**
+> of the same architecture gap (Stage 1 tray, Stage 2 spoon, Stage 4 cup).
+>
+> **Qwen2-VL-2B-Instruct VLM narrator set up and validated this session**
+> (see `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` §0.1) —
+> isolated venv at `~/vlm_venv` on the lightning.ai VM host (NOT inside the
+> Isaac Lab container), model weights cached on the VM only. Script:
+> `~/vlm_narrate.py <frames_dir> <frame1.png> <frame2.png> ...`, writes to
+> `~/vlm_summaries/<run_name>_vlm_summary.json`. Tested on the r14 collapse
+> frames — correctly flagged the collapse frame as "tray appears out of
+> place" (frame just before it: "not out of place"). Useful as a coarse
+> automated signal, not a replacement for reading result.json/frames
+> directly when precision matters.
+>
+> **Next step (not yet done):** the IK-failure/arm-collapse during
+> `stroke1_drag` is the real blocker to root-cause — likely the same
+> "arm at/past its reach limit" class of problem as Stage 2, not a
+> friction parameter. Investigate the drag target's distance from the
+> base before tuning push-distance/descend-ee-z further.
+
 > **🎯 REAL ROOT CAUSE FOUND (2026-07-24, Claude session, runs 13-14,
 > `--skip-navigation` diagnostics — read this before touching Stage 2
 > grasp code again):** the `approach_spoon` yaw-drift bug (see below) is
