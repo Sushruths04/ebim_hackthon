@@ -354,23 +354,41 @@ past an implausible manipulation without stopping" pattern found in Stage
 memory) — a recurring architecture gap across at least three of this
 project's scripts.**
 
-### 5.4 GPU status: NOT YET RE-TESTED after these changes
+### 5.4 GPU-tested (run r19): partial improvement, root cause NOT fixed
 
-**Important:** the Stage 1 code changes above (`3cb9bf00`) have been
-pushed and synced to the VM but **have not been GPU-tested since being
-made**. All Stage 1 GPU evidence in this document (r14's arm-collapse
-finding) predates these fixes. Task list item #4 ("Stage 1: GPU-verify the
-stance + verification fix, multi-trial") is still pending — this is
-likely the highest-value next action for whoever picks this up, since it's
-a clean, never-yet-tested fix on a well-understood root cause, unlike
-Stage 2's current unresolved pregrasp-height oscillation.
+Ran the fixed code (`TRAY_STANCE_X_OFFSET_M=-0.05` + fail-fast pinch
+check) fresh on GPU with full navigation, `outputs/task3_stage1_r19_claude/`.
 
-Also still open: the *actual* trigger for the arm-collapse (why IK failed
-during `stroke1_drag` specifically) is understood at the mechanism level
-(frozen arm + advancing base + active contact) but the fix
-(`TRAY_STANCE_X_OFFSET_M=-0.05`, closer contact point) has not been
-verified to actually prevent the IK failures / collapse from recurring.
-Test this specifically, not just the overhang number, when re-running.
+**Result: same failure mode recurs, at reduced severity.**
+`tray_stance` correctly computed as `(-3.37, -1.618)` (confirms the fix
+applied), base navigated there accurately (within ~3cm). But
+`stroke1_result` overhang again went **negative** (-0.199m, same wrong
+direction as the original r14 baseline) and `stroke2_realign` drift was
+**0.129m** — better than r14's 0.251m (roughly half), but still a real
+failure, still `"ok": false`.
+
+**Precisely recomputed yaw jump** (script-verified): **+70.84°** during
+`stroke1_drag` (tick 15419→16419), essentially the same magnitude as
+r14's +78.59° — coincident with **7** logged `IK failed` warnings this
+time (more than r14). **Conclusion: moving the stance 5cm closer reduced
+the severity but did not fix the root cause.** The `TRAY_STANCE_X_OFFSET_M`
+fix addressed the *static* reach margin at the initial contact point, but
+`stroke1_drag`'s per-tick loop ramps the arm's target *forward* by up to
+the full `push_distance` (0.26m default) during the drag itself, while the
+base's hold-anchor is tracked by a separate P-controller
+(`--drag-seconds` default 5.0s, i.e. ~0.052 m/s average ramp rate) — if
+that controller lags the ramping target by even a little at any tick, IK
+can still fail, freeze the arm (per the `dual_arm_lula.py` mechanism
+above), and produce the same lever-arm spin while the gripper is in
+active contact. **The closer starting stance shrinks the margin for this
+lag to matter, but doesn't eliminate the lag itself.**
+
+**Not yet tried, well-reasoned next lever:** slow the drag ramp (increase
+`--drag-seconds`, e.g. to 8-10s) so the base's tracking controller has an
+easier time keeping pace with the arm's target each tick, reducing how
+far behind it can fall before IK strain accumulates. This is a different,
+untried hypothesis from anything attempted so far for Stage 1 — test it
+in isolation (don't combine with another stance change in the same run).
 
 ---
 
@@ -452,12 +470,17 @@ be overclaimed on review and needs real re-verification, not a repeat.
 
 ## 9. Recommended next steps, in order
 
-1. **Stage 1**: run the already-committed fix (`3cb9bf00`'s
-   `TRAY_STANCE_X_OFFSET_M=-0.05` + fail-fast pinch check) fresh on GPU.
-   Given known run-to-run variance in this script (r9/r13/r14 all differed
-   with identical params), run at least 2-3 trials, not one, before
-   concluding anything. This is clean, untested, well-understood work —
-   do this first.
+1. **Stage 1**: `3cb9bf00`'s stance fix has now been GPU-tested (r19,
+   §5.4) — it reduced the collapse-drift severity (~0.25m → ~0.13m) but
+   did NOT eliminate it; same +70-79° yaw-spin mechanism recurs. Next
+   untried lever: increase `--drag-seconds` (default 5.0) to slow the
+   arm-target ramp rate during `stroke1_drag`, giving the base's tracking
+   controller more slack to keep up and reducing the IK strain that
+   triggers the freeze-and-spin. Test this ALONE (don't combine with
+   another stance change in the same run) via
+   `python scripts/task3/probe_tray_slide.py --object-name simple_tray
+   --descend-ee-z 0.815 --push-distance 0.26 --drag-seconds 9.0
+   --head-placement a --record-video`.
 2. **Stage 2**: resolve the `PREGRASP_Z` question (§4.4) — either map 2-3
    more discrete height values, or reconsider the descent trajectory
    itself (e.g., delay full gripper-opening until closer to the final
