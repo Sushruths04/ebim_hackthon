@@ -107,11 +107,18 @@ class IsaacWorld:
     def __init__(
         self,
         *,
+        simulation_app: Any = None,
         record_video: bool = False,
         out_dir: str = "outputs/task3_pipeline",
         object_names: tuple[str, ...] = config.STAGE1_OBJECTS,
         skip_navigation: bool = False,
     ) -> None:
+        # simulation_app is the isaaclab.app.AppLauncher().app object the
+        # caller must construct BEFORE this class (mirrors
+        # verify_grasp_lift.py / run_episode.py) -- scene composition calls
+        # app.update() during stage setup, so this cannot be None once
+        # reset() actually builds the scene.
+        self.simulation_app = simulation_app
         self.record_video = record_video
         self.out_dir = Path(out_dir)
         self.out_dir.mkdir(parents=True, exist_ok=True)
@@ -164,9 +171,14 @@ class IsaacWorld:
                 dt=0.005, device="cuda:0", gravity=(0.0, 0.0, -9.81)
             )
         )
+        if self.simulation_app is None:
+            raise RuntimeError(
+                "IsaacWorld requires simulation_app (the AppLauncher().app "
+                "object) -- construct AppLauncher before IsaacWorld."
+            )
         m["configure_keyboard_control_stage"](
             m["configure_robot_room_stage"],
-            None,
+            self.simulation_app,
             sim.stage,
             room_path=REPO_ROOT / "assets" / "robot_room.usd",
             task="task3",
@@ -232,7 +244,7 @@ class IsaacWorld:
             self._rgb_annotator.attach([self._render_product])
 
         self.adapter = m["TmrBaseAdapter"](robot, num_envs=1, device="cuda:0")
-        self.arms = m["DualArmController"](robot, None)
+        self.arms = m["DualArmController"](robot, self.simulation_app)
 
         # Phase 0 (verify_grasp_lift-proven): raise the spine for transit
         # clearance, then tuck the arms into the transit pose BEFORE any

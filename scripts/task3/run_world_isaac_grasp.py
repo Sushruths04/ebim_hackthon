@@ -68,7 +68,7 @@ def main() -> None:
     })
     simulation_app = app_launcher.app
     try:
-        result = _run(args, out_dir)
+        result = _run(args, out_dir, simulation_app)
         result["wall_time_seconds"] = round(time.time() - started_at, 3)
         (out_dir / "result.json").write_text(json.dumps(result, indent=2, sort_keys=True))
         print("WORLD_ISAAC_GRASP_RESULT " + json.dumps(result, sort_keys=True), flush=True)
@@ -89,12 +89,13 @@ def main() -> None:
             raise SystemExit(1)
 
 
-def _run(args: argparse.Namespace, out_dir: Path) -> dict[str, Any]:
+def _run(args: argparse.Namespace, out_dir: Path, simulation_app: Any) -> dict[str, Any]:
     from task3_pipeline import config
     from task3_pipeline.outcomes import classify_grasp, classify_lift, classify_reach
     from task3_pipeline.world_isaac import IsaacWorld
 
     world = IsaacWorld(
+        simulation_app=simulation_app,
         record_video=args.record_video,
         out_dir=str(out_dir),
         object_names=(args.object_name,),
