@@ -4,6 +4,44 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **⚠️ LATEST (2026-07-24, Claude session, real GPU evidence — read this
+> first):** ran `stage2_run9` fresh from `f6558f82` on lightning.ai
+> (`isaac-lab-2-3-2-workshop`, L4, GPU gate passed: host+container
+> `nvidia-smi` OK, `cuda:0` confirmed in log, no `llvmpipe`/software-fallback
+> signature, util 52-56% during physics). Result — real, pasted from
+> `/tmp/stage2_run9.log`:
+> `STAGE2_RESULT {"failed_phase": "approach_spoon", "phase_count": 10, "passed": false, "wall_time_seconds": 556.1}`
+> Base didn't move (island stance -3.44,-1.61 → still -3.443,-1.615;
+> target was -3.55,-1.62) despite `drive_to` being called.
+>
+> **Root cause found (code read, not guessed):** `base_hold_anchor` is set
+> to the island stance at Phase 1 arrival (line ~567) and not cleared until
+> Phase 5 (line ~800/811). The new Phase 2b `approach_spoon` (added in
+> `f6558f82`) calls `drive_to()` in between — every `sim_tick()` inside that
+> loop re-applies a hold-twist back to the *old* anchor (`apply_twist` is
+> last-write-wins), fighting the approach drive every tick. **Same bug class
+> already root-caused once in this repo for `navigate_dining`** — it just
+> recurred here because this phase was added after that fix, and nobody
+> checked whether the anchor was still live during it.
+>
+> **Fix applied and pushed:** commit `86590df6` — release
+> `base_hold_anchor = None` immediately before the Phase 2b drive, re-anchor
+> at the new position immediately after. `stage2_run10` is running now to
+> test this single, minimal change (one hypothesis, one fix, one run — not
+> stacked with anything else). Not yet concluded as of this entry — **do
+> not assume it passes**, check `/tmp/stage2_run10.log` /
+> `outputs/task3_stage2_run10_claude/result.json` on the VM for the real
+> outcome before proceeding.
+>
+> Path/commit integrity checked and confirmed identical (md5
+> `7e3bc75bfc328b2194e11a13ab4f421f`) across: local repo
+> (`D:\Mini Thesis\EBIM HAckthon\ebim`), VM host path
+> (`/teamspace/studios/this_studio/EBiM_Challenge` = `~/EBiM_Challenge`),
+> and the running container's bind mount (`/workspace/EBiM_Challenge`), all
+> at `86590df6`. Note: `/home/zeus/ebim_hackthon` on the same VM is an
+> unrelated, older, unused checkout (different casing) — do not confuse it
+> with the active one.
+
 > **⚠️ CORRECTION (2026-07-24, Claude session, supersedes the OpenCode entry
 > below):** the `docs/HANDOFF_2026-07-24_Stage2_grasp_v3.md` run4-run8
 > evidence table (gripper 0.537 rad, z-error 7.9cm, yaw drift -2.24 rad,
