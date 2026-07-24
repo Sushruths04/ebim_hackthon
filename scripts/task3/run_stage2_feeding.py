@@ -47,7 +47,7 @@ ROTATE_SPOT = (-3.0, -3.1)
 ISLAND_STANCE = (
     -3.47,
     -1.61,
-)  # proven navigable stance (matches Stage 4), ~0.87m to spoon
+)  # proven navigable stance, ~0.87m to spoon — approach drive closes the gap
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
@@ -57,8 +57,8 @@ PREGRASP_Z = (
 )
 LIFT_Z = 1.05
 DESCEND_TILT_RAD = (
-    -0.80
-)  # 46° pitch-back tilt — extreme angle to unlock wrist at 0.87m reach
+    -0.40
+)  # 23° pitch-back tilt — less extreme to improve effective reach at 0.90m
 
 HEAD_Z_OFFSET_M = 0.17
 SPOON_START_Y_OFFSET_M = -0.20
@@ -144,7 +144,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--grasp-ramp-seconds", type=float, default=1.0)
     parser.add_argument("--grasp-settle-seconds", type=float, default=1.5)
-    parser.add_argument("--close-effort-scale", type=float, default=None)
+    parser.add_argument("--close-effort-scale", type=float, default=1.0)
     parser.add_argument("--scoop-pitch-deg", type=float, default=30.0)
     return parser.parse_args()
 
@@ -595,6 +595,26 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
             sim,
         )
 
+    # ---- Phase 2b: drive base closer to spoon ----
+    # The arm at pregrasp (z=0.95) has 19 cm clearance above the island.
+    # Driving the base ~8 cm west brings the spoon within the arm's vertical
+    # descent range (0.87 m reach → 0.79 m, enabling full 18 cm z-drop).
+    approach_target = (ISLAND_STANCE[0] - 0.08, ISLAND_STANCE[1] - 0.01)
+    approach_ok = drive_to(approach_target, max_speed=0.15, budget_s=8.0, position_tolerance_m=0.05)
+    log_phase("approach_spoon", approach_ok, target=list(approach_target))
+    if not approach_ok:
+        return _result(
+            False,
+            "approach_spoon",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
+
     # ---- Phase 3: descend to spoon and close ----
     spoon_before_grasp = spoon_pose()
     spoon_grasp = object_grasp_target(
@@ -603,16 +623,17 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
         y_offset=args.object_grasp_y_offset,
         z_offset=FLAT_OBJECT_Z_OFFSET,
     )
-    # Multi-step descend: first go halfway down, then final descent.
+    # Multi-step descend using top-down orientation (no tilt so the arm
+    # reaches farthest and the open fingers straddle the spoon handle).
     spoon_mid = (spoon_grasp[0], spoon_grasp[1], spoon_grasp[2] + 0.10)
     step_ok = servo_arm(
-        "right", spoon_mid, tilted_quat, budget_s=4.0, tol_m=0.03
+        "right", spoon_mid, top_down_quat, budget_s=4.0, tol_m=0.03
     )
     log_phase(
         "descend_spoon_mid", step_ok, target=[round(v, 3) for v in spoon_mid]
     )
     strict_reach = servo_arm(
-        "right", spoon_grasp, tilted_quat, budget_s=6.0, tol_m=0.015
+        "right", spoon_grasp, top_down_quat, budget_s=8.0, tol_m=0.015
     )
     final_error = arms.position_error("right", spoon_grasp)
     ok = strict_reach or final_error <= 0.10
