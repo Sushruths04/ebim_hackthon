@@ -30,7 +30,7 @@
 ## CURRENT STATE  (update every session)
 
 - **Branch:** `task3-current-clean`
-- **Last commit:** _(fill in after first commit — this file + plan docs)_
+- **Last commit:** `5d87bf3d` (plan + prompt + this handoff doc; pushed to origin). Execution commits start at T0.
 - **Overall:** 0/4 stages have a real-rules proof bundle. Plan written, execution
   not yet started.
 - **Environment:** Lightning AI L4 only (GCP BANNED). SSH + container per
