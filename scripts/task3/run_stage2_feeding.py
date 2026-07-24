@@ -128,6 +128,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fast-exit", action="store_true")
     parser.add_argument("--skip-navigation", action="store_true")
     parser.add_argument(
+        "--approach-offset-x",
+        type=float,
+        default=-0.08,
+        help="Phase 2b approach_spoon x-offset from ISLAND_STANCE (diagnostic lever).",
+    )
+    parser.add_argument(
         "--object-grasp-x-offset",
         type=float,
         default=DEFAULT_OBJECT_GRASP_X_OFFSET,
@@ -626,7 +632,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     )
     log_phase("lift_before_approach", lift_ok)
 
-    approach_target = (ISLAND_STANCE[0] - 0.08, ISLAND_STANCE[1] - 0.01)
+    approach_target = (ISLAND_STANCE[0] + args.approach_offset_x, ISLAND_STANCE[1] - 0.01)
     approach_ok = drive_to(approach_target, max_speed=0.15, budget_s=8.0, position_tolerance_m=0.05)
     base_hold_anchor = adapter.pose().x, adapter.pose().y
     log_phase("approach_spoon", approach_ok, target=list(approach_target))
