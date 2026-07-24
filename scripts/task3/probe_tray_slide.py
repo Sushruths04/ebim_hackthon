@@ -704,6 +704,19 @@ def _run_edge_pinch(
         gripper_rad=round(gripper_rad, 6),
         pinch_plausible=pinch_plausible,
     )
+    # Fail fast instead of continuing: r9 (2026-07-24 review) proceeded
+    # through edge_lift/carry with pinch_plausible=False, and the tray's
+    # tracked XY position stayed frozen (mm-level) across three
+    # "ok": true carry_waypoint phases despite the base traveling over a
+    # meter — almost certainly an unheld/slipped tray, not a real carry.
+    # The final `passed` computation already accounts for pinch_plausible
+    # (see below), but letting the run continue anyway wastes GPU time on
+    # an already-doomed trial and produces misleading per-phase "ok: true"
+    # entries. Stop here instead.
+    if holding and not pinch_plausible:
+        return False, "edge_close_pinch_implausible", {
+            "gripper_rad": round(gripper_rad, 6),
+        }
     lift_ok = False
     lift_m = 0.0
     if holding:
@@ -812,6 +825,7 @@ def _run_push_stroke(
     top_down: tuple[float, ...],
     dt: float,
     args: argparse.Namespace,
+    stance_x: float,
 ) -> tuple[bool, str | None]:
     """One press-drag-raise stroke; module-level so its own branching does
     not count toward ``_run()``'s cyclomatic complexity.
@@ -836,7 +850,7 @@ def _run_push_stroke(
     stroke_contact_y = live_tray[1]
     base_pose = adapter.pose()
     if stroke_needs_realign(stroke_contact_y, base_pose.y):
-        realign_target = (STANCE[0], stroke_contact_y)
+        realign_target = (stance_x, stroke_contact_y)
         hold_anchor_box["value"] = None
         # A diagonal correction from the post-contact pose cuts across the
         # island's east corner (r1: it stalled 25 cm short). First recover
@@ -1218,12 +1232,22 @@ def _run(  # noqa: C901 - linear simulator phase orchestration
             positions, _ = tray_view.get_world_poses()
             return tuple(float(value) for value in positions.tolist()[0])
 
-        # Local tray stance: put the contact point dead ahead so the reach
-        # stays inside the proven ~0.83 m envelope (CUP_GRASP_XY dead-ahead
-        # distance from STANCE), instead of the ~1.0 m diagonal reach that
-        # failed trial 1.
+        # Local tray stance: put the contact point dead ahead, closer to the
+        # base than shared STANCE by TRAY_STANCE_X_OFFSET_M. Measured
+        # 2026-07-24: at plain STANCE[0], the tray contact target
+        # (STANCE[0]+CONTACT_X_OFFSET_M dead-ahead) sits 0.8593m away —
+        # 3.4cm PAST the proven 10/10 cup-grasp distance (0.8255m,
+        # STANCE->CUP_GRASP_XY in verify_grasp_lift.py), not "inside" it as
+        # the old comment here claimed. Do not modify shared STANCE itself
+        # (verify_grasp_lift.py's proven cup pipeline also imports it) —
+        # apply the offset locally instead. -0.05m lands at 0.8093m,
+        # ~1.6cm under the proven distance.
+        TRAY_STANCE_X_OFFSET_M = -0.05
         initial_tray_pose = tray_pose()
-        tray_stance = (STANCE[0], initial_tray_pose[1])
+        tray_stance = (
+            STANCE[0] + TRAY_STANCE_X_OFFSET_M,
+            initial_tray_pose[1],
+        )
 
         adapter = TmrBaseAdapter(robot, num_envs=1, device="cuda:0")
         arms = DualArmController(robot, simulation_app)
@@ -1488,6 +1512,7 @@ def _run(  # noqa: C901 - linear simulator phase orchestration
                 top_down=top_down,
                 dt=sim.cfg.dt,
                 args=args,
+                stance_x=tray_stance[0],
             )
             if failure_phase is not None:
                 return _result(

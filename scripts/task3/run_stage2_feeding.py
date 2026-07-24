@@ -546,7 +546,9 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
 
     # ---- Phase 1: navigate to island (same as Stage 4) ----
     if args.skip_navigation:
-        ok = drive_to(ISLAND_STANCE, max_speed=0.25, budget_s=20.0)
+        ok = drive_to(
+            ISLAND_STANCE, max_speed=0.25, budget_s=30.0, position_tolerance_m=0.05
+        )
         log_phase("navigate_stance_short", ok)
     else:
         ok = drive_to(CORRIDOR_STOP, max_speed=0.5, budget_s=45.0)
@@ -558,7 +560,9 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
             ok = rotate_to(FACE_WEST_YAW_RAD, budget_s=15.0)
             log_phase("rotate_west", ok)
         if ok:
-            ok = drive_to(ISLAND_STANCE, max_speed=0.25, budget_s=25.0)
+            ok = drive_to(
+                ISLAND_STANCE, max_speed=0.25, budget_s=30.0, position_tolerance_m=0.05
+            )
             log_phase("navigate_island_stance", ok)
     if not ok:
         return _result(
