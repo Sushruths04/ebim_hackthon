@@ -314,6 +314,54 @@ driving the base closer.
   warns "never run a second copy on the single GPU," so this was a known rule
   that got violated, not an unknown risk.
 
+### 4.5 LEVER 2 (stiffen base_hold_kp=8) — TESTED CLEAN, FAILED, no measurable effect
+- **Run:** `--grasp-base-hold-kp 8 --fast-exit --out-dir
+  outputs/task3_world_isaac_grasp_lever2_kp8`, single process, GPU clean
+  before/after. `wall_time_seconds: 220.76`.
+- **Result (real, opened this session):** `passed: false`, same failure
+  signature as Lever 1: `descend position_error_m 0.0938` (vs 0.0944 at kp=4 —
+  noise-level, i.e. unchanged), `recenter ok:false, recenter_pos_err_m 0.0724`
+  (vs 0.0761 at kp=4), `close: gripper -0.0, object_ee_dist_m 0.1252,
+  object_follows_ee false`, `lift: object_rise_m 0.0`.
+- **Critically:** the object's live position during recenter is virtually
+  identical between kp=4 and kp=8 (`live_obj [-4.137,-1.814,0.76]` both runs).
+  Lever 2's own hypothesis (stiffer base hold ⇒ less cup displacement during
+  descend) shows **zero measurable effect** — the cup moved the same ~6cm in Y
+  from its start position regardless of `base_hold_kp`. This confirms Lever 1's
+  interpretation: the blocker is an **arm IK/reach convergence** shortfall
+  (~7-9cm short, consistently -Y biased), not cup slippage from a soft base
+  hold. Ran kp=12 next (only remaining Lever-2 value) to close out the lever
+  per §5 step 2 exactly, before escalating.
+
+### 4.6 LEVER 2 (kp=12) — TESTED CLEAN, FAILED, identical signature — 3rd fail on same symptom
+- **Run:** `--grasp-base-hold-kp 12 --fast-exit --out-dir
+  outputs/task3_world_isaac_grasp_lever2_kp12`. `wall_time_seconds: 223.57`.
+- **Result (real, opened this session):** `passed: false`. `descend
+  position_error_m 0.0966` (vs 0.0944/0.0938 — unchanged), `recenter
+  ok:false, recenter_pos_err_m 0.0725` (vs 0.0761/0.0724 — unchanged), `close:
+  gripper 0.0038 rad, object_ee_dist_m 0.1251, object_follows_ee false`,
+  `lift: object_rise_m 0.0`. `base_hold_kp` confirmed to have **no effect
+  across 4→8→12** — closes out Lever 2 entirely.
+- **Pattern now confirmed across 3 independent clean GPU runs (Lever 1,
+  Lever-2 kp8, Lever-2 kp12):** the EE consistently falls short by ~7-10cm in
+  the same direction, and specifically **stops near the cup's raw live
+  position instead of reaching the offset grasp point** — e.g. run kp12:
+  `live_obj Y=-1.821`, recenter `target Y=-1.761` (target = live_obj_Y +
+  `CUP_GRASP_Y_OFFSET` 0.06, i.e. 6cm north/toward-base of the cup), but
+  `ee_after Y=-1.812` — the EE barely moved off the cup's own Y at all,
+  landing ~5cm short of the requested offset point, in all 3 runs. This is
+  the "3 fails on the same symptom" threshold (§0/§9 rule 2). Per process:
+  test the one remaining *mechanistically distinct* ordered lever value
+  (`grasp_y_offset`, which changes WHERE the target is, not how it's
+  reached) once before formally escalating, since it's explicitly listed in
+  §5 step 3 and the CLI help text itself suggests 0.0/0.03/0.09 as the sweep
+  — not a new invented hypothesis.
+  - **Caveat found in code:** `--grasp-height-above-origin` (also added in
+    the Lever-3 commit) is a **dead no-op for the cup object** —
+    `world_isaac.py` grasp() hardcodes `grasp_z_offset=0.0` for
+    `object_name=="cup"` and only routes `grasp_height_above_origin_m` to the
+    generic (non-cup) branch. Do not waste a GPU run sweeping it for the cup.
+
 ### 4.3 Earlier deferrals (context, not failures)
 - Tray-drag files were NOT physically archived to `old/` — `run_stage2_feeding.py`,
   `task3_autonomy/recording.py`, and 2 tests import from them; a blind `git mv`
