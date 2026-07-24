@@ -30,7 +30,8 @@
 ## CURRENT STATE  (update every session)
 
 - **Branch:** `task3-current-clean`
-- **Last commit:** (see PROGRESS LOG bottom line for the T1 commit hash).
+- **Last commit:** `fc7d1f0e` (T1: seats.py derived from real
+  TASK3_HEAD_PLACEMENTS coords; local dining-scorer validation; CPU-only).
 - **Overall:** 0/4 stages have a real-rules GPU proof bundle. T0 (CPU-only
   logic retarget) done; T1 (CPU-only seat targets) done; no GPU work has
   happened yet.
