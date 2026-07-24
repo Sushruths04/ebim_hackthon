@@ -220,24 +220,32 @@ Legend: **[S]** scripted · **[P]** perception · **[L]** learned fallback · **
 
 **GOAL:** plate, cup, bowl+beans, spoon each end at a distinct assigned seat.
 
-**BLOCKING DISCOVERY TASK (do before coding plan_stage1):**
-- **Task 1.0 — Locate the 6 seats + the assignment mechanism.**
-  Seats are NOT in code today (`grep seat` → only tray-drag + docs). Subtasks:
-  - 1.0a Open `robot_room.usd` (or inspect via a headless Isaac stage dump) and
-    find the 6 chair/seat prim paths + world XY of each seat's placement target
-    (the tabletop point in front of each chair where an object should land).
-  - 1.0b Determine how the episode assigns 3 of 6 (check the scene builder /
-    task config / any `random.seed`-driven selection in
-    `scene_robot_room_keyboard.py` and the organizers' `integration_test.py`).
-    In Phase-I sim this is privileged — read it. If not exposed, derive assigned
-    seats from perception (occupied place settings) as the Phase-II path.
-  - 1.0c Write `seats.py`: `assigned_seats(episode) -> list[SeatTarget]` and
-    `object_to_seat_assignment()` (which object goes to which seat — if the
-    rules don't dictate a mapping, any bijection of the 4 objects to 3 seats
-    that satisfies "each object at an assigned seat" is fine; confirm from rules
-    whether specific object↔seat pairing is graded).
-  - **Gate:** `seats.py` returns real world coordinates that, when an object is
-    teleport-tested there, the real-rules Stage-1 scorer accepts.
+**DISCOVERY TASK 1.0 — RESOLVED (T1, 2026-07-24):**
+`robot_room.usd` has **no separate seat/chair geometry** at all (checked
+directly — no seat prim paths exist to find), and **no seat scorer ships
+anywhere**: neither the organizers' shipped smoke-test
+(`scripts/evaluation/task3/grading.py::score_stage1_table_setup` /
+`classify_table_area`) nor their `integration_test.py::run_stage1` grade by
+seat — both score purely by "object lands in the `TASK3_DINING_AREA`
+rectangle" (center (-2.85, 1.9), scale 5.9x3.4). The official (non-dev)
+scorer is unpublished, so there is nothing further to "find" in the USD.
+
+What the code DOES have are the real seating positions:
+`TASK3_HEAD_PLACEMENTS` in `scripts/scenes/scene_robot_room_keyboard.py` — 9
+named tabletop placements (A–I) at z=0.74659, all inside the dining
+rectangle. **Decision:** `task3_pipeline/seats.py` now derives
+`TABLE_SEAT_POSITIONS` from these 9 real coordinates (copied, not
+re-imported, to avoid pulling Isaac deps into CPU code) and
+`assigned_seats()` deterministically selects a distinct subset (default A,
+C, G; seeded sample otherwise) as the seat targets. This is real, grounded
+data (not an invented mock) and satisfies the only scorer that exists.
+`SeatTarget` / `object_to_seat()` kept their shape, so `stages.py` needed no
+change. Validated locally: `task3_pipeline/tests/test_pipeline.py` asserts
+every assigned seat and every object→seat mapping classifies as `"dining"`
+via `grading.py::classify_table_area` (the local Stage-1 validation gate —
+no GPU needed). **Open item:** prose says "6 seats" but the scene ships 9
+head placements and no seat scorer — revisit if organizers publish real seat
+data.
 
 **Task 1.1 — Perceive & plan [P][S].**
   - 1.1a Perceive the 4 objects' poses in the kitchen (stacked on a plate) and

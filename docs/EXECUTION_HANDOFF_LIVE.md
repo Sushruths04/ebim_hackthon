@@ -30,33 +30,34 @@
 ## CURRENT STATE  (update every session)
 
 - **Branch:** `task3-current-clean`
-- **Last commit:** `1d1ab632` (T0: committed `task3_pipeline/` to git; retargeted
-  Stage 1/4 off tray/rectangle to real rules; honest grasp verifier; pushed to
-  origin).
-- **Overall:** 0/4 stages have a real-rules proof bundle. T0 (CPU-only logic
-  retarget) done; no GPU work has happened yet.
+- **Last commit:** (see PROGRESS LOG bottom line for the T1 commit hash).
+- **Overall:** 0/4 stages have a real-rules GPU proof bundle. T0 (CPU-only
+  logic retarget) done; T1 (CPU-only seat targets) done; no GPU work has
+  happened yet.
 - **Environment:** Lightning AI L4 only (GCP BANNED). SSH + container per
   `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` §7 (verify SSH live
   with `nvidia-smi` — the string changes across Studio restarts).
-- **Known blocking unknown:** the 6 seat positions + per-episode assignment are
-  NOT in code yet — Task 1.0 must find them in `robot_room.usd`.
+- **Resolved:** the seat-discovery unknown from T0 is closed — see
+  `docs/TASK3_MASTER_EXECUTION_PLAN_2026-07-24.md` §5.1 "DISCOVERY TASK 1.0 —
+  RESOLVED" and `task3_pipeline/seats.py`. Summary: no separate seat geometry
+  exists in `robot_room.usd`; the shipped scorer grades the dining rectangle,
+  not seats; `seats.py` now derives real targets from
+  `TASK3_HEAD_PLACEMENTS` (scene_robot_room_keyboard.py).
+
+## STAGE 1 STATUS
+
+Stage 1 CPU side COMPLETE (plan + targets + honest verifier + local scorer
+validation all green). Remaining: GPU wiring in `world_isaac.py` (T2) + a
+real GPU run.
 
 ## NEXT TASK  (the ONE thing to do next)
 
-**→ T1 (plan §5.1 Task 1.0):** locate the 6 seat positions + per-episode
-assignment in `robot_room.usd`; replace the `seats.py` stub with real coords.
-Specifically:
-- 1.0a Open `robot_room.usd` (or a headless Isaac stage dump) and find the 6
-  chair/seat prim paths + world XY of each seat's placement target.
-- 1.0b Determine how the episode assigns 3 of 6 (scene builder / task config
-  / `scene_robot_room_keyboard.py` / organizers' `integration_test.py`).
-- 1.0c Replace `task3_pipeline/seats.py`'s `MOCK_SEATS` + `assigned_seats()`
-  with the real read; keep `SeatTarget` / `object_to_seat()` shape unchanged
-  so `stages.py::plan_stage1` needs no further edits.
-**GATE:** teleport-test — an object placed at a `seats.py` target is accepted
-by the real-rules Stage-1 scorer.
+**→ T2 (plan §4 + §5.1 Task 1.2/1.3):** implement
+`task3_pipeline/world_isaac.py` against the proven primitives
+(`verify_grasp_lift.py` geometry) with the <0.80m stance-first reach
+guarantee — this is the first task requiring the Lightning GPU/VM.
 
-_After T1, continue down master plan §7 build order: T2 = world_isaac.py + reach fix, then stages._
+_After T2, continue down master plan §7 build order: perception, then Stage 1+4 end-to-end._
 
 ## PROGRESS LOG  (append one line per step, newest at bottom)
 
@@ -83,6 +84,27 @@ _After T1, continue down master plan §7 build order: T2 = world_isaac.py + reac
   `verify_grasp_lift.py` proof + import-coupling constraint made a physical
   archive out of scope; instead added a top-of-file deprecation docstring to
   `scripts/task3/probe_tray_slide.py` only (no executable change). NEXT: T1.
+- 2026-07-24 — Sonnet — T1 done (CPU-only, no GPU needed): resolved the T0
+  "6 seats" unknown by direct inspection — `robot_room.usd` has no separate
+  seat/chair geometry, and neither `grading.py` nor the organizers'
+  `integration_test.py::run_stage1` scores by seat (both score the dining
+  rectangle only). Rewrote `task3_pipeline/seats.py`: removed the invented
+  `MOCK_SEATS`; added `TABLE_SEAT_POSITIONS` copied from the real
+  `TASK3_HEAD_PLACEMENTS` (9 named A-I placements,
+  `scripts/scenes/scene_robot_room_keyboard.py`); `assigned_seats()` now
+  deterministically selects distinct real seats (default A/C/G, or a seeded
+  sample). `SeatTarget`/`object_to_seat()` shape unchanged, so
+  `stages.py::plan_stage1` required no edits. Added 3 new tests to
+  `task3_pipeline/tests/test_pipeline.py` that load
+  `scripts/evaluation/task3/grading.py` by file path (it has zero Isaac
+  imports) and assert every assigned seat AND every Stage-1
+  object->seat-target mapping classifies as `"dining"` via
+  `classify_table_area` — i.e. objects placed at seat targets pass the only
+  real scorer that ships, validated entirely on CPU.
+  `python -m pytest task3_pipeline/tests -q` -> 14 passed (11 previously
+  green + 3 new). Updated
+  `docs/TASK3_MASTER_EXECUTION_PLAN_2026-07-24.md` §5.1 to replace the
+  blocking-discovery-task text with the resolved finding. NEXT: T2.
 
 ## ⚠ NEEDS OPUS  (fill ONLY when escalating; clear when resolved)
 

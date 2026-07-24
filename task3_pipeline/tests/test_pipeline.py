@@ -11,16 +11,46 @@ These prove the *logic* (verifier, memory, retry, orchestration) without Isaac.
 
 from __future__ import annotations
 
+import importlib.util
+import sys
 import tempfile
+from pathlib import Path
 
 from task3_pipeline import config
 from task3_pipeline.memory import ParamMemory
 from task3_pipeline.outcomes import SkillOutcome, SkillReport, classify
 from task3_pipeline.policy import RetryPolicy
+from task3_pipeline.seats import TABLE_SEAT_POSITIONS, assigned_seats, object_to_seat
 from task3_pipeline.skills import SelfCorrectingSkill
 from task3_pipeline.orchestrator import Task3Pipeline
 from task3_pipeline.stages import plan_stage1
 from task3_pipeline.world import MockWorld
+
+
+def _load_grading_module():
+    """Import the organizers' pure-Python grading helpers by file path.
+
+    ``scripts/evaluation/task3/grading.py`` is not part of an importable
+    package (no ``__init__.py`` anywhere under ``scripts/``), so it is loaded
+    directly like the organizers' own
+    ``scripts/evaluation/task3/tests/test_grading.py`` does (via sys.path).
+    It has zero Isaac imports (see its own module docstring), so this works
+    on plain CPU Python.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    grading_path = repo_root / "scripts" / "evaluation" / "task3" / "grading.py"
+    spec = importlib.util.spec_from_file_location(
+        "task3_grading_for_seat_tests", grading_path
+    )
+    module = importlib.util.module_from_spec(spec)
+    # dataclasses' frozen(eq=True) processing looks the module up in
+    # sys.modules by name, so it must be registered before exec_module runs.
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_grading = _load_grading_module()
 
 
 # ---- verifier ----------------------------------------------------------- #
@@ -105,6 +135,38 @@ def test_skill_recovers_from_ik_fail_via_retry():
                         reward_fn=lambda m: max(0.0, 1 - m["gripper_rad"] / 0.8))
     assert report.outcome is SkillOutcome.SUCCESS
     assert report.params.get("approach_stance") == "north"
+
+
+# ---- seats --------------------------------------------------------------- #
+
+def test_assigned_seats_returns_distinct_seats_inside_dining_area():
+    dining_area = _grading.TASK3_DINING_AREA
+    seats = assigned_seats(seed=None)
+    assert len(seats) == 3
+    assert len({s.seat_id for s in seats}) == 3  # distinct
+    for seat in seats:
+        assert seat.seat_id in TABLE_SEAT_POSITIONS
+        assert dining_area.contains_xy((seat.x, seat.y))
+
+
+def test_assigned_seats_seeded_is_deterministic_and_distinct():
+    seats_a = assigned_seats(seed=42, count=4)
+    seats_b = assigned_seats(seed=42, count=4)
+    assert [s.seat_id for s in seats_a] == [s.seat_id for s in seats_b]
+    assert len({s.seat_id for s in seats_a}) == 4
+
+
+def test_object_to_seat_targets_classify_as_dining_per_shipped_scorer():
+    # This proves that placing the 4 real Stage-1 objects at their assigned
+    # seat targets passes the ONLY real scorer that ships anywhere
+    # (grading.py's dining-rectangle classifier) -- the local Stage-1
+    # validation gate for T1.
+    seats = assigned_seats(seed=None)
+    mapping = object_to_seat(list(config.STAGE1_OBJECTS), seats)
+    assert set(mapping) == set(config.STAGE1_OBJECTS)
+    for obj, seat in mapping.items():
+        area = _grading.classify_table_area((seat.x, seat.y))
+        assert area == "dining", f"{obj} -> seat {seat.seat_id} classified as {area!r}"
 
 
 # ---- end-to-end orchestration ------------------------------------------ #
