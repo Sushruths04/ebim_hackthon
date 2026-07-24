@@ -609,10 +609,36 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     # driving, then re-anchor at the new position so descend/grasp still
     # hold the base stationary.
     base_hold_anchor = None
+
+    # GPU evidence (stage2_run10): with only the anchor fix, the base still
+    # only travelled ~14mm of the 110mm needed and yawed ~0.32 rad instead of
+    # translating cleanly; frames show the spoon dragged out of view partway
+    # through. The arm is still at pregrasp height (19cm above the island)
+    # directly over the spoon during this drive — the same arm/island
+    # proximity that required a tuck fix for the Phase 5 navigate_dining
+    # drive. Lift the arm clear first, drive, then re-descend to pregrasp at
+    # the new stance, mirroring that already-proven pattern.
+    lift_ok = servo_arm(
+        "right",
+        (spoon_pregrasp[0], spoon_pregrasp[1], LIFT_Z),
+        top_down_quat,
+        budget_s=4.0,
+    )
+    log_phase("lift_before_approach", lift_ok)
+
     approach_target = (ISLAND_STANCE[0] - 0.08, ISLAND_STANCE[1] - 0.01)
     approach_ok = drive_to(approach_target, max_speed=0.15, budget_s=8.0, position_tolerance_m=0.05)
     base_hold_anchor = adapter.pose().x, adapter.pose().y
     log_phase("approach_spoon", approach_ok, target=list(approach_target))
+    if approach_ok:
+        approach_ok = servo_arm(
+            "right", spoon_pregrasp, top_down_quat, budget_s=6.0
+        )
+        log_phase(
+            "repregrasp_after_approach",
+            approach_ok,
+            target=[round(v, 3) for v in spoon_pregrasp],
+        )
     if not approach_ok:
         return _result(
             False,
