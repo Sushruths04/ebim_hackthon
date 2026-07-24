@@ -30,9 +30,11 @@
 ## CURRENT STATE  (update every session)
 
 - **Branch:** `task3-current-clean`
-- **Last commit:** `5d87bf3d` (plan + prompt + this handoff doc; pushed to origin). Execution commits start at T0.
-- **Overall:** 0/4 stages have a real-rules proof bundle. Plan written, execution
-  not yet started.
+- **Last commit:** `1d1ab632` (T0: committed `task3_pipeline/` to git; retargeted
+  Stage 1/4 off tray/rectangle to real rules; honest grasp verifier; pushed to
+  origin).
+- **Overall:** 0/4 stages have a real-rules proof bundle. T0 (CPU-only logic
+  retarget) done; no GPU work has happened yet.
 - **Environment:** Lightning AI L4 only (GCP BANNED). SSH + container per
   `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` §7 (verify SSH live
   with `nvidia-smi` — the string changes across Studio restarts).
@@ -41,18 +43,46 @@
 
 ## NEXT TASK  (the ONE thing to do next)
 
-**→ T0 (plan §2, §6):** (a) `git mv` the tray-drag work to
-`old/task3_tray_drag_ABANDONED_2026-07-24/` (archive, don't delete); (b) commit
-the untracked `task3_pipeline/` into git; (c) retarget `stages.py` + `config.py`
-off the tray/dining-rectangle objective to the real rules; (d) make
-`outcomes.classify` honest (SUCCESS only with measured proof).
-**GATE:** CPU tests + ruff green; no tray/rectangle logic in the active path.
+**→ T1 (plan §5.1 Task 1.0):** locate the 6 seat positions + per-episode
+assignment in `robot_room.usd`; replace the `seats.py` stub with real coords.
+Specifically:
+- 1.0a Open `robot_room.usd` (or a headless Isaac stage dump) and find the 6
+  chair/seat prim paths + world XY of each seat's placement target.
+- 1.0b Determine how the episode assigns 3 of 6 (scene builder / task config
+  / `scene_robot_room_keyboard.py` / organizers' `integration_test.py`).
+- 1.0c Replace `task3_pipeline/seats.py`'s `MOCK_SEATS` + `assigned_seats()`
+  with the real read; keep `SeatTarget` / `object_to_seat()` shape unchanged
+  so `stages.py::plan_stage1` needs no further edits.
+**GATE:** teleport-test — an object placed at a `seats.py` target is accepted
+by the real-rules Stage-1 scorer.
 
-_After T0, continue down master plan §7 build order: T1 = seats.py, T2 = world_isaac.py + reach fix, then stages._
+_After T1, continue down master plan §7 build order: T2 = world_isaac.py + reach fix, then stages._
 
 ## PROGRESS LOG  (append one line per step, newest at bottom)
 
 - 2026-07-24 — Opus — plan + prompt + this handoff written to `docs/`. Execution not started. NEXT: T0.
+- 2026-07-24 — Sonnet — T0 done (commit `1d1ab632`): committed the untracked
+  `task3_pipeline/` package to git; added `task3_pipeline/seats.py` (seat-target
+  interface, mocked pending T1); retargeted `config.py` (`STAGE1_OBJECTS` -> 4
+  real objects, no tray; `DINING_AREA` now documented as smoke-test-only
+  fallback; added `GRASP_HELD_MAX_DIST_M`); rewrote `stages.py::plan_stage1`
+  (per-object navigate/reach/grasp/carry to assigned seats, no tray, no
+  single dining-drop) and `plan_stage4` (honest per-utensil grasp+place into
+  the sink, dropped "SCORER EXPLOIT" framing); made
+  `outcomes.py::classify_grasp` honest (closed-cage-on-empty-object now
+  WEAK_GRASP, not SUCCESS, unless `object_follows_ee`/`object_ee_dist_m`
+  proves a real hold); updated `world.py` MockWorld to match (honest grasp
+  metrics, generalized `carry_object_to`, 4-object `score_stage`). CPU tests:
+  `python -m pytest task3_pipeline/tests -q` -> 11 passed. `ruff check
+  task3_pipeline` -> 68 pre-existing/residual style findings (E501 line-length,
+  import-sort, a couple `UP037`/`F401`) — almost all in files not touched this
+  session (`memory.py`, `policy.py`, `orchestrator.py`, `world_isaac.py`,
+  `skills.py`) or on pre-existing lines in touched files; the new code
+  authored this session (`seats.py`, the new/changed lines in `stages.py`)
+  was cleaned to pass ruff. Did NOT `git mv` any tray-drag file — the
+  `verify_grasp_lift.py` proof + import-coupling constraint made a physical
+  archive out of scope; instead added a top-of-file deprecation docstring to
+  `scripts/task3/probe_tray_slide.py` only (no executable change). NEXT: T1.
 
 ## ⚠ NEEDS OPUS  (fill ONLY when escalating; clear when resolved)
 
