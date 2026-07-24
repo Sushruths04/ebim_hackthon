@@ -121,7 +121,11 @@ def route_via_door(
     ISLAND_EAST_FACE_X = -3.77
     BASE_HALF_WIDTH = 0.40
     ISLAND_CLEAR_X = ISLAND_EAST_FACE_X + BASE_HALF_WIDTH + 0.05  # -3.32
-    if not start_north and start_xy[0] < ISLAND_CLEAR_X:
+    # Island-clear only needed for the first leg from the kitchen stance.
+    # If we are already near the door lane (within 0.3 m of KITCHEN_LANE_Y),
+    # skip the island-clear — otherwise we detour east for no reason.
+    near_door = abs(start_xy[1] - TASK3_KITCHEN_LANE_Y) < 0.3
+    if not start_north and start_xy[0] < ISLAND_CLEAR_X and not near_door:
         clear_xy = (ISLAND_CLEAR_X, start_xy[1])
         route = [start_xy, clear_xy]
         _sub = waypoints_y_then_x(clear_xy, first)
