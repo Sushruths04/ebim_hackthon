@@ -4,6 +4,50 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **⚠️ CORRECTION (2026-07-24, Claude session, supersedes the OpenCode entry
+> below):** the `docs/HANDOFF_2026-07-24_Stage2_grasp_v3.md` run4-run8
+> evidence table (gripper 0.537 rad, z-error 7.9cm, yaw drift -2.24 rad,
+> etc.) has **no corroborating artifact anywhere in this repo** — no prior
+> AGENT_STATE.md entry, no result.json, no output/frame directory. It
+> violates this project's own anti-hallucination rule 1 (every claim needs a
+> pasted result.json/log/frame excerpt) added earlier the same day in
+> `b15ea5cb` for exactly this failure mode. Treat "Root cause 1/2" in that
+> doc as **unverified hypotheses**, not confirmed diagnoses.
+>
+> Also: the lightning.ai VM was **not fresh** as claimed — it had EBiM_Challenge
+> checked out at `84bcb86` (5 commits behind local HEAD) with uncommitted WIP
+> to `run_stage2_feeding.py` / `task3_autonomy/navigation.py` (stashed as
+> `wip-before-run9-sync`, not discarded). Its real `outputs/task3_stage2_feeding/result.json`
+> (mtime 2026-07-24 06:45 UTC) reads:
+> `{"failed_phase": "navigate_dining", "phase_count": 19, "passed": false, "wall_time_seconds": 738.0}`
+> — i.e. the most recent actual GPU evidence on that machine shows
+> **`navigate_dining` still failing**, even with the door-jamb rotation fix
+> present in the stashed diff. This directly contradicts the v3 handoff's
+> claim that navigation was solved by run4 and only spoon-grasp remained.
+> Do not assume navigation passes until a fresh run proves it.
+>
+> I'm taking over GPU-side execution now (SSH + L4 confirmed live, idle).
+> Plan: push local `f6558f82` to origin, `bootstrap_new_studio.sh` on the VM
+> to sync to real HEAD, GPU-verify per the STEP 0 gate in
+> `HANDOFF_2026-07-24_Stage2_navdining_fix.md`, run stage2 fresh into a
+> **uniquely-named** output dir (the fixed `outputs/task3_stage2_feeding/`
+> path gets overwritten every run, which is *why* runs 4-8's evidence no
+> longer exists — same output path was reused each time), and log real
+> result.json/frame evidence here before drawing any conclusions.
+>
+> SSH string: `s_01ky82mwnw8s1125cnc3gajaaw@ssh.lightning.ai`
+> Docker container target: `isaac-lab-2-3-2-workshop` (image cache present
+> at `/teamspace/studios/this_studio/docker/ebim-challenge/isaac-lab-2.3.2/cache`,
+> ~906M; nvcr.io auth already configured on this VM)
+
+> **⚠️ Prior (2026-07-24, OpenCode session) — see correction above before
+> acting on this:** all Stage 2 spoon grasp changes are committed in
+> `task3-current-clean`. See `docs/HANDOFF_2026-07-24_Stage2_grasp_v3.md` for
+> the claimed diagnosis and code state (root-cause claims unverified, see
+> above). Key code change actually verified-by-diff: the `approach_spoon`
+> phase (lines 598-616) drives the base 8 cm closer after pregrasp, reducing
+> reach to ~0.79 m — untested on GPU as of this entry.
+
 > **⚠️ READ BEFORE ANY STAGE 2 WORK (2026-07-24 session): read
 > `docs/HANDOFF_2026-07-24_Stage2_navdining_fix.md` first — it supersedes
 > the blocker section of `HANDOFF_2026-07-23_Stage2_v2.md` (that doc's
