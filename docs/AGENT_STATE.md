@@ -44,6 +44,8 @@ edge workflow is saved locally at `outputs/task3_stage4_tray_edge_r1/` (JSON
 the edge-pinch phase was never reached. Fix base recovery before attempting
 another tray edge-pinch run.
 
+**Active claim — OpenCode, 2026-07-24, `task3-current-clean`:** GPU-verifying the `base_hold_anchor = None` fix for Stage 2 `navigate_dining` on Lightning AI (only authorized compute). Per handoff `HANDOFF_2026-07-24_Stage2_navdining_fix.md`: STEP 0 GPU gate done (host + container `nvidia-smi` pass, NVIDIA L4), utilization confirmed 55% during simulated run. First GPU run (commit 28469adf, `base_hold_anchor = None` only) FAILED at navigate_dining: base moved only ~1 cm in 45 s. Root cause: right arm EE at x=-4.37 inside island x[-4.51,-3.77] creates physical collision constraint → base cannot translate. Fix: tuck arms to TRANSIT_ARM_POSE before Phase 5 navigation loop. Change committed and pushed; second GPU run pending.
+
 Last update: 2026-07-19 (Claude, `agent/codex-task3-grasp`) — see
 "## ROOT CAUSE of the transport nav stall + fix (Claude, 2026-07-19)" below.
 

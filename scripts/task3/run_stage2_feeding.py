@@ -772,6 +772,12 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     # Same bug class already root-caused for probe_tray_slide.py (see
     # docs/AGENT_STATE.md, Day 3 Step 1 fix3).
     base_hold_anchor = None
+    # The right arm is still in its post-scoop pose (EE x~-4.37, inside
+    # the island x[-4.51,-3.77]), which creates a physical collision
+    # constraint that locks the base.  Tuck the arm before navigating.
+    ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
+    arms.sync_targets_from_measured()
+    log_phase("tuck_for_dining", True)
     route = route_via_door((adapter.pose().x, adapter.pose().y), DINING_TARGET)
     nav_dining_ok = True
     for waypoint in route[1:]:
