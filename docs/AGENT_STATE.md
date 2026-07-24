@@ -4,6 +4,42 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **🎯 REAL ROOT CAUSE FOUND (2026-07-24, Claude session, runs 13-14,
+> `--skip-navigation` diagnostics — read this before touching Stage 2
+> grasp code again):** the `approach_spoon` yaw-drift bug (see below) is
+> real but is NOT the fundamental blocker. Traced the full chain via
+> `/tmp/stage2_run14.log` (offset=0.0, i.e. approach eliminated as a
+> variable):
+> `descend_spoon` fails with **~0.12m position error** (both at
+> approach-offset -0.03 and 0.0 — same magnitude either way) →
+> `recenter_spoon`'s own fallback (`error <= 0.10` counts as "ok") accepts
+> this near-miss → `close_spoon` reports `"ok": true` with
+> **`gripper_position_rad: 1.0119`** (more open than the ~0.9 resting-open
+> position — **the gripper closed on empty air**, a spoon handle is only
+> ~1-2cm wide, nowhere near a 10-12cm miss) → `spoon_grasped` reports
+> `"ok": true` with nothing held → `lift_spoon` reports `"ok": true` while
+> the un-held spoon is knocked away and enters unbounded freefall (spoon z
+> observed going -160 → -330 → -608 → -1238 → -2139 across ticks,
+> accelerating like gravity, never held). **None of the phase-success
+> checks from `close_spoon` onward verify an actual grasp** — they only
+> check arm/gripper servo convergence, so the pipeline silently reports
+> success while manipulating nothing. Matches the `v2` handoff's
+> already-documented but under-weighted caveat: "gripper reads
+> 0.887-1.0 rad vs 0.9 open / 0.0 closed — not a firm grasp, unverified."
+>
+> **Implication:** the arm's descend IK converges to ~10-12cm short of the
+> true target regardless of the small approach-offset changes tested so
+> far — this is very likely the original "0.87m reach limit" problem the
+> very first (unverified) handoff described, just now backed by real
+> telemetry instead of a fabricated run table. Getting `approach_spoon`'s
+> yaw-drift bug fully fixed (so the base can actually complete the full
+> 8cm approach cleanly) is still the right next lever — it should shrink
+> this descend error — but has not yet been tested with a fully-working
+> approach. **Do not trust `close_spoon`/`spoon_grasped` "ok": true again
+> without also checking `position_error_m` at `descend_spoon` and the
+> `gripper_position_rad` at `close_spoon` — those are the fields that
+> reveal a real vs. fake grasp.**
+
 > **📋 OPERATING PLAN (2026-07-24, Claude session — durable, re-read this
 > even in future sessions, not just the Stage 2 evidence below):**
 >
