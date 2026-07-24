@@ -599,8 +599,19 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     # The arm at pregrasp (z=0.95) has 19 cm clearance above the island.
     # Driving the base ~8 cm west brings the spoon within the arm's vertical
     # descent range (0.87 m reach → 0.79 m, enabling full 18 cm z-drop).
+    #
+    # base_hold_anchor was set to ISLAND_STANCE at Phase 1 arrival (line
+    # ~567) and is not otherwise cleared until Phase 5. Left set here,
+    # sim_tick()'s hold-twist (line ~389-396) overwrites this drive_to's
+    # nav twist every tick (apply_twist is last-write-wins) — the same bug
+    # class already root-caused for navigate_dining, recurring here because
+    # this phase was added after that anchor-clearing fix. Release before
+    # driving, then re-anchor at the new position so descend/grasp still
+    # hold the base stationary.
+    base_hold_anchor = None
     approach_target = (ISLAND_STANCE[0] - 0.08, ISLAND_STANCE[1] - 0.01)
     approach_ok = drive_to(approach_target, max_speed=0.15, budget_s=8.0, position_tolerance_m=0.05)
+    base_hold_anchor = adapter.pose().x, adapter.pose().y
     log_phase("approach_spoon", approach_ok, target=list(approach_target))
     if not approach_ok:
         return _result(
