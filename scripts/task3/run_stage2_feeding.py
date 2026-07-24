@@ -778,8 +778,9 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     ramp_arm_pose(robot, TRANSIT_ARM_POSE, step=sim_tick)
     arms.sync_targets_from_measured()
     log_phase("tuck_for_dining", True)
-    route = route_via_door((adapter.pose().x, adapter.pose().y), DINING_TARGET)
-    print(f"DEBUG Phase5 route: {route}", flush=True)
+    _start = (adapter.pose().x, adapter.pose().y)
+    route = route_via_door(_start, DINING_TARGET)
+    print(f"DEBUG Phase5 start={_start} target={DINING_TARGET} route={route}", flush=True)
     nav_dining_ok = True
     for waypoint in route[1:]:
         nav_dining_ok = drive_to(waypoint, max_speed=0.35, budget_s=45.0)

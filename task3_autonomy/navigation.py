@@ -113,6 +113,7 @@ def route_via_door(
         else (south_point, north_point)
     )
     route = waypoints_y_then_x(start_xy, first)
+    print(f"DEBUG route_via_door start={start_xy} target={target_xy} first={first} second={second} route={route}", flush=True)
     route.append(second)
     route.extend(waypoints_x_then_y(second, target_xy)[1:])
     return route
