@@ -46,6 +46,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-lift-m", type=float, default=0.05)
     parser.add_argument("--hold-seconds", type=float, default=3.0)
     parser.add_argument("--fast-exit", action="store_true")
+    parser.add_argument("--grasp-base-hold-kp", type=float, default=4.0,
+                        help="Base hold KP during descend/grasp (LEVER 2: try 8, then 12)")
     parser.add_argument(
         "--out-dir", type=Path,
         default=REPO_ROOT / "outputs" / "task3_world_isaac_grasp",
@@ -101,6 +103,7 @@ def _run(args: argparse.Namespace, out_dir: Path, simulation_app: Any) -> dict[s
         object_names=(args.object_name,),
         skip_navigation=args.skip_navigation,
     )
+    world._base_hold_kp = args.grasp_base_hold_kp
     world.reset(seed=args.seed, head_placement="a")
 
     object_start = world.object_position(args.object_name)
