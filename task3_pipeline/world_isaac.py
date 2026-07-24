@@ -443,6 +443,28 @@ class IsaacWorld:
 
     def grasp(self, side, object_name, **p) -> dict:
         vgl = self._m["vgl"]
+        m = self._m
+
+        # LEVER 1: re-center on the LIVE cup pose right before close.
+        # Between reach() and grasp(), the cup may have moved due to contact.
+        # Re-read the actual PhysX pose and recompute the close target.
+        if object_name == "cup":
+            live_obj = self.object_position(object_name)
+            grasp_xy_offset = p.get("grasp_y_offset", vgl.CUP_GRASP_Y_OFFSET)
+            live_grasp_target = vgl.cup_grasp_target(
+                live_obj,
+                rim_x_offset=p.get("cup_rim_x_offset", vgl.CUP_RIM_X_OFFSET),
+                grasp_y_offset=grasp_xy_offset,
+                grasp_z_offset=0.0,
+            )
+            top_down = m["_quaternion_from_rpy"](math.pi, 0.0, 0.0)
+            self.arms.reach(
+                side, live_grasp_target, top_down, step=self._tick, dt=self.sim.cfg.dt,
+                timeout_s=4.0, position_tolerance_m=0.015,
+            )
+            self._log_phase("recenter", True, target=[round(v, 3) for v in live_grasp_target],
+                            live_obj=[round(v, 3) for v in live_obj])
+
         holding = self.arms.grasp(
             side,
             step=self._tick,
