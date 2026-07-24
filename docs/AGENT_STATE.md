@@ -1388,3 +1388,47 @@ The FR3 right arm's IK **cannot achieve the grasp Y-offset** from the east stanc
 - Full-nav test: ~23 min = $0.23
 - Total spent this session: ~$1.20 (all personal account)
 - Lab project `ebim26ham-236` (RTX 6000 $3.60/hr spot) is DEAD — expired Jul 19-20
+
+---
+
+## 2026-07-24 — Sonnet (T2 session, task3-current-clean) — ESCALATED to Opus
+
+Implemented `task3_pipeline/world_isaac.py` (commits `ee0659dd`, `197f20f5`)
+wiring the T2 stubbed methods to real Isaac primitives per the master plan's
+wiring map, reusing `verify_grasp_lift.py`'s proven constants/geometry and
+its `object_follows_end_effector` hold-check. Added
+`scripts/task3/run_world_isaac_grasp.py` GPU harness. GPU-verified the
+plumbing works (scene builds, robot moves, navigate/reach/grasp/lift all
+execute against real PhysX on the Lightning L4, no llvmpipe/CPU fallback).
+
+BLOCKER: the grasp itself does not achieve a real hold. Root-caused this to
+the REFERENCE primitive, not new code — ran the unmodified
+`scripts/task3/verify_grasp_lift.py --skip-navigation` (the script whose
+10/10 result this whole project's cup-grasp geometry is based on) 3 times
+(plain python, twice; via the official `isaaclab.sh -p` launcher used by the
+frozen reliability batch script, once) and got bit-identical deterministic
+FAILURES every time (gripper closes to 0.24 rad on empty air, object never
+lifted, `passed: false`) — on the exact commit (`cf372031`, "Complete Day 1
+grasp reliability proof") that produced the archived
+`proofs/phase2-grasp-reliability/run18_result.json` (`passed: true`).
+Diffed every file in the execution path against that commit: all identical
+or changes provably unreachable by this code path (see full evidence in
+`docs/EXECUTION_HANDOFF_LIVE.md` NEEDS OPUS block, filled this session).
+Tried one grid-alternative param (`--cup-grasp-y-offset 0.0`) on the
+unmodified script as a bounded single-variable test: made it WORSE (cup
+knocked ~25cm off the counter). Escalated per the ONE-hypothesis/ONE-change
+discipline rather than continuing to guess grid points blind.
+
+VM housekeeping this session: `task3-current-clean` on the VM had diverged
+to an old, unpushed pre-pivot lineage (tip `38040c0`, no `task3_pipeline`
+package) — backed up to VM-local branch `backup/vm-pretpivot-2026-07-24`
+(could not push from VM, no git creds there) and reset the VM to the
+authoritative `origin/task3-current-clean` (which itself needed its first
+push from local this session, since `3be4cbc5` had never been pushed).
+
+Container `isaac-lab-2-3-2-workshop` stopped at end of session (no idle GPU
+spend). Repo HEAD both locally and on VM: `197f20f5`.
+
+NEXT: awaiting Opus decision in `docs/EXECUTION_HANDOFF_LIVE.md` NEEDS OPUS
+block on how to proceed (re-tune fresh vs investigate environment/build
+mismatch vs other).
