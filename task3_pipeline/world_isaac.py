@@ -227,6 +227,7 @@ class IsaacWorld:
         self._tick_count = 0
         self._frames_written = 0
         self._base_hold_anchor = None
+        self._base_hold_kp = 4.0
         self._held = None
         self.phases = []
 
@@ -271,7 +272,7 @@ class IsaacWorld:
                 self.adapter.pose(),
                 self._base_hold_anchor,
                 max_linear_mps=0.25,
-                position_kp=4.0,
+                position_kp=self._base_hold_kp,
             )
             self.adapter.apply_twist(hold_vx, hold_vy, hold_heading=True)
         self.scene.write_data_to_sim()
@@ -458,12 +459,19 @@ class IsaacWorld:
                 grasp_z_offset=0.0,
             )
             top_down = m["_quaternion_from_rpy"](math.pi, 0.0, 0.0)
-            self.arms.reach(
+            recenter_ok = self.arms.reach(
                 side, live_grasp_target, top_down, step=self._tick, dt=self.sim.cfg.dt,
                 timeout_s=4.0, position_tolerance_m=0.015,
             )
-            self._log_phase("recenter", True, target=[round(v, 3) for v in live_grasp_target],
-                            live_obj=[round(v, 3) for v in live_obj])
+            ee_after = self.arms.ee_world_poses()[0 if side == "left" else 1][0]
+            pos_err = math.dist(live_grasp_target, ee_after)
+            self._log_phase("recenter", bool(recenter_ok), target=[round(v, 3) for v in live_grasp_target],
+                            live_obj=[round(v, 3) for v in live_obj],
+                            ee_after=[round(v, 3) for v in ee_after],
+                            recenter_pos_err_m=round(pos_err, 4))
+            if not recenter_ok or pos_err > 0.03:
+                # Recenter failed to reach target accurately - cup likely kept moving
+                pass  # proceed anyway, log will show it
 
         holding = self.arms.grasp(
             side,
