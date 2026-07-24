@@ -62,15 +62,15 @@ FACE_WEST_YAW_RAD = math.pi
 
 TRAVEL_SPINE_M = 0.45
 PREGRASP_Z = (
-    0.85  # REDUCED 2026-07-24 from 0.95 (was 19cm above spoon). That much
-    # clearance existed to protect a secondary base-approach drive that no
-    # longer exists (ISLAND_STANCE revert, see above) -- the base doesn't
-    # need to be moved again after pregrasp now, so the descent doesn't
-    # need to clear a moving-base collision, only the spoon/table itself.
-    # 8.9cm above spoon (0.761) is still real clearance. This shrinks the
-    # required vertical descent from ~17.9cm to ~7.9cm at the SAME (already
-    # near-max) horizontal reach -- the actual lever available now that the
-    # base can't get closer in XY (see ISLAND_STANCE note above).
+    0.90  # GPU evidence (run17): 0.85 (8.9cm clearance) was too aggressive
+    # -- the spoon was ALREADY displaced by the time pregrasp_spoon logged
+    # (before any descend began), meaning the open gripper's own physical
+    # geometry was contacting it just from hovering there, not only from
+    # a secondary base movement as first assumed. 0.90 (12.9cm) restores
+    # some margin while keeping most of the descent-shortening benefit
+    # (run17's descend position_error was an excellent 0.0147m at the
+    # lower height, confirming the "shrink vertical descent" direction is
+    # right -- this is a magnitude correction, not a reversal).
 )
 LIFT_Z = 1.05
 DESCEND_TILT_RAD = (
