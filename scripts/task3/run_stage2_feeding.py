@@ -45,9 +45,18 @@ from run_episode import (
 CORRIDOR_STOP = (-3.18, -1.6)
 ROTATE_SPOT = (-3.0, -3.1)
 ISLAND_STANCE = (
-    -3.47,
-    -1.61,
-)  # proven navigable stance, ~0.87m to spoon — approach drive closes the gap
+    -3.53,
+    -1.62,
+)  # redesigned 2026-07-24: single static stance, ~0.77m to spoon pregrasp
+# target (was -3.47,-1.61 / ~0.83m). Calibrated against the PROVEN 10/10
+# cup-grasp distance (0.8255m, verify_grasp_lift.py STANCE+CUP_GRASP_XY) —
+# the old stance was only 6.9mm past that proven distance (not a huge
+# overreach), but right at the edge where IK convergence is unreliable.
+# This gives ~5.3cm of margin under the proven distance. Replaces the
+# two-phase pregrasp->drive-8cm-closer->re-pregrasp maneuver (commits
+# f6558f82/86590df6/8aef9f66), which never executed cleanly (anchor bug,
+# then a ~0.2-0.3 rad yaw drift/no-net-translation issue never resolved) —
+# navigating directly to one closer stance sidesteps that entirely.
 DINING_TARGET = (-2.85, 1.85)
 FACE_WEST_YAW_RAD = math.pi
 
@@ -127,12 +136,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument("--fast-exit", action="store_true")
     parser.add_argument("--skip-navigation", action="store_true")
-    parser.add_argument(
-        "--approach-offset-x",
-        type=float,
-        default=-0.08,
-        help="Phase 2b approach_spoon x-offset from ISLAND_STANCE (diagnostic lever).",
-    )
     parser.add_argument(
         "--object-grasp-x-offset",
         type=float,
@@ -601,63 +604,6 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
             sim,
         )
 
-    # ---- Phase 2b: drive base closer to spoon ----
-    # The arm at pregrasp (z=0.95) has 19 cm clearance above the island.
-    # Driving the base ~8 cm west brings the spoon within the arm's vertical
-    # descent range (0.87 m reach → 0.79 m, enabling full 18 cm z-drop).
-    #
-    # base_hold_anchor was set to ISLAND_STANCE at Phase 1 arrival (line
-    # ~567) and is not otherwise cleared until Phase 5. Left set here,
-    # sim_tick()'s hold-twist (line ~389-396) overwrites this drive_to's
-    # nav twist every tick (apply_twist is last-write-wins) — the same bug
-    # class already root-caused for navigate_dining, recurring here because
-    # this phase was added after that anchor-clearing fix. Release before
-    # driving, then re-anchor at the new position so descend/grasp still
-    # hold the base stationary.
-    base_hold_anchor = None
-
-    # GPU evidence (stage2_run10): with only the anchor fix, the base still
-    # only travelled ~14mm of the 110mm needed and yawed ~0.32 rad instead of
-    # translating cleanly; frames show the spoon dragged out of view partway
-    # through. The arm is still at pregrasp height (19cm above the island)
-    # directly over the spoon during this drive — the same arm/island
-    # proximity that required a tuck fix for the Phase 5 navigate_dining
-    # drive. Lift the arm clear first, drive, then re-descend to pregrasp at
-    # the new stance, mirroring that already-proven pattern.
-    lift_ok = servo_arm(
-        "right",
-        (spoon_pregrasp[0], spoon_pregrasp[1], LIFT_Z),
-        top_down_quat,
-        budget_s=4.0,
-    )
-    log_phase("lift_before_approach", lift_ok)
-
-    approach_target = (ISLAND_STANCE[0] + args.approach_offset_x, ISLAND_STANCE[1] - 0.01)
-    approach_ok = drive_to(approach_target, max_speed=0.15, budget_s=8.0, position_tolerance_m=0.05)
-    base_hold_anchor = adapter.pose().x, adapter.pose().y
-    log_phase("approach_spoon", approach_ok, target=list(approach_target))
-    if approach_ok:
-        approach_ok = servo_arm(
-            "right", spoon_pregrasp, top_down_quat, budget_s=6.0
-        )
-        log_phase(
-            "repregrasp_after_approach",
-            approach_ok,
-            target=[round(v, 3) for v in spoon_pregrasp],
-        )
-    if not approach_ok:
-        return _result(
-            False,
-            "approach_spoon",
-            phases,
-            args,
-            frames_dir,
-            frames_written,
-            rgb_annotator,
-            render_product,
-            sim,
-        )
-
     # ---- Phase 3: descend to spoon and close ----
     spoon_before_grasp = spoon_pose()
     spoon_grasp = object_grasp_target(
@@ -738,6 +684,58 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
         return _result(
             False,
             "close_spoon",
+            phases,
+            args,
+            frames_dir,
+            frames_written,
+            rgb_annotator,
+            render_product,
+            sim,
+        )
+
+    # ---- Grasp verification: don't trust arms.grasp()'s "holding" alone ----
+    # GPU evidence (2026-07-24): a prior run reported holding=True with
+    # gripper_position_rad=1.0119 (MORE open than GRIPPER_OPEN_RAD=0.9 —
+    # closed on empty air) and every phase after silently continued while
+    # the un-held spoon fell into unbounded freefall (z -> -2000+, never
+    # caught). Check the gripper actually closed meaningfully, then confirm
+    # the spoon's tracked position stays rigid relative to the end-effector
+    # over a short settle window before trusting the grasp.
+    GRASP_VERIFY_MAX_GRIPPER_RAD = 0.75
+    GRASP_VERIFY_MAX_DRIFT_M = 0.02
+    ee_pos_before = arms.ee_world_poses()[1][0]
+    offset_before = math.sqrt(
+        sum(
+            (a - b) ** 2
+            for a, b in zip(spoon_pose(), ee_pos_before)
+        )
+    )
+    for _ in range(int(0.5 / sim.cfg.dt)):
+        sim_tick()
+    ee_pos_after = arms.ee_world_poses()[1][0]
+    offset_after = math.sqrt(
+        sum(
+            (a - b) ** 2
+            for a, b in zip(spoon_pose(), ee_pos_after)
+        )
+    )
+    offset_drift = abs(offset_after - offset_before)
+    grasp_verified = (
+        gripper_pos < GRASP_VERIFY_MAX_GRIPPER_RAD
+        and offset_drift < GRASP_VERIFY_MAX_DRIFT_M
+    )
+    log_phase(
+        "grasp_verify",
+        grasp_verified,
+        gripper_position_rad=round(gripper_pos, 4),
+        offset_before_m=round(offset_before, 4),
+        offset_after_m=round(offset_after, 4),
+        offset_drift_m=round(offset_drift, 4),
+    )
+    if not grasp_verified:
+        return _result(
+            False,
+            "grasp_verify",
             phases,
             args,
             frames_dir,
