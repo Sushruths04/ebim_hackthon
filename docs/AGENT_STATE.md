@@ -5,11 +5,14 @@
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
 > **📖 START HERE (2026-07-24):**
-> `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` is the current
-> complete plan — all 4 stages broken into sub-tasks, the VLM/RL/teleop
-> question answered, non-negotiable rules, and verified environment setup.
-> Read it before the entries below (which are the detailed evidence trail
-> that plan was built from).
+> `docs/HANDOFF_2026-07-24_SESSION_COMPLETE_LOG.md` is the detailed,
+> no-summarizing record of every change/run/commit this session (Stage 1
+> + Stage 2 code changes, exact GPU results, VLM setup, open questions) —
+> read this FIRST, it is authoritative for current Stage 2 state.
+> `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` is the original
+> plan (still accurate for Stage 1/3/4 sub-tasks, VLM/RL/teleop rationale,
+> non-negotiable rules, environment setup) but its Stage 2 section is
+> superseded by the complete log above.
 
 > **🎯 STAGE 1 — real finding + verified mechanism (2026-07-24, Claude
 > session, corrected after re-checking my own arithmetic and reading the
