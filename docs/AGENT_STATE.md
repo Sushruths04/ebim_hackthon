@@ -4,6 +4,47 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **📋 OPERATING PLAN (2026-07-24, Claude session — durable, re-read this
+> even in future sessions, not just the Stage 2 evidence below):**
+>
+> **Status:** per `docs/eval_results.md` (project's own Definition-of-Done
+> ledger), 0 of 4 scored stages have a real physically-autonomous proof
+> bundle yet. Stage 2 (feeding) is furthest along — navigation to the
+> island works, spoon grasp is the live blocker. ~7-8 days remain to the
+> Aug 1 submission target as of this date.
+>
+> **RL/PPO is NOT needed and should NOT be added.** The competition's
+> autonomy requirement is satisfied by a scripted FSM with closed-loop
+> sensing and zero teleop during the graded run — exactly the current
+> approach (decided 2026-07-16, re-confirmed 2026-07-24). Do not propose
+> training a policy to "make this autonomous" — it already is, by the
+> project's own rules. Learned-policy work (SmolVLA) is a stretch goal on
+> top of a passing scripted FSM, parked until at least one stage has a
+> real proof bundle.
+>
+> **Working loop for whoever picks this up (autonomous, minimal
+> check-ins):** launch a GPU test → wait for it to finish → read the real
+> log/result.json/frames (never assume) → if it fails, diagnose from that
+> evidence → apply ONE minimal fix → commit+push → re-sync the VM →
+> re-test. Guardrails: one hypothesis at a time, never stack unverified
+> changes; **if 3 fixes fail on the same phase without narrowing the
+> problem, stop and raise an architecture question instead of guessing a
+> 4th time** (`superpowers:systematic-debugging`); every run gets the GPU
+> gate (host+container `nvidia-smi`, no `llvmpipe` signature) before being
+> trusted; every meaningful result — pass or fail — gets committed+pushed
+> immediately; stop the GPU/container at natural pause points (cost
+> discipline); check for other agents editing this same working tree
+> before committing (see the OpenCode collision this session — reconcile,
+> don't silently overwrite).
+>
+> **Sequencing after Stage 2 passes (scoop → feed → hold, then freeze with
+> a real proof bundle):** Stage 1 next (slide-to-overhang sub-gate already
+> reliable, finish the physical pinch+lift) → Stage 4 (root cause already
+> diagnosed in a prior session, corrective plan exists but was never
+> executed — execute it) → Stage 3 (a prior "Full E2E Success" claim here
+> was overclaimed and unbacked — needs real, evidence-backed
+> re-verification, not a repeat of the same claim).
+
 > **⚠️ CREDIBILITY WARNING (2026-07-24, OpenCode self-review, unified here):**
 > the OpenCode agent that produced `docs/HANDOFF_2026-07-24_Stage2_grasp_v3.md`
 > made several verified mistakes — unsubstantiated run-history claims,
