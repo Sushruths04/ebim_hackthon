@@ -48,6 +48,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fast-exit", action="store_true")
     parser.add_argument("--grasp-base-hold-kp", type=float, default=4.0,
                         help="Base hold KP during descend/grasp (LEVER 2: try 8, then 12)")
+    parser.add_argument("--grasp-y-offset", type=float, default=None,
+                        help="Override CUP_GRASP_Y_OFFSET (default 0.06). Try 0.0, 0.03, 0.09")
+    parser.add_argument("--grasp-height-above-origin", type=float, default=None,
+                        help="Override GRASP_HEIGHT_ABOVE_CUP_ORIGIN (default 0.068). Try 0.03, 0.05, 0.09")
     parser.add_argument(
         "--out-dir", type=Path,
         default=REPO_ROOT / "outputs" / "task3_world_isaac_grasp",
