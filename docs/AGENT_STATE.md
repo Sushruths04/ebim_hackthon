@@ -11,20 +11,64 @@
 > Read it before the entries below (which are the detailed evidence trail
 > that plan was built from).
 
-> **🎯 STAGE 1 — real finding, GPU-verified fresh baseline (2026-07-24,
-> Claude session):** re-ran the exact r9 config
+> **🎯 STAGE 1 — real finding + verified mechanism (2026-07-24, Claude
+> session, corrected after re-checking my own arithmetic and reading the
+> actual source — don't trust the first-pass numbers below this line, this
+> paragraph supersedes them):** re-ran the exact r9 config
 > (`--object-name simple_tray --descend-ee-z 0.815 --push-distance 0.26
 > --head-placement a`, `scripts/task3/probe_tray_slide.py`) fresh on the
 > rebuilt environment (`outputs/task3_stage1_tray_slide_r14_claude/`,
-> GPU-gate passed). **Result is worse than either historical run**:
-> `stroke1_result` overhang went **negative** (-0.160m, wrong direction)
-> and `stroke2_realign` hit a 0.251m base drift before stroke 2 even
-> started — ending the run. Log shows repeated
-> `Right arm IK failed: solver reported no solution` warnings during
-> `stroke1_drag`. **Confirmed visually** (frames pulled and viewed
-> directly, `rgb_0008.png`/`rgb_0010.png`): at `stroke1_result` the arm is
-> **completely collapsed**, draped flat across the table edge with the
-> gripper hanging off the side — not a subtle friction/contact-tuning
+> GPU-gate passed). Result worse than either historical run: overhang went
+> negative (-0.160m), then a 0.251m base drift ended the run before
+> stroke 2. **Precisely recomputed (angle-wrapped, verified with a script,
+> not eyeballed)**: base yaw jumped **exactly +78.59°** in one step,
+> between `stroke1_descend` (tick 15404) and `stroke1_drag` (tick 16404) —
+> the same 1000-tick window as 3 logged `Right arm IK failed: solver
+> reported no solution` warnings — then **stayed flat** (~-104° to -106°)
+> through every phase afterward. A single abrupt event, not a slow drift
+> (ruling out a Stage-2-style continuous heading-hold failure).
+>
+> **Mechanism, traced in `dual_arm_lula.py:258-276` and
+> `probe_tray_slide.py:913-937`, not guessed:** `stroke1_drag`'s per-tick
+> loop commands the arm to an absolute **world-frame** target that ramps
+> forward every tick (`arms.set_arm_target`), while separately ramping the
+> base's own hold-anchor by `base_follow_fraction` (=1.0 here) of the same
+> offset. When the Lula IK solver fails (`compute_inverse_kinematics`
+> returns `succeeded=False`), `_solve_arm` catches it and **returns the
+> previous joint targets unchanged** (`dual_arm_lula.py:274-276`) — the arm
+> silently freezes at its last valid pose (base-relative, since joint
+> angles are base-relative) rather than erroring out or stopping the run.
+> The base's separate anchor-tracking controller keeps advancing
+> regardless of arm IK state. With the gripper still pressed down in
+> **active surface contact** with the tray at this exact moment (mid-drag,
+> post-descend), a frozen arm + a still-advancing base is a lever-arm
+> situation: any base tracking disturbance gets amplified through the
+> rigid, contact-loaded arm into base torque — this fits the observed
+> single sharp 78.6° spin far better than a slow control-loop drift would.
+>
+> **Why IK fails at all:** `probe_tray_slide.py`'s own module docstring
+> states the tray contact point sits "~0.86m dead ahead" of the stance —
+> essentially the same ~0.85-0.87m ceiling that caused Stage 2's
+> `descend_spoon` failures. **This is very likely the same root physical
+> constraint (FR3 arm reach) manifesting differently depending on whether
+> the end-effector is in free space when IK struggles (Stage 2: soft
+> miss, slow yaw creep) or in active surface contact (Stage 1: frozen arm
+> + moving base + contact = violent single-event spin).** Both `TRAY_STANCE`
+> (~0.86m) and `ISLAND_STANCE` (~0.87m) were likely set for
+> collision/navigation safety margin without enough thought to arm-reach
+> margin — this looks like a recurring design pattern across stages, not
+> two unrelated bugs. **Implication for the fix:** the right lever for
+> Stage 1, same as Stage 2, is very likely reducing the required reach
+> (closer stance / closer contact point), not tuning push-distance or
+> descend depth — confirm by measuring the FR3's real max reach against
+> the actual commanded contact distance before changing any script
+> parameter.
+>
+> Original (less precise) framing, kept for context — **confirmed visually**
+> (frames pulled and viewed directly, `rgb_0008.png`/`rgb_0010.png`): at
+> `stroke1_result` the arm is **completely collapsed**, draped flat across
+> the table edge with the gripper hanging off the side — not a subtle
+> friction/contact-tuning
 > issue, an actual control/IK breakdown during the drag maneuver. Also
 > confirms real run-to-run variance exists even with identical commanded
 > parameters (r9: +0.099m overhang/reached pinch; r13: +0.039m/never
