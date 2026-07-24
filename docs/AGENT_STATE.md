@@ -4,6 +4,13 @@
 > short; link proofs. Protocol: `AGENTS.md`. Plan:
 > `docs/task3_sprint_plan_2026-07-17.md`.
 
+> **📖 START HERE (2026-07-24):**
+> `docs/HANDOFF_2026-07-24_FULL_PLAN_Claude_to_OpenCode.md` is the current
+> complete plan — all 4 stages broken into sub-tasks, the VLM/RL/teleop
+> question answered, non-negotiable rules, and verified environment setup.
+> Read it before the entries below (which are the detailed evidence trail
+> that plan was built from).
+
 > **🎯 REAL ROOT CAUSE FOUND (2026-07-24, Claude session, runs 13-14,
 > `--skip-navigation` diagnostics — read this before touching Stage 2
 > grasp code again):** the `approach_spoon` yaw-drift bug (see below) is
