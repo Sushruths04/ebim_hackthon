@@ -767,7 +767,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     # skip-navigation shortcut nor CORRIDOR_STOP=(-3.18, -1.6) passes through
     # it. route_via_door() is the same proven waypoint helper already used
     # by verify_grasp_lift.py and probe_tray_slide.py for this exact crossing.
-    from task3_autonomy.navigation import route_via_door
+    from task3_autonomy.navigation import route_via_door, TASK3_DOOR_X, TASK3_KITCHEN_LANE_Y
 
     # base_hold_anchor was set to the island stance at Phase 1 arrival and
     # must be released before free navigation: sim_tick() re-applies a
@@ -787,13 +787,22 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     route = route_via_door(_start, DINING_TARGET)
     print(f"DEBUG Phase5 start={_start} target={DINING_TARGET} route={route}", flush=True)
     nav_dining_ok = True
-    for waypoint in route[1:]:
+    for idx, waypoint in enumerate(route[1:]):
         nav_dining_ok = drive_to(waypoint, max_speed=0.35, budget_s=45.0)
         log_phase(
             "navigate_dining_waypoint", nav_dining_ok, target=list(waypoint)
         )
         if not nav_dining_ok:
             break
+        # Before the south_point -> north_point door passage, rotate the
+        # base to face north so the tucked arm points into the dining room
+        # instead of into the west door jamb (x = -4.74).
+        if waypoint == (TASK3_DOOR_X, TASK3_KITCHEN_LANE_Y):
+            r = rotate_to(math.pi / 2, budget_s=10.0)
+            log_phase("rotate_for_door_passage", r)
+            if not r:
+                nav_dining_ok = False
+                break
     if not nav_dining_ok:
         return _result(
             False,
