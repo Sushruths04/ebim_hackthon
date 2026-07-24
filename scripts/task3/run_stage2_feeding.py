@@ -779,6 +779,7 @@ def _run(  # noqa: C901 — linear phase sequence, pre-existing complexity
     arms.sync_targets_from_measured()
     log_phase("tuck_for_dining", True)
     route = route_via_door((adapter.pose().x, adapter.pose().y), DINING_TARGET)
+    print(f"DEBUG Phase5 route: {route}", flush=True)
     nav_dining_ok = True
     for waypoint in route[1:]:
         nav_dining_ok = drive_to(waypoint, max_speed=0.35, budget_s=45.0)
