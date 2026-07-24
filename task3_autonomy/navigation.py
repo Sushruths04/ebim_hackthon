@@ -112,7 +112,22 @@ def route_via_door(
         if start_north
         else (south_point, north_point)
     )
-    route = waypoints_y_then_x(start_xy, first)
+
+    # Kitchen-side start: if the base's west edge is inside the island
+    # (island east face x=-3.77, base half-width ≈ 0.40), the y-then-x
+    # route drives north first and drags the base's west side along the
+    # island edge, pinning the base.  Insert an eastward waypoint to clear
+    # the island before proceeding.
+    ISLAND_EAST_FACE_X = -3.77
+    BASE_HALF_WIDTH = 0.40
+    ISLAND_CLEAR_X = ISLAND_EAST_FACE_X + BASE_HALF_WIDTH + 0.05  # -3.32
+    if not start_north and start_xy[0] < ISLAND_CLEAR_X:
+        clear_xy = (ISLAND_CLEAR_X, start_xy[1])
+        route = [start_xy, clear_xy]
+        _sub = waypoints_y_then_x(clear_xy, first)
+        route.extend(_sub[1:])  # skip clear_xy (already in route)
+    else:
+        route = waypoints_y_then_x(start_xy, first)
     print(f"DEBUG route_via_door start={start_xy} target={target_xy} first={first} second={second} route={route}", flush=True)
     route.append(second)
     route.extend(waypoints_x_then_y(second, target_xy)[1:])
