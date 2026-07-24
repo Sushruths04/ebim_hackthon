@@ -92,11 +92,35 @@ embodiment-matched fine-tune data we don't have yet).**
 
 ## 2. CURRENT STATE — what's done, what's in progress (detail)
 
-- **Branch:** `task3-current-clean`. **Last commit: `3fb6ddc8`** (pushed to
+- **Branch:** `task3-current-clean`. **Last commit: `3311a0b3`** (pushed to
   origin `github.com/Sushruths04/ebim_hackthon`). Confirm with `git rev-parse HEAD`.
+  (This section was stale — it said `3fb6ddc8` but HEAD was already 6 commits
+  ahead: `319419c7`/`0eb76f4d` LEVER 1 recenter code, `a2105f70` LEVER 2
+  `grasp_base_hold_kp` param, `3311a0b3` LEVER 3 CLI args. That prior session
+  ended after writing the code but WITHOUT running/verifying any of it on GPU
+  and WITHOUT updating this file — a violation of §0 rule 7/8. Corrected now.)
 - **Overall: 0 of 4 stages have a real GPU proof bundle.** The blocker is the
   grasp (see §4). Everything below the grasp (navigate/place/carry) is
   comparatively easy once grasp holds.
+- **2026-07-24 session (this one) found the VM in a bad state on connect:**
+  5 concurrent `run_world_isaac_grasp.py` processes were all running at once
+  inside the container (started 19:41–20:29, one pair being exact duplicates
+  of the same base-param command, plus kp=8 and kp=12 variants) — a clear
+  violation of the "ONE run at a time" rule from a prior session that
+  launched them and got cut off before waiting for results or cleaning up.
+  Worse: they were ALL writing to the same default `--out-dir`
+  (`outputs/task3_world_isaac_grasp/result.json`), so the one result.json
+  found on disk was a race with unknown provenance (couldn't tell which run
+  produced it — it has no kp field in its output) and 5-way GPU contention
+  meant none of them are trustworthy anyway (`nvidia-smi` showed only 6% util
+  after 30-92 min of "running"). **Killed all 5** (had to kill via
+  `docker exec ... kill -9` with container-local PIDs, not host PIDs — host
+  PIDs get "operation not permitted" since procs run as root inside the
+  container). GPU confirmed clean (0%/0MiB) after kill. Relaunched ONE clean
+  Lever-1 test with a dedicated `--out-dir` (`..._lever1_clean`) so this
+  doesn't happen again. **Lesson for future sessions: always check
+  `ps aux`/`docker exec ... ps aux` for stragglers before launching a new
+  run, and always pass a unique `--out-dir` per run.**
 
 **DONE:**
 - **T0 (CPU, commit `1d1ab632`):** committed the `task3_pipeline/` orchestration
@@ -239,6 +263,56 @@ The base at `STANCE=(-3.32,-1.72)` already sits ~0.05 m off the island east face
 reach without base-vs-island collision. So for the island cup, make the grasp
 robust AT the achievable ~0.82 m reach via close-accuracy (§5 levers 1–3), NOT by
 driving the base closer.
+
+### 4.4 LEVER 1 (recenter on live cup pose) — TESTED CLEAN, FAILED, reproducible
+- **Run:** `python -B scripts/task3/run_world_isaac_grasp.py --object-name cup
+  --skip-navigation --out-dir outputs/task3_world_isaac_grasp_lever1_clean`, single
+  process, GPU confirmed clean before launch (0%/0MiB), GPU gate passed
+  (`Using device: cuda:0`, no llvmpipe/software-rasterizer hits in
+  `outputs/lever1_clean.log`). `wall_time_seconds: 222.06`.
+- **Result (`result.json`, real, opened this session):** `passed: false`.
+  - `descend`: `position_error_m 0.0944`, `strict_reach: false` — already ~9.4cm
+    short, biased in **-Y** (`ee_dy_m: -0.072`).
+  - `recenter` (the Lever-1 fix itself): `ok: false`, `recenter_pos_err_m: 0.0761`
+    — re-solving IK against the LIVE cup pose barely helped (9.4cm → 7.6cm) and
+    still missed by 7.6cm against a 0.015m tolerance / 4s timeout.
+    `target=[-4.097,-1.754,0.829]` vs `ee_after=[-4.117,-1.808,0.879]` — off in
+    both Y and Z, i.e. the arm did not converge, not "closed on a target that
+    was itself wrong."
+  - `close`: `gripper_position_rad -0.0` (fully closed — closed on empty air),
+    `object_ee_dist_m 0.1251`, `object_follows_ee: false` → `weak_grasp`.
+  - `lift`: `object_rise_m 0.0` → `miss`.
+  - **Reproducibility:** this is near-identical to the (contaminated,
+    provenance-unknown) result found on session start — `recenter_pos_err_m`
+    0.0768 there vs 0.0761 here. Same failure mode twice → this is a real,
+    deterministic finding, not noise.
+- **Interpretation:** the fix in Lever 1 (recompute target from live pose) is
+  necessary but not sufficient — it is not a *stale-target* problem, it is an
+  **IK/reach convergence** problem: `arms.reach()` cannot get the end effector
+  within tolerance of the (correct, live) target at all, consistently missing
+  by ~7-9cm in the same -Y-biased direction both before and after recentering.
+  This matches §4.2's standing concern that the island-cup reach may sit right
+  at/beyond the arm's workspace limit for this base stance. **Lever 2
+  (stiffen descend / reduce cup displacement) targets a different failure mode
+  (cup slipping) and is unlikely to fix an IK-convergence shortfall — but per
+  process we test it anyway, one change at a time, before escalating.**
+- **New finding (§5 step 4, captured this session):** container's actual
+  running Isaac Sim is **`5.1.0-rc.19+release.26219.9c81211b.gl`** (from
+  `/workspace/isaaclab/_isaac_sim/VERSION` and boot log
+  `Isaac-Sim/5.1/user.config.json`), inside image `isaac-lab-2.3.2:ebim2026`.
+  This container was created ~12h before this session (i.e. NOT the same
+  container instance that produced the 07-18 proof). The historical proof's
+  `repro.txt` does not pin an Isaac Sim version, so we cannot directly compare,
+  but a 2.3.2-branded Isaac Lab image running a 5.1 **release-candidate** Isaac
+  Sim internally is unusual and consistent with §4.1's suspected
+  build-mismatch cause of the IK/contact-geometry drift. Cannot fix from
+  inside the repo (would need a different/pinned image) — noting as
+  supporting evidence for §6 if levers exhaust.
+- **Also confirmed independently (session hygiene):** the VM was found with 5
+  concurrent unmanaged runs left by a prior session (see §2) — that prior
+  session's own frozen `repro.txt` for the reference batch script explicitly
+  warns "never run a second copy on the single GPU," so this was a known rule
+  that got violated, not an unknown risk.
 
 ### 4.3 Earlier deferrals (context, not failures)
 - Tray-drag files were NOT physically archived to `old/` — `run_stage2_feeding.py`,
