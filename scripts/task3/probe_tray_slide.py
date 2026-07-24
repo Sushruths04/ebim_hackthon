@@ -2,7 +2,14 @@
 # Copyright (c) 2026 The EBiM Benchmark Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Physical-only Step 1 probe: slide the flat tray to an edge and pinch it.
+"""DEPRECATED 2026-07-24 -- optimized the dev-helper dining-rectangle proxy +
+tray carry, which the organizer rules do NOT score (real Stage 1 = 4 objects
+to 3 assigned seats). Retained only because run_stage2_feeding.py /
+recording.py still import shared helpers from it. To be physically archived
+to old/ once those imports are severed. See
+docs/TASK3_MASTER_EXECUTION_PLAN_2026-07-24.md Section 2.2.
+
+Physical-only Step 1 probe: slide the flat tray to an edge and pinch it.
 
 The tray remains the organizer asset. This script uses only robot joint
 targets, contact, and PhysX pose reads. It intentionally contains no
